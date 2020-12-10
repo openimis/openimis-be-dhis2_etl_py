@@ -8,11 +8,11 @@ This module will push data in two programs
 
 ## Getting started
 
-#. install DHIS2 2.33 or 2.34
+1. install DHIS2 2.33 or 2.34
 
-#. get the metadata for the github repository https://github.com/openimis/openimis-dhis2-configuration_json
+1. get the metadata for the github repository https://github.com/openimis/openimis-dhis2-configuration_json
 
-#. Import the metadata in DHIS2 (http://<<dhis2Address>>/dhis-web-importexport/index.html#/import/metadata)
+1. Import the metadata in DHIS2 (http://<<dhis2Address>>/dhis-web-importexport/index.html#/import/metadata)
     - JSON Format
     - UID identifier
     - Report Error
@@ -21,17 +21,17 @@ This module will push data in two programs
     - Atomic mode all
     - Merge mode
 
-#. Create the location json (see ./Script/CreateDHIS2Location.sql)
+1. Create the location json (see ./Script/CreateDHIS2Location.sql)
 
-#. Import the location json dhis2 (http://<<dhis2Address>>/dhis-web-importexport/index.html#/import/metadata)
+1. Import the location json dhis2 (http://<<dhis2Address>>/dhis-web-importexport/index.html#/import/metadata)
 
-#. Assign name to the level in DHIS2 (http://<<dhis2Address>>/dhis-web-maintenance/index.html#/list/organisationUnitSection/organisationUnitLevel)
+1. Assign name to the level in DHIS2 (http://<<dhis2Address>>/dhis-web-maintenance/index.html#/list/organisationUnitSection/organisationUnitLevel)
 
-#. Allow the family-insuree project to collect data on level 5
+1. Allow the family-insuree project to collect data on level 5
 
-#. Allow the claim project to collect data on level 4 (Ideally we should have an OrgUniut Group for HF)
+1. Allow the claim project to collect data on level 4 (Ideally we should have an OrgUniut Group for HF)
 
-#. You are now ready to start the module
+1. You are now ready to start the module
 
 
 -------------------------------------------------------------------------------------
@@ -50,11 +50,11 @@ Hisp india documetation for the programs
 
 # Contents
 
-**[1.](#_Toc24836604)****Executive Summary 2**
+**[1. Executive Summary 2](#_Toc24836604)**
 
-**[2.](#_Toc24836605)****System Overview 3**
+**[2. System Overview 3](#_Toc24836605)**
 
-**[3.](#_Toc24836606)****Design and Development Approach 4**
+**[3. Design and Development Approach 4](#_Toc24836606)**
 
 **[3.1 Organisation units/ Reporting Units and hierarchy 4](#_Toc24836607)**
 
@@ -76,7 +76,7 @@ Hisp india documetation for the programs
 
 [3.3.5Dashboards 13](#_Toc24836616)
 
-**[4.](#_Toc24836617)****User management 13**
+**[4.User management 13](#_Toc24836617)**
 
 **[4.1 Admin user/Super user 13](#_Toc24836618)**
 
@@ -93,12 +93,9 @@ Hisp india documetation for the programs
 | **Version** | **Date** | **Changes made** |
 | --- | --- | --- |
 | Version 1 | February 6th 2020 | - |
-| Version 2 | May 26th 2020 | Updated Claims Management Program Design
-- Claim – Service program Stage
-- Claim – Item program Stage
- |
+| Version 2 | May 26th 2020 | Updated Claims Management Program Design <br/>- Claim – Service program Stage<br/>- Claim – Item program Stage |
 
-1.
+
 # **Executive Summary**
 
 The following document details out the overall system design, approach, and the functionalities available in the envisaged openIMIS-DHIS2 integrated instance. This document builds on the requirements document shared with GIZ/Digital Square team in August 2019. The report has the following parts:
@@ -126,12 +123,10 @@ The integrated openIMIS-DHIS2 integrated system will have the following key func
 
 1. Supporting spatial analysis of data using the GIS apps in DHIS2 depending upon the availability of the shapefiles of the country which can be configured into DHIS2.
 
-1.
 # **Design and Development Approach**
 
 The system will be designed using the latest stable release DHIS2 2.32, which can be further upgraded to higher versions. The below sections define how the contents defined in the requirements document will be configured in DHIS2.
 
-##
 
 ## 3.1 Organisation units/ Reporting Units and hierarchy
 
@@ -176,26 +171,19 @@ Below are the key attributes/data elements captured in the Insuree Program conce
 
 | **Program Name** | **Tracked Entity Attributes** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- |
-| **Family/Insuree** | Family ID | TEXT |
- |
-| Insuree ID | TEXT |
- |
-| CHF ID | TEXT |
- |
-| Poverty status | TEXT | Yes/No |
-| Household head | TEXT | Yes/No |
-| First name | TEXT |
- |
-| Last name | TEXT |
- |
-| Date of birth/Age | DATE |
- |
-| Gender | TEXT | Male, Female, Other |
-| Marital status | TEXT | Single, Married, Divorced, Widowed, Not Specified |
-| First service point | TEXT |
- |
-| Education | TEXT | Nursery, Primary School, Secondary School, University, Post Graduate Studies, PhD, Others |
-| Profession | TEXT | Household, Employed, Self-Employed, Others |
+| **Family/Insuree** | Family ID | TEXT ||
+|| Insuree ID | TEXT ||
+|| CHF ID | TEXT ||
+|| Poverty status | TEXT | Yes/No |
+|| Household head | TEXT | Yes/No |
+|| First name | TEXT ||
+|| Last name | TEXT ||
+|| Date of birth/Age | DATE ||
+|| Gender | TEXT | Male, Female, Other |
+|| Marital status | TEXT | Single, Married, Divorced, Widowed, Not Specified |
+|| First service point | TEXT ||
+|| Education | TEXT | Nursery, Primary School, Secondary School, University, Post Graduate Studies, PhD, Others 
+|| Profession | TEXT | Household, Employed, Self-Employed, Others |
 
 1. **Policy Details**
 
@@ -207,11 +195,10 @@ Below are the data elements captured in the Policy Details program stage concern
 
 | **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- | --- |
-| **Family/Insuree** | Policy Details | Policy ID | TEXT |
- |
-| Product | TEXT | SHSDC-Non Poor, SHSDC FCHV, HIB-3500 |
-| Policy Stage | TEXT | New Policy, Renewed Policy |
-| Policy Status | TEXT | Idle, Active, Suspended, Expired |
+| **Family/Insuree** | Policy Details | Policy ID | TEXT ||
+||| Product | TEXT | SHSDC-Non Poor, SHSDC FCHV, HIB-3500 |
+||| Policy Stage | TEXT | New Policy, Renewed Policy |
+||| Policy Status | TEXT | Idle, Active, Suspended, Expired |
 
 ### 3.2.2 Claims Management Program
 
@@ -229,16 +216,14 @@ Below are the key attributes captured in the Claims Management Program concernin
 
 | **Program Name** | **Tracked Entity Attributes** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- |
-| **Claims Management** | Claim administrator | TEXT |
- |
-| Claim number | NUMBER |
- |
-| Primary Diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-| Visit type | TEXT | OPD, IPD, Emergency, Referral,Others |
+| **Claims Management** | Claim administrator | TEXT | |
+|| Claim number | NUMBER | |
+|| Primary Diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
+|| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
+|| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
+|| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
+|| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
+|| Visit type | TEXT | OPD, IPD, Emergency, Referral,Others |
 
 1. **Claim Details**
 
@@ -251,20 +236,14 @@ Below are the data elements captured in the Claim Details program stage concerni
 | **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- | --- |
 | **Claims Management** | Claims Details | Claim status | TEXT | Entered, Checked, Rejected, Processed, Valuated |
-| Claim amount | NUMBER |
- |
-| Adjusted amount | NUMBER |
- |
-| Approved amount | NUMBER |
- |
-| Valuated amount | NUMBER |
- |
-| Checked date | DATE |
- |
-| Valuation date | DATE |
- |
-| Rejected date | DATE |
- |
+|||Claim amount | NUMBER ||
+ ||| Adjusted amount | NUMBER ||
+ ||| Approved amount | NUMBER ||
+ ||| Valuated amount | NUMBER ||
+ ||| Checked date | DATE ||
+ ||| Valuation date | DATE ||
+ ||| Rejected date | DATE ||
+ 
 
 1. **Services Detail**
 
@@ -277,27 +256,17 @@ Below are the data elements captured in the Claim - Services program stage conce
 | **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- | --- |
 |
- | Claim - Services | Claimed Service | TEXT |
- |
-| Service Quantity | NUMBER |
- |
-| Service Price | NUMBER |
- |
-| Adjusted amount - Service | NUMBER |
- |
-| Approved amount - Service | NUMBER |
- |
-| Deductible amount - Service | NUMBER |
- |
-| Exceeded ceiling - Amount | NUMBER |
- |
-| Renumerted Amount - Service | NUMBER |
- |
-| Valuated amount - Service | NUMBER |
- |
-| Sequence ID | NUMBER |
- |
-
+ | Claim - Services | Claimed Service | TEXT ||
+ ||| Service Quantity | NUMBER ||
+ ||| Service Price | NUMBER ||
+ ||| Adjusted amount - Service | NUMBER ||
+ ||| Approved amount - Service | NUMBER ||
+ ||| Deductible amount - Service | NUMBER ||
+ ||| Exceeded ceiling - Amount | NUMBER ||
+ ||| Renumerted Amount - Service | NUMBER ||
+ ||| Valuated amount - Service | NUMBER ||
+ ||| Sequence ID | NUMBER ||
+ 
 1. **Items Detail**
 
 **Program Stage Name:** Claim - Items
@@ -309,25 +278,15 @@ Below are the data elements captured in the Claim – Items program stage concer
 | **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- | --- |
 | **Claims Management** | Claim - Items | Claimed Item | NUMBER |
- |
-| Item Quantity | NUMBER |
- |
-| Item Price | NUMBER |
- |
-| Adjusted amount - Item | NUMBER |
- |
-| Approved amount – Item | NUMBER |
- |
-| Deductible amount - Item | NUMBER |
- |
-| Exceeded ceiling amount - Item | NUMBER |
- |
-| Remunerated Amount - Service | NUMBER |
- |
-| Valuated amount - Service | NUMBER |
- |
-| Sequence ID | NUMBER |
- |
+ ||| Item Quantity | NUMBER |
+ ||| Item Price | NUMBER ||
+ ||| Adjusted amount - Item | NUMBER ||
+ ||| Approved amount – Item | NUMBER ||
+ ||| Deductible amount - Item | NUMBER ||
+ ||| Exceeded ceiling amount - Item | NUMBER ||
+ ||| Remunerated Amount - Service | NUMBER ||
+ ||| Valuated amount - Service | NUMBER ||
+ ||| Sequence ID | NUMBER ||
 
 ## 3.2 Data Analysis
 
@@ -380,9 +339,6 @@ Based on the above groups and group sets defined the analytics engine in DHIS2 w
 
 ### 3.3.4 Indicator Dimensions
 
-####
-
-      1.
 #### **Indicator groups**
 
 1. Beneficiary Management
@@ -391,7 +347,7 @@ Based on the above groups and group sets defined the analytics engine in DHIS2 w
 
 All indicators falling under the above groups have been defined in the requirements document along with their source.
 
-    1.
+
 ### Dashboards
 
 DHIS2 Dashboards app will be configured to create dashboards based on the following proposed structure, and the content:
@@ -410,7 +366,7 @@ DHIS2 Dashboards app will be configured to create dashboards based on the follow
 - Claims-Service Utilisation
 - Claims-Item Utilisation
 
-1.
+
 # **User management**
 
 The following user roles and users are being proposed, but we expect the list to grow during the capacity-building phase and in discussions with the HIC-MoH team.
@@ -427,12 +383,7 @@ This role will be assigned to the users at the district level. This role will al
 
 This user role allows the user to enter data for the respective facility, generate reports, and perform data quality checks and analysis.
 
-##
 
 ## 4.4 Health Insurance Board/National Insurance Agency
 
 User roles will be created and assigned to a user belonging to Health Insurance Board/National Insurance Agency in the country to allow them to access data for their specific thematic areas such as Beneficiary Enrollments/Coverage, Claims etc. and evaluate across the country/region/district depending upon their administrative authority. They can access reports, perform data analysis and use dashboards.
-
-#
-
-#
