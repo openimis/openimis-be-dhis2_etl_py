@@ -1,2 +1,438 @@
-# openimis-be-dhis2_py-
+# openimis-be-dhis2_py
+
 openIMIS Module to push data into DHIS2
+
+This module will push data in two programs
+- Family-insuree [enrolment] Policy [event]
+- Claims 
+
+## Getting started
+
+#. install DHIS2 2.33 or 2.34
+
+#. get the metadata for the github repository https://github.com/openimis/openimis-dhis2-configuration_json
+
+#. Import the metadata in DHIS2 (http://<<dhis2Address>>/dhis-web-importexport/index.html#/import/metadata)
+    - JSON Format
+    - UID identifier
+    - Report Error
+    - Reference pre-heat
+    - New and udate strategy
+    - Atomic mode all
+    - Merge mode
+
+#. Create the location json (see ./Script/CreateDHIS2Location.sql)
+
+#. Import the location json dhis2 (http://<<dhis2Address>>/dhis-web-importexport/index.html#/import/metadata)
+
+#. Assign name to the level in DHIS2 (http://<<dhis2Address>>/dhis-web-maintenance/index.html#/list/organisationUnitSection/organisationUnitLevel)
+
+#. Allow the family-insuree project to collect data on level 5
+
+#. Allow the claim project to collect data on level 4 (Ideally we should have an OrgUniut Group for HF)
+
+#. You are now ready to start the module
+
+
+-------------------------------------------------------------------------------------
+Hisp india documetation for the programs
+-------------------------------------------------------------------------------------
+
+![](RackMultipart20201210-4-1agjxdr_html_81f805b27f195b6e.gif)
+
+![](RackMultipart20201210-4-1agjxdr_html_8337311abc75b3be.gif) ![](RackMultipart20201210-4-1agjxdr_html_76e5e5e64c8f76d2.gif) ![](RackMultipart20201210-4-1agjxdr_html_f0378cec9a7f81b4.gif)
+
+**Version 2**
+
+# System Design Document
+
+**openIMIS**** -DHIS2 Integration**
+
+# Contents
+
+**[1.](#_Toc24836604)****Executive Summary 2**
+
+**[2.](#_Toc24836605)****System Overview 3**
+
+**[3.](#_Toc24836606)****Design and Development Approach 4**
+
+**[3.1 Organisation units/ Reporting Units and hierarchy 4](#_Toc24836607)**
+
+**[3.2 Data Input 5](#_Toc24836608)**
+
+[3.2.1 Family/Insuree Program 5](#_Toc24836609)
+
+[3.2.2 Claims Management Program 7](#_Toc24836610)
+
+**[3.2 Data Analysis 10](#_Toc24836611)**
+
+[3.3.1 Organisation Unit Dimensions 11](#_Toc24836612)
+
+[**3.3.1.1 Organisation unit groups and Group Sets** 11](#_Toc24836613)
+
+[3.3.4 Indicator Dimensions 12](#_Toc24836614)
+
+[**3.3.4.1**** Indicator groups** 12](#_Toc24836615)
+
+[3.3.5Dashboards 13](#_Toc24836616)
+
+**[4.](#_Toc24836617)****User management 13**
+
+**[4.1 Admin user/Super user 13](#_Toc24836618)**
+
+**[4.2 District User 14](#_Toc24836619)**
+
+**[4.3 Facility User 14](#_Toc24836620)**
+
+**[4.4 Health Insurance Board/National Insurance Agency 14](#_Toc24836621)**
+
+#
+
+# **Change Log**
+
+| **Version** | **Date** | **Changes made** |
+| --- | --- | --- |
+| Version 1 | February 6th 2020 | - |
+| Version 2 | May 26th 2020 | Updated Claims Management Program Design
+- Claim – Service program Stage
+- Claim – Item program Stage
+ |
+
+1.
+# **Executive Summary**
+
+The following document details out the overall system design, approach, and the functionalities available in the envisaged openIMIS-DHIS2 integrated instance. This document builds on the requirements document shared with GIZ/Digital Square team in August 2019. The report has the following parts:
+
+The System Overview section provides a summary of key functionalities based on the requirements mentioned in the requirements document has been documented which include key aspects such as system metadata configuration, data input, data analysis, use of dashboards.
+
+The System Design and Development section describes the design and development approach where each data input component defined in the requirements document has been described in terms of how the component will be defined in DHIS2. This section will be a living component, which will evolve, and any change in the data model based on feedback will be considered and correspondingly will be updated to maintain a record of the design decisions made.
+
+The Data Analysis section defines the various data dimension, which will be configured to give the desired shape and fit the data being collected so that it reaps maximum value when analysed. The dimensions involve the use of various disaggregations in place to create combinations, the grouping of facilities based on qualifying factors to analyze by their type, location, area, etc.
+
+The last section proposes the kind of users/user roles the system should have to be of use to all stakeholders involved in the health insurance data in the country/region of implementation.
+
+1.
+# **System Overview**
+
+The integrated openIMIS-DHIS2 integrated system will have the following key functionalities, which will encompass all the requirements mentioned in the requirements document. The below functionalities will be suitable for all openIMIS implementations, and minor modifications will be required to manage the localised context of the country.
+
+1. Availability of reporting hierarchies as per the structure defined in openIMIS by defining the appropriate levels in DHIS2, the reporting hierarchies will further complement the programs designed for storing the incoming data from openIMIS for client enrollments and claims management.
+
+1. Provision for data import for openIMIS on a daily frequency which will have the data received for new policy enrollments, updates in the policy status, new claims submissions, updates in the status of the submitted claims as they get processed.
+
+1. Availability of all data dimensions required for data analysis such as groups and group sets for organisation units, data elements, and indicators.
+
+1. Availability of dashboards for different stakeholders and indicator groups (Beneficiary Management, Claims Management, and Operational Indicators).
+
+1. Supporting spatial analysis of data using the GIS apps in DHIS2 depending upon the availability of the shapefiles of the country which can be configured into DHIS2.
+
+1.
+# **Design and Development Approach**
+
+The system will be designed using the latest stable release DHIS2 2.32, which can be further upgraded to higher versions. The below sections define how the contents defined in the requirements document will be configured in DHIS2.
+
+##
+
+## 3.1 Organisation units/ Reporting Units and hierarchy
+
+Organisation units refer to the reporting facilities in DHIS and are organized based on the hierarchy of reporting. The data reported by each facility is stored against the respective organisation unit. With context to openIMIS, the hierarchy structure defined in openIMIS will be taken as the base for importing into DHIS2. For example, the below structure is an example of hierarchy available in openIMIS implementation in Nepal which has been implemented in DHIS2:
+
+| **Level** | **Organisation Unit** |
+| --- | --- |
+| Level 1 | Country |
+| Level 2 | Province |
+| Level 3 | District |
+| Level 4 | Health Facilities, Wards |
+| Level 5 | Villages |
+
+The above structure will be modifiable based on the reporting structure defined in the country&#39;s openIMIS implementation. The further classification of organisation units into different dimensions and their use in data analysis has been elicited in the Data Analysis section of the document.
+
+In the openIMIS-DHIS2 Demo instance, the hierarchy from the openIMIS demo instance has been taken as the base, where the following structure is followed:
+
+| **Level** | **Organisation Unit** |
+| --- | --- |
+| Level 1 | Country |
+| Level 2 | Province |
+| Level 3 | District |
+| Level 4 | Health Facilities |
+
+## 3.2 Data Input
+
+The data input structure is defined below for the information which will be fetched from openIMIS and stored in DHIS2 for aggregation, data presentation, visualisation, and analysis.
+
+### 3.2.1 Family/Insuree Program
+
+The Insuree program will be designed under the following considerations:
+
+1. **Tracked Entity Type** : Person
+
+1. **Enrollment entities** (as per openIMIS): All Insurees, including Household Heads.
+
+1. **Organisation Units** : The program will be assigned to the village level, as registration in openIMIS is happening at the point of insuree&#39;s residence which is the village in case of the Nepal implementation.
+
+Below are the key attributes/data elements captured in the Insuree Program concerning context with openIMIS Nepal implementation, these details can be changed based on local context in openIMIS country implementations.
+
+1. **Family/Insuree Registration**
+
+| **Program Name** | **Tracked Entity Attributes** | **Value Type** | **Menu Options** |
+| --- | --- | --- | --- |
+| **Family/Insuree** | Family ID | TEXT |
+ |
+| Insuree ID | TEXT |
+ |
+| CHF ID | TEXT |
+ |
+| Poverty status | TEXT | Yes/No |
+| Household head | TEXT | Yes/No |
+| First name | TEXT |
+ |
+| Last name | TEXT |
+ |
+| Date of birth/Age | DATE |
+ |
+| Gender | TEXT | Male, Female, Other |
+| Marital status | TEXT | Single, Married, Divorced, Widowed, Not Specified |
+| First service point | TEXT |
+ |
+| Education | TEXT | Nursery, Primary School, Secondary School, University, Post Graduate Studies, PhD, Others |
+| Profession | TEXT | Household, Employed, Self-Employed, Others |
+
+1. **Policy Details**
+
+**Program Stage Name:** Policy Details
+
+**Type:** Repeatable (every time a change in the policy stage and policy status happens in openIMIS, a new event will be created in DHIS2 storing the updates made to the policy details.
+
+Below are the data elements captured in the Policy Details program stage concerning the context of openIMIS Nepal implementation, these details can be changed based on the local context in openIMIS country implementations.
+
+| **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
+| --- | --- | --- | --- | --- |
+| **Family/Insuree** | Policy Details | Policy ID | TEXT |
+ |
+| Product | TEXT | SHSDC-Non Poor, SHSDC FCHV, HIB-3500 |
+| Policy Stage | TEXT | New Policy, Renewed Policy |
+| Policy Status | TEXT | Idle, Active, Suspended, Expired |
+
+### 3.2.2 Claims Management Program
+
+The Insuree program will be designed under the following considerations:
+
+1. **Tracked Entity Type** : Person
+
+1. **Enrollment entities** (as per openIMIS): All Claims submitted by the facilities for the insured individuals.
+
+1. **Organisation Units** : The program will be assigned to the facility level, as services are given to the insuree at the facility level, and claims are submitted by the facility for processing for getting the required re-payments.
+
+Below are the key attributes captured in the Claims Management Program concerning context with openIMIS Nepal implementation, these details can be changed based on local context in openIMIS country implementations.
+
+1. **Claim Registration Attributes**
+
+| **Program Name** | **Tracked Entity Attributes** | **Value Type** | **Menu Options** |
+| --- | --- | --- | --- |
+| **Claims Management** | Claim administrator | TEXT |
+ |
+| Claim number | NUMBER |
+ |
+| Primary Diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
+| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
+| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
+| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
+| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
+| Visit type | TEXT | OPD, IPD, Emergency, Referral,Others |
+
+1. **Claim Details**
+
+**Program Stage Name:** Claim Details
+
+**Type:** Repeatable (every time a new claim is submitted in openIMIS, or status of the claim is changed, this event will get created).
+
+Below are the data elements captured in the Claim Details program stage concerning the context of openIMIS Nepal implementation, these details can be changed based on the local context in openIMIS country implementations.
+
+| **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
+| --- | --- | --- | --- | --- |
+| **Claims Management** | Claims Details | Claim status | TEXT | Entered, Checked, Rejected, Processed, Valuated |
+| Claim amount | NUMBER |
+ |
+| Adjusted amount | NUMBER |
+ |
+| Approved amount | NUMBER |
+ |
+| Valuated amount | NUMBER |
+ |
+| Checked date | DATE |
+ |
+| Valuation date | DATE |
+ |
+| Rejected date | DATE |
+ |
+
+1. **Services Detail**
+
+**Program Stage Name:** Claim - Services
+
+**Type:** Repeatable (This stage will be created each time for capturing details for each service incurred by the insuree from the facility). For example, the claim in question has 10 services, then 10 events will be created for each service.
+
+Below are the data elements captured in the Claim - Services program stage concerning the context of openIMIS Nepal implementation, these details can be changed based on the local context in openIMIS country implementations.
+
+| **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
+| --- | --- | --- | --- | --- |
+|
+ | Claim - Services | Claimed Service | TEXT |
+ |
+| Service Quantity | NUMBER |
+ |
+| Service Price | NUMBER |
+ |
+| Adjusted amount - Service | NUMBER |
+ |
+| Approved amount - Service | NUMBER |
+ |
+| Deductible amount - Service | NUMBER |
+ |
+| Exceeded ceiling - Amount | NUMBER |
+ |
+| Renumerted Amount - Service | NUMBER |
+ |
+| Valuated amount - Service | NUMBER |
+ |
+| Sequence ID | NUMBER |
+ |
+
+1. **Items Detail**
+
+**Program Stage Name:** Claim - Items
+
+**Type:** Repeatable (This stage will be created each time for capturing details for each item incurred by the insuree from the facility). For example, the claim in question has 10 items, then 10 events will be created for each service.
+
+Below are the data elements captured in the Claim – Items program stage concerning the context of openIMIS Nepal implementation, these details can be changed based on the local context in openIMIS country implementations.
+
+| **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
+| --- | --- | --- | --- | --- |
+| **Claims Management** | Claim - Items | Claimed Item | NUMBER |
+ |
+| Item Quantity | NUMBER |
+ |
+| Item Price | NUMBER |
+ |
+| Adjusted amount - Item | NUMBER |
+ |
+| Approved amount – Item | NUMBER |
+ |
+| Deductible amount - Item | NUMBER |
+ |
+| Exceeded ceiling amount - Item | NUMBER |
+ |
+| Remunerated Amount - Service | NUMBER |
+ |
+| Valuated amount - Service | NUMBER |
+ |
+| Sequence ID | NUMBER |
+ |
+
+## 3.2 Data Analysis
+
+The data analysis will utilize the following modules in DHIS2 both for analyzing the raw data, as well as the indicators, generate from aggregate, and event-based data.
+
+  1. Data Visualiser
+  2. Pivot Tables
+  3. GIS
+  4. Event Reports
+  5. Dashboards
+
+Each of the above modules will be assisted with the following data dimensions, which help in adding additional layers to the data analysis:
+
+### 3.3.1 Organisation Unit Dimensions
+
+#### **3.3.1.1 Organisation unit groups and Group Sets**
+
+The organisation unit groups will be created based on the facility attributes such as given below. The list has been generated from the reporting facilities available in the openIMIS Nepal implementation. These lists can be altered based on localised context of the country implementation.
+
+**Facility-type Groups**
+
+1. PHC
+2. PHCC
+3. District Hospitals
+4. Zonal Hospitals
+5. Medical College/Teaching Hospitals
+6. NGOs
+
+**Facility-wise Groups**
+
+1. Primary Health Centres
+2. General Hospitals
+3. Eye Hospitals
+4. Cardiothoracic and Vascular Hospitals
+5. Cancer Hospitals
+6. Health Institutes
+7. Polytechnic Institutes
+
+**Location-wise Groups**
+
+1. Urban
+2. Rural
+
+**Facility type-wise groups**
+
+1. Public facilities
+2. Private facilities
+
+Based on the above groups and group sets defined the analytics engine in DHIS2 will aggregate the data which can be used to carry out the analysis of data both raw data and indicators by adding these additional dimensions to understand the reach and coverage of services.
+
+### 3.3.4 Indicator Dimensions
+
+####
+
+      1.
+#### **Indicator groups**
+
+1. Beneficiary Management
+2. Claims Management
+3. Operations Management
+
+All indicators falling under the above groups have been defined in the requirements document along with their source.
+
+    1.
+### Dashboards
+
+DHIS2 Dashboards app will be configured to create dashboards based on the following proposed structure, and the content:
+
+1. **Beneficiary Management**
+
+- Policy Management
+- Individuals with an active policy
+- Individuals enrolled and not covered
+- Households with an active policy
+- Households enrolled and not covered
+
+1. **Claims Management**
+
+- Claims Management
+- Claims-Service Utilisation
+- Claims-Item Utilisation
+
+1.
+# **User management**
+
+The following user roles and users are being proposed, but we expect the list to grow during the capacity-building phase and in discussions with the HIC-MoH team.
+
+## 4.1 Admin user/Superuser
+
+This role will be assigned to the system administrator. This role will enable the super user to manage, maintain, and configure the application, which involves various tasks such modifying organisation units, adding new data elements, indicators, creating new users, resetting passwords etc.
+
+## 4.2 District User
+
+This role will be assigned to the users at the district level. This role will allow the user to access the data entry, data quality, data analysis, and output/reporting modules of their particular district. Using these modules the user can, generate reports and analyse trends in data using the analysis tools.
+
+## 4.3 Facility User
+
+This user role allows the user to enter data for the respective facility, generate reports, and perform data quality checks and analysis.
+
+##
+
+## 4.4 Health Insurance Board/National Insurance Agency
+
+User roles will be created and assigned to a user belonging to Health Insurance Board/National Insurance Agency in the country to allow them to access data for their specific thematic areas such as Beneficiary Enrollments/Coverage, Claims etc. and evaluate across the country/region/district depending upon their administrative authority. They can access reports, perform data analysis and use dashboards.
+
+#
+
+#
