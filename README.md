@@ -1,6 +1,8 @@
-# openimis-be-dhis2_py
+# openimis-be-dhis2_py UNDER DEVELOPMENT: NOT working YEt
 
 openIMIS Module to push data into DHIS2
+
+
 
 This module will push data in two programs
 - Family-insuree [enrolment] Policy [event]
