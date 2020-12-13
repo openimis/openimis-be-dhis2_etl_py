@@ -182,7 +182,7 @@ Below are the key attributes/data elements captured in the Insuree Program conce
 || Gender | TEXT | Male, Female, Other |
 || Marital status | TEXT | Single, Married, Divorced, Widowed, Not Specified |
 || First service point | TEXT ||
-|| Education | TEXT | Nursery, Primary School, Secondary School, University, Post Graduate Studies, PhD, Others 
+|| Education | TEXT | Nursery, Primary School, Secondary School, University, Post Graduate Studies, PhD, Others |
 || Profession | TEXT | Household, Employed, Self-Employed, Others |
 
 1. **Policy Details**
