@@ -3,6 +3,50 @@ from django.apps import AppConfig
 
 DEFAULT_CFG = {
     "salt":"LeSalt",
+    "genderCodes": {
+        "M" : "Male",
+        "F" : "Female",
+        "O" : "Other",
+        "U" : "Unknown" # Default
+    },
+    "professionCodes": {
+        "4" : "Household",
+        "2" : "Employee",
+        "1" : "Selfemployee",
+        "0" : "Other" # default
+    },
+    "booleanCodes":{
+        "0" : "No", # Default
+        "1" : "Yes"
+    }, 
+    "maritalStatusCodes":{
+        "M" : "Maried",
+        "D" : "Divorced",
+        "W" : "Widowed",
+        "S" : "Single" # Default
+    }, 
+    "groupTypeCodes":{
+        "C" : "Council",
+        "O" : "Organisation",
+        "H" : "HouseHold",
+        "P" : "Priests",
+        "S" : "Students",
+        "T" : "Teachers",
+        "X" : "Other" # Default
+    },
+    "educationCodes":{
+        "1" : "Nursery",
+        "2" : "Primary school",
+        "3" : "Secondary school",
+        "4" : "Secondary school",
+        "5" : "Secondary school",
+        "6" : "Secondary school",
+        "7" : "University",
+        "8" : "Postgraduate studies",
+        "9" : "PhD",
+        "10" : "Other" # default        
+    }, 
+    "default_page_size":"250",
     "insureeProgram" : {
         "id" : "IR5BiEXrBD7",
         "teiType":"EoBGArVCQ69",
@@ -99,4 +143,13 @@ DEFAULT_CFG = {
  # Population on location : id: "UbpmYBEmuwK" TBD
 
 class Dhis2Config(AppConfig):
-    name = 'dhis2'
+    name = MODULE_NAME
+
+    def ready(self):
+        from core.models import ModuleConfiguration
+        cfg = ModuleConfiguration.get_or_default(MODULE_NAME, DEFAULT_CFG)
+        self.__configure_module(cfg)
+
+    def __configure_module(self, cfg):
+        ModuleConfiguration.build_configuration(cfg)
+        logger.info('Module $s configured successfully', MODULE_NAME)
