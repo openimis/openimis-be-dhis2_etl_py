@@ -88,7 +88,7 @@ Hisp india documetation for the programs
 
 **[4.4 Health Insurance Board/National Insurance Agency 14](#_Toc24836621)**
 
-#
+
 
 # **Change Log**
 
@@ -110,7 +110,7 @@ The Data Analysis section defines the various data dimension, which will be conf
 
 The last section proposes the kind of users/user roles the system should have to be of use to all stakeholders involved in the health insurance data in the country/region of implementation.
 
-1.
+
 # **System Overview**
 
 The integrated openIMIS-DHIS2 integrated system will have the following key functionalities, which will encompass all the requirements mentioned in the requirements document. The below functionalities will be suitable for all openIMIS implementations, and minor modifications will be required to manage the localised context of the country.
@@ -257,17 +257,16 @@ Below are the data elements captured in the Claim - Services program stage conce
 
 | **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- | --- |
-|
- | Claim - Services | Claimed Service | TEXT ||
- ||| Service Quantity | NUMBER ||
- ||| Service Price | NUMBER ||
- ||| Adjusted amount - Service | NUMBER ||
- ||| Approved amount - Service | NUMBER ||
- ||| Deductible amount - Service | NUMBER ||
- ||| Exceeded ceiling - Amount | NUMBER ||
- ||| Renumerted Amount - Service | NUMBER ||
- ||| Valuated amount - Service | NUMBER ||
- ||| Sequence ID | NUMBER ||
+| Claim - Services | Claimed Service | Service | TEXT||
+||| Service Quantity | NUMBER ||
+||| Service Price | NUMBER ||
+||| Adjusted amount - Service | NUMBER ||
+||| Approved amount - Service | NUMBER ||
+||| Deductible amount - Service | NUMBER ||
+||| Exceeded ceiling - Amount | NUMBER ||
+||| Renumerted Amount - Service | NUMBER ||
+||| Valuated amount - Service | NUMBER ||
+||| Sequence ID | NUMBER ||
  
 1. **Items Detail**
 
