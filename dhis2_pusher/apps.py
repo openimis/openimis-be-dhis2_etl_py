@@ -2,6 +2,11 @@ from django.apps import AppConfig
 
 
 DEFAULT_CFG = {
+    "dhis2" : {
+        "host":"play.dhis2.org",
+        "username":"admin",
+        "password":"district"
+    }
     "salt":"LeSalt",
     "genderCodes": {
         "M" : "Male",
