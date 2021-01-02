@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Union
 from pydantic import BaseModel, Field
 from datetime import datetime
 from uuid import uuid4
+from dhis2 import utils
 #FIXME add dataset model
 
 # Create your models here.
@@ -29,6 +30,9 @@ class EventDataValue(BaseModel):
     def must_be_valid_uid(cls, uid):
         if not is_valid_uid(uid):
             raise ValidationError()
+    def __init__(self, de, value):
+        self.dataElement = de
+        self.value = value
 
 class Event(BaseModel):
     created: datetime
@@ -69,6 +73,12 @@ class Enrollment(BaseModel):
     def must_be_valid_uid(cls, uid):
         if not is_valid_uid(uid):
             raise ValidationError()
+    def __init__(self, id, tei, orgunit, completedDate):
+        self.enrollment = id
+        self.trackedEntityInstance = tei
+        self.completedDate = completedDate
+        self.status = "COMPLETED"
+        self.orgUnit = orgunit
 
 
 class AttributeValue(BaseModel):
@@ -81,6 +91,10 @@ class AttributeValue(BaseModel):
     def must_be_valid_uid(cls, uid):
         if not is_valid_uid(uid):
             raise ValidationError()
+    
+    def __init__(self, id, value):
+        self.attribute = id
+        self.value = value
 
 
 class trackedEntityInstance(BaseModel):
@@ -98,3 +112,38 @@ class trackedEntityInstance(BaseModel):
         if not is_valid_uid(uid):
             raise ValidationError()
 
+class organisationUnit(BaseModel)
+    created: datetime
+    lastUpdated: datetime
+    id: str
+    code: str
+    name: str
+    shortname: str
+    description: str
+    openingdate: date
+    closeddate: date
+    comment : str
+    featuretype: str
+    coordinates: tuple[float,float]
+    url: AnyUrl
+    contactperson: str
+    address: str
+    email: EmailStr
+    phonenumber: str
+    parent: str
+    @validator('url')
+    @validator('address')
+    @validator('contactperson')
+    def code_length_255(cls, code):
+        if len(code) > 50
+            raise ValidationError()
+    @validator('code')
+    @validator('shortname')
+    def code_length_50(cls, code):
+        if len(code) > 50
+            raise ValidationError()
+    @validator('id')
+    @validator('parent')
+    def must_be_valid_uid(cls, uid):
+        if not is_valid_uid(uid):
+            raise ValidationError()

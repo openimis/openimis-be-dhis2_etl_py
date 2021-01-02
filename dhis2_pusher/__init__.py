@@ -1,2 +1,2 @@
-default_app_config = 'dhis2.apps.Dhis2Config'
+default_app_config = 'dhis2_pusher.apps.Dhis2Config'
 

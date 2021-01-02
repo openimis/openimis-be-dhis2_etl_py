@@ -1,12 +1,13 @@
 from django.apps import AppConfig
 
+MODULE_NAME = "dhis2_pusher"
 
 DEFAULT_CFG = {
     "dhis2" : {
         "host":"play.dhis2.org",
         "username":"admin",
         "password":"district"
-    }
+    },
     "salt":"LeSalt",
     "genderCodes": {
         "M" : "Male",
@@ -50,25 +51,40 @@ DEFAULT_CFG = {
         "8" : "Postgraduate studies",
         "9" : "PhD",
         "10" : "Other" # default        
+    }, "policyStateCode":{
+        "N" : "New Policy",
+        "R" : "Renewed Policy"       
+    }, "policyStatusCode":{
+        "1" : "Idle",
+        "2" : "Active",
+        "4" : "Suspended",
+        "8" : "Expired",
+        "16" : "Ready",
+        "64" : "Other" # default        
+    }, "claimStatusCode":{
+        "2" : "Entered",
+        "4" : "Checked",
+        "1" : "Rejected",
+        "8" : "Processed",
+        "16" : "Valuated"    
     }, 
     "default_page_size":"250",
     "insureeProgram" : {
         "id" : "IR5BiEXrBD7",
         "teiType":"EoBGArVCQ69",
         "stages": [
-            "policy" : {
+            {"policy" : {
                 "id":"DVRNDUNwI9s",
                 "dataElements": {
                     "policyStage":"j028KRFsjx6", # categoryCombo "bjDvmb4bfuf"
                     "policyStatus":"Q0pEucwW60Z",
-                    "prodcut":"NAdBLHAdOGv",
+                    "product":"NAdBLHAdOGv",
                     "policyId":"NtslGBEMyMy", 
                     "PolicyValue":"mVeMk0sNLZb",
                     "expirityDate":"RzgHQtgsmfB" # note used
                     }
-            }
-        ],
-        "attributes" : [
+            }}],
+        "attributes" : {
             "poverty" : "WeLouCfrfoF",
             "CHFId":"HaVpe5WsCRl", # should not use it
             "insuranceId":"g54R38QNwEi", # Salted data for privay reason
@@ -86,11 +102,12 @@ DEFAULT_CFG = {
             "profession":"zy5Br9ZEDLY",
             "maritalSatus":"vncvDog0YwP",
             "phoneNumber": "r9hJ7SJbVvx", # TBC
-        ]
-    },    "ClaimProgram" : {
+        }
+    }, "ClaimProgram" : {
         "id" : "vPjOO7Jl6jC",
+        "teiType":"EoBGArVCQ69",
         "stages": [
-            "claimDetails" : {
+            {"claimDetails" : {
                 "id" : "J6HPLSiv7Ij",
                 "dataElements": {
                     "status":"mGCsTQbv7zA",
@@ -105,8 +122,8 @@ DEFAULT_CFG = {
                     "valuatedAmount":"Fk7sSgbFTaG",
                     "renumeratedAmount":""
                     }
-            },
-            "items" :{
+            }},
+            {"items" :{
                 "id" : "GfHayuoGJLr",
                 "dataElements": {
                     "item":"VFWCqLKPuSd",
@@ -116,8 +133,8 @@ DEFAULT_CFG = {
                     "exeedingCeilingAmount":"krBi9DbQl4Y",
                     "renumeratedAmount":"WyAw53dfnMj", # not used
                     "seqId":"QmuynKAhycW" # same Service
-                    },
-            "services": {
+                    } }},
+           { "services": {
                 "id" : "u7wtwsIJ3Dz",
                 "dataElements": {
                     "adjustedAmount":"vIkmxPdZpUT",# not used
@@ -130,9 +147,9 @@ DEFAULT_CFG = {
                     "exeedingCeilingAmount":"gUanr8YW9Kj",
                     "renumeratedAmount": "WyAw53dfnMj", # not used
                     "seqId":"QmuynKAhycW"
-                    }
-        ],
-        "attributes" : [
+                    }}
+        }],
+        "attributes" : {
             "insuranceId":"g54R38QNwEi", # Not part of the basic package
             "claimAdministrator":"wDBF7RjuEyp",
             "claimNumber" : "Z4yrjMuGkeY", # salted for privacy reason
@@ -143,7 +160,7 @@ DEFAULT_CFG = {
             "diagnoseSec4":"cPbpCJnkrci",
             "VisitType": "Hxyr4f36WHF"
         }
-    ]
+    }
 }
  # Population on location : id: "UbpmYBEmuwK" TBD
 

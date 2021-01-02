@@ -17,10 +17,30 @@ class GeneralConfiguration(BaseConfiguration):
         config.booleanCodes = cfg['booleanCodes']
         config.groupTypeCodes = cfg['groupTypeCodes']
         config.default_page_size = cfg['default_page_size']
+        config.policyStageCode = cfg['policyStateCode']
+        config.policyStatusCode = cfg['policyStatusCode']
+        
 
     @classmethod
     def get_dhis2(cls):
         return cls.get_config().dhis2
+
+    @classmethod
+    def get_insuree_program(cls):
+        return cls.get_config().insureeProgram
+    @classmethod
+    def get_policy_state_code(cls, code):
+        return cls.get_config().policyStageCode.get(code, 'New Policy')
+    @classmethod
+    def get_policy_status_code(cls, code):
+        return cls.get_config().policyStatusCode.get(code, 'Idle')
+    @classmethod 
+    def get_policy_status_code(cls, code):
+        return cls.get_config().claimStatusCode.get(code, 'Valuated')
+    @classmethod
+    def get_claim_program(cls):
+        return cls.get_config().claimProgram
+
     @classmethod
     def get_gender_code(cls, code):
         return cls.get_config().genderCodes.get(code, 'Unknown')
