@@ -201,7 +201,8 @@ Below are the data elements captured in the Policy Details program stage concern
 ||| Product | TEXT | SHSDC-Non Poor, SHSDC FCHV, HIB-3500 |
 ||| Policy Stage | TEXT | New Policy, Renewed Policy |
 ||| Policy Status | TEXT | Idle, Active, Suspended, Expired |
-
+||| Policy value | ??? |  |
+||| Policy expirity  date | DATE |  |
 ### 3.2.2 Claims Management Program
 
 The Insuree program will be designed under the following considerations:
