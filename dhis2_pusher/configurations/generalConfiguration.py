@@ -1,4 +1,4 @@
-from .configurations import BaseConfiguration
+from . import BaseConfiguration
 
 
 class GeneralConfiguration(BaseConfiguration):
@@ -28,6 +28,9 @@ class GeneralConfiguration(BaseConfiguration):
     @classmethod
     def get_insuree_program(cls):
         return cls.get_config().insureeProgram
+    @classmethod
+    def get_salt(cls):
+        return cls.get_config().salt
     @classmethod
     def get_policy_state_code(cls, code):
         return cls.get_config().policyStageCode.get(code, 'New Policy')

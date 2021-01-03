@@ -9,5 +9,8 @@ class BaseConfiguration(object):  # pragma: no cover
 
     @classmethod
     def get_config(cls):
-        module_name = "api_fhir_r4"
+        module_name = "dhis2_pusher"
         return sys.modules[module_name]
+
+from .generalConfiguration import GeneralConfiguration
+from .moduleConfiguration import ModuleConfiguration

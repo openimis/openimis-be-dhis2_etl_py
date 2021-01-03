@@ -1,5 +1,5 @@
 from django.db import models
-import threading
+from typing import List
 from jsonfallback.fields import FallbackJSONField
 from pydantic import BaseModel, Field
 
@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 class ThreadTask(models.Model):
     task = models.CharField(max_length=30, blank=True, null=True)
     is_done = models.BooleanField(blank=False,default=False )
-    result = models.FallbackJSONField(max_length=1024, blank=True, null=True)
+    result = FallbackJSONField(max_length=1024, blank=True, null=True)
 
 class Result(BaseModel):
     code : int

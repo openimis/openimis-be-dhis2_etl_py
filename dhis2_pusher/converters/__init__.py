@@ -33,13 +33,7 @@ class BaseDHIS2Converter(ABC):
     def to_dataset_obj(cls, de_id, obj):
         raise NotImplementedError('`to_data_set_obj()` must be implemented.')  # pragma: no cover
 
-    @classmethod
-    def build_dhis2_identifier(cls, identifiers, imis_object):
-        if hasattr(imis_object,'uuid') and imis_object.uuid != None:
-            identifier = cls.build_fhir_identifier(cls.build_dhis2_id(imis_object.uuid),
-                                                   R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                                   R4IdentifierConfig.get_fhir_dhis2_id_type_code())
-            identifiers.append(identifier)
+
 
     @classmethod
     def build_dhis2_id(cls, uuid):
@@ -48,16 +42,16 @@ class BaseDHIS2Converter(ABC):
                 28: 'S', 29: 'T', 30: 'U', 31: 'V', 32: 'W', 33: 'X', 34: 'Y', 35: 'Z', 36: 'a', 37: 'b', 38: 'c', 39: 'd', 
                 40: 'e', 41: 'f', 42: 'g', 43: 'h', 44: 'i', 45: 'j', 46: 'k', 47: 'l', 48: 'm', 49: 'n', 50: 'o', 51: 'p', 
                 52: 'q', 53: 'r', 54: 's', 55: 't', 56: 'u', 57: 'v', 58: 'w', 59: 'x', 60: 'y', 61: 'z', 62: 'A', 63: 'B'}
-            dhis2_id = ''
-            #remove the "-
-            tmp_uuid = uuid.replace('-','')
-            # trasform 2 hex (256) in to 0-9a-zA-Z(62)  for 22 symbol on 32 --> data loss = 1-(62/256*22/36) = 83,4%
-            for x in range(18):
-                int0 = int(tmp_uuid[0:1] ,16)
-                int1 = int(tmp_uuid[1:2] ,16)
-                char = int0*4+int(int1/4)
-                if x = 0 and char < 10:
-                    char += 10
-                dhis2_id +=  DHIS2IDCharDict[char]
-                tmp_uuid = tmp_uuid[2:]
+        dhis2_id = ''
+        #remove the "-
+        tmp_uuid = uuid.replace('-','')
+        # trasform 2 hex (256) in to 0-9a-zA-Z(62)  for 22 symbol on 32 --> data loss = 1-(62/256*22/36) = 83,4%
+        for x in range(18):
+            int0 = int(tmp_uuid[0:1] ,16)
+            int1 = int(tmp_uuid[1:2] ,16)
+            char = int0*4+int(int1/4)
+            if x == 0 and char < 10:
+                char += 10
+            dhis2_id +=  DHIS2IDCharDict[char]
+            tmp_uuid = tmp_uuid[2:]
         return dhis2_id[0:11]

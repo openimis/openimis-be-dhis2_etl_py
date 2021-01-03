@@ -21,8 +21,11 @@ setup(
     install_requires=[
         'django',
         'django-db-signals',
+        'django-jsonfallback',
         'dhis2.py',
-        'pydantic'
+        'pydantic',
+        'pydantic[email]',
+        'dict2obj'
     ],   
     classifiers=[
         'Environment :: Web Environment',

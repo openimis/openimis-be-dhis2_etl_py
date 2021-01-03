@@ -1,10 +1,16 @@
 from django.apps import AppConfig
 
+import logging
+
+from .configurations import ModuleConfiguration
+
 MODULE_NAME = "dhis2_pusher"
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_CFG = {
     "dhis2" : {
-        "host":"play.dhis2.org",
+        "host":"https://play.dhis2.org/2.35",
         "username":"admin",
         "password":"district"
     },
@@ -103,7 +109,7 @@ DEFAULT_CFG = {
             "maritalSatus":"vncvDog0YwP",
             "phoneNumber": "r9hJ7SJbVvx", # TBC
         }
-    }, "ClaimProgram" : {
+    }, "claimProgram" : {
         "id" : "vPjOO7Jl6jC",
         "teiType":"EoBGArVCQ69",
         "stages": [
@@ -169,6 +175,7 @@ class Dhis2Config(AppConfig):
 
     def ready(self):
         from core.models import ModuleConfiguration
+        
         cfg = ModuleConfiguration.get_or_default(MODULE_NAME, DEFAULT_CFG)
         self.__configure_module(cfg)
 

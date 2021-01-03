@@ -1,12 +1,14 @@
 from insuree.models import Insuree, Gender, Education, Profession, Family
 from location.models import Location
 from product.models import Product
-from . import models
-from .configuration import GeneralConfiguration
+from .. import models
+from . import BaseDHIS2Converter
+from ..configurations import GeneralConfiguration
 from dhis2 import utils
 import hashlib 
+from dict2obj import Dict2Obj
 
-insureeProgram =  GeneralConfiguration.get_insuree_program()
+insureeProgram =  Dict2Obj(GeneralConfiguration.get_insuree_program())
 salt = GeneralConfiguration.get_salt()
 class InsureeConverter(BaseDHIS2Converter):
 
@@ -82,10 +84,9 @@ class InsureeConverter(BaseDHIS2Converter):
                  GeneralConfiguration.get_marital_code(insuree.marital))) 
             #"phoneNumber": "r9hJ7SJbVvx", # TBC
             #if insuree.poverty != None and is_valid_uid(insureeProgram.poverty):
-            #    tei.attributes.insert(AttributeValue(insureeProgram.poverty, insuree.poverty)) 
-
+            #tei.attributes.insert(AttributeValue(insureeProgram.poverty, insuree.poverty)) 
             return tei
-        else
+        else:
             return None
 
  

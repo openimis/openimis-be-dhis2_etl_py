@@ -3,22 +3,22 @@ from dhis2 import Api
 
 #from django.http import HttpResponse, JsonResponse
 import threading
-from .models import *
+from .models.dhis2 import *
+from .models.threading import *
 #import time
-
+from dict2obj import Dict2Obj
 from .converters import InsureeConverter, ClaimConverter
 from insuree.models import Insuree, InsureePolicy
 from claim.models import Claim
 #from policy.models import Policy
  
-from .configuration import GeneralConfiguration
-from .model import ProgramBundle
+from .configurations import GeneralConfiguration
 import requests
-from django.db.models import Q, prefetch
+from django.db.models import Q, Prefetch
 # FIXME manage permissions
 
 # Get DHIS2 credentials from the config
-dhis2 = GeneralConfiguration.get_dhis2()
+dhis2 = Dict2Obj(GeneralConfiguration.get_dhis2())
 # create the DHIS2 API object
 api = Api(dhis2.host, dhis2.username, dhis2.password)
 # define the page size
@@ -33,10 +33,13 @@ def startThreadTask(request):
     scope = request.GET.get('scope')
     if scope is None:
         scope = "all"
-    t = threading.Thread(target=SyncDHIS2,args=[task.id, starteDate, stopeDate, scope])
-    t.setDaemon(True)
-    t.start()
-    return JsonResponse({'id':task.id})
+    if startDate != None and stopDate != None:
+        t = threading.Thread(target=SyncDHIS2,args=(task.id, starteDate, stopeDate, scope))
+        t.setDaemon(True)
+        t.start()
+        return JsonResponse({'id':task.id})
+    else:
+        return "Please specify startDate and stopDate using yyyy-mm-dd format"
 
 def checkThreadTask(request,id):
     task = ThreadTask.objects.get(pk=id)
@@ -71,8 +74,8 @@ def syncInsuree(startDate,stopDate):
     trackedEntityInstances = InsureeConverter.to_tei_obj(insurees)
     # Send the Insuree page per page, page size defined by config get_default_page_size
     return api.post_partitioned('TrackedEntityInstance',\
-        {"TrackedEntityInstances" : trackedEntityInstances.json()}, \
-        {"mergeMode": "REPLACE"},\  
+        {"TrackedEntityInstances" : trackedEntityInstances.json()},\
+        {"mergeMode": "REPLACE"},\
         page_size )
     
 
@@ -96,10 +99,10 @@ def syncPolicy(startDate,stopDate):
     
 def syncClaim(starteDate,stopDate):
     # get only the last version of valudated or rejected claims (to sending multiple time the same claim)
-    claims = Claim.objects.filter(validity_to__isnull=True)
-            .filter(validity_from__gte=startDate)
-            .filter(validity_from__gte=startDate)
-            .filter(Q(status=CLAIM_VALUATED)| Q(status=CLAIM_REJECTED))
+    claims = Claim.objects.filter(validity_to__isnull=True)\
+            .filter(validity_from__gte=startDate)\
+            .filter(validity_from__gte=startDate)\
+            .filter(Q(status=CLAIM_VALUATED)| Q(status=CLAIM_REJECTED))\
             .order_by('validity_from')\
             .select_related('insuree__uuid')\
             .select_related('admin__uuid')\
@@ -120,9 +123,8 @@ def syncClaim(starteDate,stopDate):
         {"mergeMode": "REPLACE"},\
         page_size )
 
-  def syncClaimDetail(starteDate,stopDate):
+def syncClaimDetail(starteDate, stopDate):
     # get the list of todos
-            
     events = ClaimConverter.to_event_obj(claims)
     return api.post_partitioned('Event',\
         {"Events" : events.json()}, \

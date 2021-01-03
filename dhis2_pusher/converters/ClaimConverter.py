@@ -3,12 +3,14 @@ from medical.models import Diagnosis, Item, Service
 from insuree.models import InsureePolicy
 from policy.models import Policy
 from product.models import ProductItem, ProductService
-from . import models
-from .configuration import GeneralConfiguration
+from .. import models
+from . import BaseDHIS2Converter
+from ..configurations import GeneralConfiguration
 from dhis2 import utils
 import hashlib 
+from dict2obj import Dict2Obj
 
-claimProgram =  GeneralConfiguration.get_claim_program()
+claimProgram =  Dict2Obj(GeneralConfiguration.get_claim_program())
 salt = GeneralConfiguration.get_salt()
 CLAIM_REJECTED = 1
 CLAIM_ENTERED = 2
@@ -81,7 +83,7 @@ class ClaimConverter(BaseDHIS2Converter):
                     tei.attributes.insert(AttributeValue(claimProgram.VisitType,\
                     claim.visit_type ))
             return tei
-        else
+        else:
             return None
 
  
@@ -121,16 +123,17 @@ class ClaimConverter(BaseDHIS2Converter):
             event.dataValue.insert(DataValue(stageDE.checkedDate, claim.date_claimed ))
         # "processedDate"
         if is_valid_uid(stageDE.processedDate) and claim.process_stamp != None:
-            event.dataValue.insert(DataValue(stageDE.processedDate, claim.process_stamp.date()))
+            event.dataValue.insert(DataValue(stageDE.processedDate,\
+             claim.process_stamp.date()))
         # "adjustedDate"
         if is_valid_uid(stageDE.adjustedDate) and claim.submit_stamp != None:
             event.dataValue.insert(DataValue(stageDE.adjustedDate, \
                 claim.submit_stamp.date()))
-        if (claim.status == CLAIM_VALUATED OR claim.status == CLAIM_PROCESSED):
+        if (claim.status == CLAIM_VALUATED or claim.status == CLAIM_PROCESSED):
             # "adjustedAmount"
             if is_valid_uid(stageDE.adjustedAmount) and claim.valuated!= None :
-            event.dataValue.insert(DataValue(stageDE.adjustedAmount, claim.valuated ))
-            
+                event.dataValue.insert(DataValue(stageDE.adjustedAmount,\
+                 claim.valuated ))
             # "valuationDate" # FIXME not correct in case of batch run
             if is_valid_uid(stageDE.valuationDate):
                 event.dataValue.insert(DataValue(stageDE.valuationDate, \
@@ -148,7 +151,7 @@ class ClaimConverter(BaseDHIS2Converter):
                 event.dataValue.insert(DataValue(stageDE.renumeratedAmount, \
                     claim.reinsured))
         # "rejectionDate"
-        else if (claim.status == CLAIM_REJECTED ) and and is_valid_uid(stageDE.rejectionDate):
+        elif (claim.status == CLAIM_REJECTED ) and is_valid_uid(stageDE.rejectionDate):
             event.dataValue.insert(DataValue(stageDE.rejectionDate,\
                 max(claim.submit_stamp.date(),claim.process_stamp.date())))
 
