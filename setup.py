@@ -23,8 +23,7 @@ setup(
         'django-db-signals',
         'django-jsonfallback',
         'dhis2.py',
-        'pydantic',
-        'pydantic[email]',
+        'pydantic[email,typing_extensions,dotenv]',
         'dict2obj'
     ],   
     classifiers=[
