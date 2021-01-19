@@ -27,8 +27,8 @@ def str_length_50(str2Test):
     return str_length(str2Test, 50)
 
 class AttributeValue(BaseModel):
-    created: datetime
-    lastUpdated: datetime
+    created: Optional[datetime]
+    lastUpdated: Optional[datetime]
     attribute: str
     value: str
     storedBy: Optional[str]
@@ -40,8 +40,8 @@ class AttributeValue(BaseModel):
         self.value = value
 
 class EventDataValue(BaseModel):
-    created: datetime
-    lastUpdated: datetime
+    created: Optional[datetime]
+    lastUpdated: Optional[datetime]
     dataElement: str
     value: str
     providedElsewhere: bool
@@ -54,8 +54,8 @@ class EventDataValue(BaseModel):
         self.value = value
 
 class Event(BaseModel):
-    created: datetime
-    lastUpdated: datetime
+    created: Optional[datetime]
+    lastUpdated: Optional[datetime]
     event: str
     program: str
     programStage: str
@@ -75,8 +75,8 @@ class Event(BaseModel):
     _uid_check_trackedEntityInstance = validator('trackedEntityInstance', allow_reuse=True)(must_be_valid_uid)
 
 class Enrollment(BaseModel):
-    created: datetime
-    lastUpdated: datetime
+    created: Optional[datetime]
+    lastUpdated: Optional[datetime]
     enrollment: str
     trackedEntityInstance: str
     orgUnit: str
@@ -101,8 +101,8 @@ class Enrollment(BaseModel):
 
 
 class TrackedEntityInstance(BaseModel):
-    created: datetime
-    lastUpdated: datetime
+    created: Optional[datetime]
+    lastUpdated: Optional[datetime]
     trackedEntity: str
     trackedEntityType: str
     orgUnit: str
@@ -115,8 +115,8 @@ class TrackedEntityInstance(BaseModel):
 
 
 class organisationUnit(BaseModel):
-    created: datetime
-    lastUpdated: datetime
+    created: Optional[datetime]
+    lastUpdated: Optional[datetime]
     id: str
     code: str
     name: str
