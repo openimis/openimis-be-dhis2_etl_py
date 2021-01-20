@@ -95,7 +95,7 @@ DEFAULT_CFG = {
             "CHFId":"HaVpe5WsCRl", # should not use it
             "insuranceId":"g54R38QNwEi", # Salted data for privay reason
             "insureeId":"e9fOa40sDwR",  # should not use it
-            "familiyId":"DvT0LSMDW2f",
+            "familyId":"DvT0LSMDW2f",
             "dob":"woZmnhwGvu6",
             "education":"pWV8uthRZVY",
             "groupType":"QnAQO4Kd4I3",

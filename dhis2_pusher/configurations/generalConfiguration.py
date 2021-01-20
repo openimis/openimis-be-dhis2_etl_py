@@ -1,5 +1,5 @@
 from . import BaseConfiguration
-
+import json
 
 class GeneralConfiguration(BaseConfiguration):
 
@@ -59,7 +59,7 @@ class GeneralConfiguration(BaseConfiguration):
 
     @classmethod
     def get_boolean_code(cls, code):
-        return cls.get_config().booleanCodes.get(code, 'No')
+        return cls.get_config().booleanCodes.get(int(code), 'No')
 
     @classmethod
     def get_marital_status_code(cls, code):

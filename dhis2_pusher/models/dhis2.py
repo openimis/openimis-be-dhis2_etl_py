@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Union, Tuple
 from pydantic import BaseModel, ValidationError, validator, Field, AnyUrl, EmailStr
 from datetime import datetime, date
 from uuid import uuid4
-from dhis2 import utils
+from dhis2.utils import *
 #FIXME add dataset model
 
 # Create your models here.
@@ -35,9 +35,6 @@ class AttributeValue(BaseModel):
     # validators
     _uid_check_attribute = validator('attribute', allow_reuse=True)(must_be_valid_uid)
    
-    def __init__(self, id, value):
-        self.attribute = id
-        self.value = value
 
 class EventDataValue(BaseModel):
     created: Optional[datetime]
@@ -49,9 +46,6 @@ class EventDataValue(BaseModel):
     #validator 'dataElement'
     _uid_check_dataElement = validator('dataElement', allow_reuse=True)(must_be_valid_uid)
 
-    def __init__(self, de, value):
-        self.dataElement = de
-        self.value = value
 
 class Event(BaseModel):
     created: Optional[datetime]
