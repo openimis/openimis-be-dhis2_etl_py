@@ -37,6 +37,7 @@ class BaseDHIS2Converter(ABC):
 
     @classmethod
     def build_dhis2_id(cls, uuid):
+        
         DHIS2IDCharDict = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: 'A', 11: 'B', 12: 'C', 13: 'D', 14: 'E', 15: 'F', 
                 16: 'G', 17: 'H', 18: 'I', 19: 'J', 20: 'K', 21: 'L', 22: 'M', 23: 'N', 24: 'O', 25: 'P', 26: 'Q', 27: 'R', 
                 28: 'S', 29: 'T', 30: 'U', 31: 'V', 32: 'W', 33: 'X', 34: 'Y', 35: 'Z', 36: 'a', 37: 'b', 38: 'c', 39: 'd', 
@@ -46,7 +47,7 @@ class BaseDHIS2Converter(ABC):
         #remove the "-
         tmp_uuid = uuid.replace('-','')
         # trasform 2 hex (256) in to 0-9a-zA-Z(62)  for 22 symbol on 32 --> data loss = 1-(62/256*22/36) = 83,4%
-        for x in range(18):
+        for x in range(11):
             int0 = int(tmp_uuid[0:1] ,16)
             int1 = int(tmp_uuid[1:2] ,16)
             char = int0*4+int(int1/4)

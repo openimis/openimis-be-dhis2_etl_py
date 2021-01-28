@@ -32,10 +32,11 @@ DEFAULT_CFG = {
         "1" : "Yes"
     }, 
     "maritalStatusCodes":{
-        "M" : "Maried",
+        "M" : "Married",
         "D" : "Divorced",
         "W" : "Widowed",
-        "S" : "Single" # Default
+        "S" : "Single",
+        "NF" : "Not specified"# Default
     }, 
     "groupTypeCodes":{
         "C" : "Council",
@@ -78,8 +79,8 @@ DEFAULT_CFG = {
     "insureeProgram" : {
         "id" : "IR5BiEXrBD7",
         "teiType":"EoBGArVCQ69",
-        "stages": [
-            {"policy" : {
+        "stages": {
+            "policy" : {
                 "id":"DVRNDUNwI9s",
                 "dataElements": {
                     "policyStage":"j028KRFsjx6", # categoryCombo "bjDvmb4bfuf"
@@ -89,7 +90,8 @@ DEFAULT_CFG = {
                     "PolicyValue":"mVeMk0sNLZb",
                     "expirityDate":"RzgHQtgsmfB" # note used
                     }
-            }}],
+            }
+        },
         "attributes" : {
             "poverty" : "WeLouCfrfoF",
             "CHFId":"HaVpe5WsCRl", # should not use it
@@ -112,8 +114,8 @@ DEFAULT_CFG = {
     }, "claimProgram" : {
         "id" : "vPjOO7Jl6jC",
         "teiType":"EoBGArVCQ69",
-        "stages": [
-            {"claimDetails" : {
+        "stages":{
+            "claimDetails" : {
                 "id" : "J6HPLSiv7Ij",
                 "dataElements": {
                     "status":"mGCsTQbv7zA",
@@ -128,8 +130,8 @@ DEFAULT_CFG = {
                     "valuatedAmount":"Fk7sSgbFTaG",
                     "renumeratedAmount":""
                     }
-            }},
-            {"items" :{
+            },
+            "items" :{
                 "id" : "GfHayuoGJLr",
                 "dataElements": {
                     "item":"VFWCqLKPuSd",
@@ -139,8 +141,9 @@ DEFAULT_CFG = {
                     "exeedingCeilingAmount":"krBi9DbQl4Y",
                     "renumeratedAmount":"WyAw53dfnMj", # not used
                     "seqId":"QmuynKAhycW" # same Service
-                    } }},
-           { "services": {
+                    } 
+            },
+            "services": {
                 "id" : "u7wtwsIJ3Dz",
                 "dataElements": {
                     "adjustedAmount":"vIkmxPdZpUT",# not used
@@ -153,8 +156,9 @@ DEFAULT_CFG = {
                     "exeedingCeilingAmount":"gUanr8YW9Kj",
                     "renumeratedAmount": "WyAw53dfnMj", # not used
                     "seqId":"QmuynKAhycW"
-                    }}
-        }],
+                    }
+            }
+        },
         "attributes" : {
             "insuranceId":"g54R38QNwEi", # Not part of the basic package
             "claimAdministrator":"wDBF7RjuEyp",

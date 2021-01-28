@@ -19,7 +19,7 @@ class GeneralConfiguration(BaseConfiguration):
         config.default_page_size = cfg['default_page_size']
         config.policyStageCode = cfg['policyStateCode']
         config.policyStatusCode = cfg['policyStatusCode']
-        
+        config.claimStatusCode = cfg['claimStatusCode']
 
     @classmethod
     def get_dhis2(cls):
@@ -38,7 +38,7 @@ class GeneralConfiguration(BaseConfiguration):
     def get_policy_status_code(cls, code):
         return cls.get_config().policyStatusCode.get(code, 'Idle')
     @classmethod 
-    def get_policy_status_code(cls, code):
+    def get_claim_status_code(cls, code):
         return cls.get_config().claimStatusCode.get(code, 'Valuated')
     @classmethod
     def get_claim_program(cls):

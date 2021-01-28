@@ -1,12 +1,14 @@
 # FROM https://github.com/dhis2/dhis2-python/blob/main/dhis2_core/src/dhis2/e2b/models/e2b.py
 from typing import Dict, List, Optional, Union, Tuple
 
-from pydantic import BaseModel, ValidationError, validator, Field, AnyUrl, EmailStr
+from pydantic import constr, BaseModel, ValidationError, validator, Field, AnyUrl, EmailStr
 from datetime import datetime, date
 from uuid import uuid4
 from dhis2.utils import *
 #FIXME add dataset model
-
+uid = constr(regex="^[a-zA-Z][a-zA-Z0-9]{10}$")
+dateStr = constr(regex="^\d{4}-\d{2}-\d{2}$")
+datetimeStr = constr(regex="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$")
 # Create your models here.
 def must_be_valid_uid(uid):
     if is_valid_uid(uid):
@@ -27,80 +29,62 @@ def str_length_50(str2Test):
     return str_length(str2Test, 50)
 
 class AttributeValue(BaseModel):
-    created: Optional[datetime]
-    lastUpdated: Optional[datetime]
-    attribute: str
+    created: Optional[datetimeStr]
+    lastUpdated: Optional[datetimeStr]
+    attribute: uid
     value: str
     storedBy: Optional[str]
-    # validators
-    _uid_check_attribute = validator('attribute', allow_reuse=True)(must_be_valid_uid)
+
    
 
 class EventDataValue(BaseModel):
-    created: Optional[datetime]
-    lastUpdated: Optional[datetime]
-    dataElement: str
+    created: Optional[datetimeStr]
+    lastUpdated: Optional[datetimeStr]
+    dataElement: uid
     value: str
-    providedElsewhere: bool
-    storedBy: Optional[str]
-    #validator 'dataElement'
-    _uid_check_dataElement = validator('dataElement', allow_reuse=True)(must_be_valid_uid)
+    providedElsewhere: Optional[bool]
+    storedBy: Optional[uid]
+
 
 
 class Event(BaseModel):
-    created: Optional[datetime]
-    lastUpdated: Optional[datetime]
-    event: str
-    program: str
-    programStage: str
-    trackedEntityInstance: str
-    orgUnit: str
+    created: Optional[datetimeStr]
+    lastUpdated: Optional[datetimeStr]
+    event: Optional[uid]
+    program: uid
+    programStage: uid
+    trackedEntityInstance: uid
+    orgUnit: uid
     status: str
-    dueDate: datetime
-    eventDate: datetime
-    completedDate: Optional[str]
-    storedBy: Optional[str]
+    dueDate: Optional[dateStr]
+    eventDate: dateStr
+    completedDate: Optional[dateStr]
+    storedBy: Optional[uid]
     dataValues: Union[Dict[str, EventDataValue], List[EventDataValue]] = []
-    # Validator
-    _uid_check_event = validator('event', allow_reuse=True)(must_be_valid_uid)
-    _uid_check_program = validator('program', allow_reuse=True)(must_be_valid_uid)
-    _uid_check_programStage = validator('programStage', allow_reuse=True)(must_be_valid_uid)
-    _uid_check_orgUnit = validator('orgUnit', allow_reuse=True)(must_be_valid_uid)
-    _uid_check_trackedEntityInstance = validator('trackedEntityInstance', allow_reuse=True)(must_be_valid_uid)
 
 class Enrollment(BaseModel):
-    created: Optional[datetime]
-    lastUpdated: Optional[datetime]
-    enrollment: str
-    trackedEntityInstance: str
-    orgUnit: str
-    storedBy: Optional[str]
+    created: Optional[datetimeStr]
+    lastUpdated: Optional[datetimeStr]
+    enrollment: Optional[uid]
+    trackedEntityInstance: Optional[uid] # optionnal only if part of the TEI creation
+    orgUnit: uid
+    storedBy: Optional[uid]
     status: str
-    completedDate: Optional[str]
+    incidentDate: dateStr
+    enrollmentDate: dateStr
     events: List[Event] = []
     attributes: Union[Dict[str, AttributeValue], List[AttributeValue]] = []
-    # validator('enrollment','orgUnit')
-    _uid_check_enrollment = validator('enrollment', allow_reuse=True)(must_be_valid_uid)
-    _uid_check_orgUnit = validator('orgUnit', allow_reuse=True)(must_be_valid_uid)
-
-    def __init__(self, id, tei, orgunit, completedDate):
-        self.enrollment = id
-        self.trackedEntityInstance = tei
-        self.completedDate = completedDate
-        self.status = "COMPLETED"
-        self.orgUnit = orgunit
-
-
+    program: uid
 
 
 
 class TrackedEntityInstance(BaseModel):
-    created: Optional[datetime]
-    lastUpdated: Optional[datetime]
-    trackedEntity: str
-    trackedEntityType: str
-    orgUnit: str
-    storedBy: Optional[str]
+    created: Optional[datetimeStr]
+    lastUpdated: Optional[datetimeStr]
+    trackedEntity: uid
+    trackedEntityType: uid
+    orgUnit: uid
+    storedBy: Optional[uid]
     enrollments: List[Enrollment] = []
     attributes: Union[Dict[str, AttributeValue], List[AttributeValue]] = []
     #validator('trackedEntity','orgUnit')
@@ -109,9 +93,9 @@ class TrackedEntityInstance(BaseModel):
 
 
 class organisationUnit(BaseModel):
-    created: Optional[datetime]
-    lastUpdated: Optional[datetime]
-    id: str
+    created: Optional[datetimeStr]
+    lastUpdated: Optional[datetimeStr]
+    id: uid
     code: str
     name: str
     shortname: str
