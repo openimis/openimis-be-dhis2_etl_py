@@ -20,7 +20,6 @@ class InsureeConverter(BaseDHIS2Converter):
     @classmethod
     def to_tei_objs(cls, objs):
         trackedEntityInstances = []
-        logger.debug("start Insuree %d sync",objs.count())
         for insuree in objs:
             trackedEntityInstances.append(cls.to_tei_obj(insuree))
         return TrackedEntityInstanceBundle(trackedEntityInstances = trackedEntityInstances)
