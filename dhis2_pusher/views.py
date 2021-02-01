@@ -87,9 +87,9 @@ def syncInsuree(startDate,stopDate):
             .select_related('family')\
             .select_related('family__location')\
             .select_related('health_facility')\
-            .only('profession_id','family__poverty','chf_id','education_id','dob','family__uuid',\
+            .only('id','profession_id','family__poverty','chf_id','education_id','dob','family__uuid',\
                 'family__family_type_id','other_names','gender_id','head','health_facility__uuid',\
-                'marital','family__location__uuid','uuid','validity_from')
+                'marital','family__location__uuid','uuid','validity_from','last_name')
     return postPaginated('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs)
 
 
