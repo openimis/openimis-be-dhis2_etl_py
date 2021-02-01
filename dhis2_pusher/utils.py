@@ -6,6 +6,8 @@ from dict2obj import Dict2Obj
 import datetime
 import requests
 import re
+from concurrent.futures.thread import ThreadPoolExecutor
+
 
 # import the logging library
 import logging
@@ -23,13 +25,17 @@ def postPaginated(ressource,queryset, convertor):
     p = Paginator(queryset, page_size)
     pages = p.num_pages
     curPage = 1
+    futures = []
+    with  ThreadPoolExecutor(max_workers=10) as executor:
+        while curPage <= pages :
+            page = p.page(curPage)
+            futures.append(executor.submit(postPage, ressource = ressource, page = page, convertor = convertor))
+            curPage+=1
     responses = []
-    while curPage < pages:
-        curPage+=1
-        page = p.page(curPage)
-        res = postPage(ressource,page,convertor)
+    for future in futures:
+        res = future.result()
         if res is not None:
-            responses.append(res)
+            response.append(res)
     return responses
 
 
@@ -43,7 +49,7 @@ def postPage(ressource,page,convertor):
     try:
         response = api.post(ressource,\
             json = jsonPayload,\
-            params = {'mergeMode': 'REPLACE'})
+            params = {'mergeMode': 'REPLACE'} #, "async":"false", "preheatCache":"true"})
         logger.info(response)
         return response
     except requests.exceptions.RequestException as e:
