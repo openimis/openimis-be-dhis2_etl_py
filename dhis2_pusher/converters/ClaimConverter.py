@@ -22,14 +22,14 @@ CLAIM_VALUATED = 16
 class ClaimConverter(BaseDHIS2Converter):
 
     @classmethod
-    def to_tei_objs(cls, objs):
+    def to_tei_objs(cls, objs, event = False):
         trackedEntityInstances = []
         for claim in objs:
             trackedEntityInstances.append(cls.to_tei_obj(claim))
         return TrackedEntityInstanceBundle(trackedEntityInstances = trackedEntityInstances)
 
     @classmethod
-    def to_tei_obj(cls, claim):
+    def to_tei_obj(cls, claim, event = False):
         if claim is not None and claim.insuree is not None and claim.insuree.uuid is not None:
             trackedEntity = cls.build_dhis2_id(claim.uuid)
             orgUnit = cls.build_dhis2_id(claim.health_facility.uuid)
@@ -71,20 +71,21 @@ class ClaimConverter(BaseDHIS2Converter):
                     attributes.append(AttributeValue( attribute = claimProgram['attributes']['VisitType'],\
                     value = claim.visit_type ))
              # add enroment
+            events = []
+            if event:
+                if claimProgram['stages']['claimDetails'] is not None :
+                    events.append(cls.to_event_obj(claim)) # add claim details
+                if claimProgram['stages']['items'] is not None :
+                    for service in claim.services: 
+                        events.append(cls.to_event_item_obj(service)) # add claim items
+                if claimProgram['stages']['services'] is not None :
+                    for items in claim.items: 
+                        events.append(cls.to_event_service_obj(items)) # add claim service
             enrollment = Enrollment(incidentDate = toDateStr(claim.date_claimed), program = claimProgram['id'],\
-                    enrollmentDate = toDateStr(claim.date_claimed),  orgUnit = orgUnit, status = "COMPLETED" )
-             
-            if claimProgram['stages']['claimDetails'] is not None :
-                enrollment.events.append(cls.to_event_obj(claim)) # add claim details
-            if claimProgram['stages']['items'] is not None :
-                for service in claim.services: 
-                    enrollment.events.append(cls.to_event_item_obj(service)) # add claim items
-            if claimProgram['stages']['services'] is not None :
-                for items in claim.items: 
-                    enrollment.events.append(cls.to_event_service_obj(items)) # add claim service
+                    enrollmentDate = toDateStr(claim.date_claimed), events = events, orgUnit = orgUnit, status = "COMPLETED" )
             return TrackedEntityInstance(\
                 trackedEntityType = claimProgram['tieType'],\
-                trackedEntity = trackedEntity,\
+                id = trackedEntity,\
                 orgUnit = orgUnit,\
                 enrollments = [enrollment])
         else:
@@ -177,7 +178,7 @@ class ClaimConverter(BaseDHIS2Converter):
 
 
     @classmethod
-    def to_event_item_obj(cls, item):
+    def to_event_item_obj(cls, item, claim = None):
         orgUnit = cls.build_dhis2_id(claim.health_facility.uuid)
         trackedEntityInstance = cls.build_dhis2_id(claim.uuid)
         stageDE = claimProgram['stages']['items']['dataElements']
@@ -221,7 +222,7 @@ class ClaimConverter(BaseDHIS2Converter):
            
 
     @classmethod
-    def to_event_service_obj(cls, service):
+    def to_event_service_obj(cls, service , claim = None):
         trackedEntityInstance = cls.build_dhis2_id(claim.uuid)
         orgUnit = cls.build_dhis2_id(claim.health_facility.uuid)
         stageDE = claimProgram['stages']['services']['dataElements']

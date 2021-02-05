@@ -18,14 +18,18 @@ salt = GeneralConfiguration.get_salt()
 class InsureeConverter(BaseDHIS2Converter):
 
     @classmethod
-    def to_tei_objs(cls, objs):
+    def to_tei_objs(cls, objs, event = False):
         trackedEntityInstances = []
         for insuree in objs:
-            trackedEntityInstances.append(cls.to_tei_obj(insuree))
+            trackedEntityInstances.append(cls.to_tei_obj(insuree, event))
         return TrackedEntityInstanceBundle(trackedEntityInstances = trackedEntityInstances)
 
     @classmethod
-    def to_tei_obj(cls, insuree):
+    def to_tei_objs_event(cls, objs):
+        return cls.to_tei_objs(objs, True)
+
+    @classmethod
+    def to_tei_obj(cls, insuree, event = False):
         if insuree is not None and insuree.uuid is not None  and insuree.family is not None and insuree.family.uuid is not None:
             attributes = []
             # add profession attributes
@@ -89,11 +93,15 @@ class InsureeConverter(BaseDHIS2Converter):
             #attributes.append(AttributeValue(attribute = insureeProgram['attributes']['poverty'], value = insuree.poverty)) 
             orgUnit = cls.build_dhis2_id(insuree.family.location.uuid)
             trackedEntity = cls.build_dhis2_id(insuree.uuid)
+            events = []
+            if event:
+                for insureepolicy in insuree.insuree_policies.all():
+                    events.append(cls.to_event_obj(insureepolicy,  insuree))
             enrollment = Enrollment(incidentDate = toDateStr(insuree.validity_from), program = insureeProgram['id'],\
-                    enrollmentDate = toDateStr(insuree.validity_from),  orgUnit = orgUnit, status = "COMPLETED" )
+                    enrollmentDate = toDateStr(insuree.validity_from), events = events, orgUnit = orgUnit, status = "COMPLETED" )
             return TrackedEntityInstance(\
             trackedEntityType = insureeProgram['teiType'],\
-                trackedEntity = trackedEntity,\
+                id = trackedEntity,\
                 orgUnit = orgUnit,\
                 # add enroment
                 enrollments= [enrollment],\
@@ -118,7 +126,7 @@ class InsureeConverter(BaseDHIS2Converter):
         
 
     @classmethod
-    def to_event_obj(cls, insureepolicy):
+    def to_event_obj(cls, insureepolicy, insuree=None):
         stageDE = insureeProgram['stages']["policy"]['dataElements']
         dataValue = []
         if is_valid_uid(stageDE['policyStage']):
@@ -135,14 +143,23 @@ class InsureeConverter(BaseDHIS2Converter):
         if is_valid_uid(stageDE['expirityDate']):
             dataValue.append(EventDataValue(dataElement = stageDE['expirityDate'], value = toDateStr(insureepolicy.policy.expiry_date)))
         #event.dataValue.append(EventDataValue(dataElement = stageDE['policyId'],cls.build_dhis2_id(insureepolicy.policy.uuid)))
-        orgUnit = cls.build_dhis2_id(insureepolicy.insuree.family.location.uuid)
-        return Event(\
+        if  insuree is None:
+            return Event(\
             program = insureeProgram['id'],\
-            orgUnit = orgUnit,\
+            orgUnit = cls.build_dhis2_id(insureepolicy.insuree.family.location.uuid),\
             eventDate = toDateStr(insureepolicy.enrollment_date), \
             status = "COMPLETED",\
             dataValue = dataValue,\
             trackedEntityInstance = cls.build_dhis2_id(insureepolicy.insuree.uuid),\
+            programStage = insureeProgram['stages']["policy"]['id'])
+        else:
+            return Event(\
+            program = insureeProgram['id'],\
+            orgUnit = cls.build_dhis2_id(insuree.family.location.uuid),\
+            eventDate = toDateStr(insureepolicy.enrollment_date), \
+            status = "COMPLETED",\
+            dataValue = dataValue,\
+            trackedEntityInstance = cls.build_dhis2_id(insuree.uuid),\
             programStage = insureeProgram['stages']["policy"]['id'])
 
         
