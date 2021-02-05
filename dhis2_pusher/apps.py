@@ -41,7 +41,7 @@ DEFAULT_CFG = {
     "groupTypeCodes":{
         "C" : "Council",
         "O" : "Organisation",
-        "H" : "HouseHold",
+        "H" : "Household",
         "P" : "Priests",
         "S" : "Students",
         "T" : "Teachers",
