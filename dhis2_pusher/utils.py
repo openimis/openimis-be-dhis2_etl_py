@@ -7,7 +7,7 @@ import datetime
 import requests
 import re
 from concurrent.futures.thread import ThreadPoolExecutor
-
+import json
 
 # import the logging library
 import logging
@@ -20,13 +20,26 @@ api = Api(dhis2.host, dhis2.username, dhis2.password)
 # define the page size
 page_size = int(GeneralConfiguration.get_default_page_size())
 
+def printPaginated(ressource,queryset, convertor):
+    p = Paginator(queryset, page_size)
+    pages = p.num_pages
+    curPage = 1
+    timestamp = datetime.datetime.now().strftime("%d%m%Y%H%M%S")
+    while curPage <= pages :
+        f = open(r'C:\temp\out_'+timestamp+'_'+ressource+'-'+str(curPage)+".json", "w+")
+        page = p.page(curPage)
+        Obj = page.object_list
+        objConv = convertor(Obj)
+        f.write(json.dumps(objConv.dict(exclude_none=True, exclude_defaults=True)))
+        f.close()
+        curPage+=1
 
 def postPaginated(ressource,queryset, convertor):
     p = Paginator(queryset, page_size)
     pages = p.num_pages
     curPage = 1
     futures = []
-    with  ThreadPoolExecutor(max_workers=10) as executor:
+    with  ThreadPoolExecutor(max_workers=4) as executor:
         while curPage <= pages :
             page = p.page(curPage)
             futures.append(executor.submit(postPage, ressource = ressource, page = page, convertor = convertor))
@@ -35,21 +48,21 @@ def postPaginated(ressource,queryset, convertor):
     for future in futures:
         res = future.result()
         if res is not None:
-            response.append(res)
+            responses.append(res)
     return responses
 
 
 def postPage(ressource,page,convertor):
     # just to retrive the value of the queryset to avoid calling big count .... FIXME a better way must exist ...
-    trackedEntityInstancesObj = page.object_list
-    trackedEntityInstances = convertor(trackedEntityInstancesObj)
+    obj = page.object_list
+    objConv = convertor(obj)
     
     # Send the Insuree page per page, page size defined by config get_default_page_size
-    jsonPayload = trackedEntityInstances.dict(exclude_none=True, exclude_defaults=True)
+    jsonPayload = objConv.dict(exclude_none=True, exclude_defaults=True)
     try:
         response = api.post(ressource,\
             json = jsonPayload,\
-            params = {'mergeMode': 'REPLACE'} #, "async":"false", "preheatCache":"true"})
+            params = {'mergeMode': 'MERGE_IF_NOT_NULL','strategy':'CREATE_AND_UPDATE'}) #, "async":"false", "preheatCache":"true"})
         logger.info(response)
         return response
     except requests.exceptions.RequestException as e:
