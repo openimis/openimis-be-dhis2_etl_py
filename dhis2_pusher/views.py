@@ -69,7 +69,10 @@ def SyncDHIS2(id, startDate, stopDate, scope):
         claimResponse = syncClaim(startDate,stopDate)
         logger.debug(claimResponse)
 
-
+    if  scope == "insureepolicies":
+        logger.debug("start Insuree & policy sync")
+        insureePolicyResponse = syncInsureePolicy(startDate,stopDate)
+        logger.debug(insureePolicyResponse)
         #responses.insert(claimResponse)
     #if scope == "all" or scope == "claimdetail":
     #    responses.insert(syncClaimDetail(startDate,stopDate))
@@ -79,9 +82,12 @@ def SyncDHIS2(id, startDate, stopDate, scope):
 
 def syncInsuree(startDate,stopDate):
     # get the insuree matching the search
-    insurees = Insuree.objects.filter(Q(validity_to__isnull=True) | Q(validity_to__gte=stopDate))\
+        # get all insuree so we have also the detelted ones
+    # .filter(Q(validity_to__isnull=True) | Q(validity_to__gte=stopDate))\
+    insurees = Insuree.objects\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
+            .filter(legacy_id__isnull=True)\
             .order_by('validity_from')\
             .select_related('gender')\
             .select_related('family')\
@@ -92,6 +98,29 @@ def syncInsuree(startDate,stopDate):
                 'marital','family__location__uuid','uuid','validity_from','last_name')
     return postPaginated('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs)
 
+def syncInsureePolicy(startDate,stopDate):
+    # get the insuree matching the search
+        # get all insuree so we have also the detelted ones
+    # .filter(Q(validity_to__isnull=True) | Q(validity_to__gte=stopDate))\
+    insurees = Insuree.objects\
+            .filter(validity_from__lte=stopDate)\
+            .filter(validity_from__gte=startDate)\
+            .filter(legacy_id__isnull=True)\
+            .order_by('validity_from')\
+            .select_related('gender')\
+            .select_related('family')\
+            .select_related('family__location')\
+            .select_related('health_facility')\
+                .only('id','profession_id','family__poverty','chf_id','education_id','dob','family__uuid',\
+                'family__family_type_id','other_names','gender_id','head','health_facility__uuid',\
+                'marital','family__location__uuid','uuid','validity_from','last_name')\
+            .prefetch_related(Prefetch('insuree_policies', queryset=InsureePolicy.objects.filter(validity_to__isnull=True)\
+                    .select_related('policy')\
+                    .select_related('policy__product').only('policy__stage','policy__status','policy__value','policy__product__code',\
+                'policy__product__name','policy__expiry_date', 'enrollment_date','id','insuree_id')))
+            
+    return postPaginated('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs_event)
+
 
 
 
@@ -100,7 +129,7 @@ def syncPolicy(startDate,stopDate):
     # get params from the request
     # get all insuree so we have also the detelted ones
     # .filter(Q(validity_to__isnull=True) | Q(validity_to__gte=stopDate))\
-    policies = InsureePolicy.objects\
+    policies = InsureePolicy.objects.filter(validity_to__isnull=True)\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
             .order_by('validity_from')\
@@ -108,8 +137,8 @@ def syncPolicy(startDate,stopDate):
             .select_related('policy')\
             .select_related('insuree__family__location')\
             .select_related('policy__product')\
-            .only('insuree__family__location__uuid','policy__stage','policy__status','policy__value','insuree__uuid',\
-                'policy__product__code','policy__product__name','policy__expiry_date', 'enrollment_date')
+            .only('insuree__family__location__uuid','policy__stage','policy__status','policy__value','policy__product__code','insuree__uuid',\
+                'policy__product__name','policy__expiry_date', 'enrollment_date')
     return postPaginated('events',policies, InsureeConverter.to_event_objs)
     
 def syncClaim(startDate,stopDate):
