@@ -50,7 +50,7 @@ class EventDataValue(BaseModel):
 class Event(BaseModel):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
-    event: Optional[uid]
+    id: Optional[uid]
     program: uid
     programStage: uid
     trackedEntityInstance: uid
@@ -65,7 +65,7 @@ class Event(BaseModel):
 class Enrollment(BaseModel):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
-    enrollment: Optional[uid]
+    id: Optional[uid]
     trackedEntityInstance: Optional[uid] # optionnal only if part of the TEI creation
     orgUnit: uid
     storedBy: Optional[uid]
@@ -81,21 +81,20 @@ class Enrollment(BaseModel):
 class TrackedEntityInstance(BaseModel):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
-    trackedEntity: uid
+    id: Optional[uid]
     trackedEntityType: uid
     orgUnit: uid
     storedBy: Optional[uid]
     enrollments: List[Enrollment] = []
     attributes: Union[Dict[str, AttributeValue], List[AttributeValue]] = []
     #validator('trackedEntity','orgUnit')
-    _uid_check_trackedEntity = validator('trackedEntity', allow_reuse=True)(must_be_valid_uid)
-    _uid_check_orgUnit = validator('orgUnit', allow_reuse=True)(must_be_valid_uid)
+
 
 
 class organisationUnit(BaseModel):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
-    id: uid
+    id: Optional[uid]
     code: str
     name: str
     shortname: str
@@ -110,15 +109,15 @@ class organisationUnit(BaseModel):
     address: str
     email: EmailStr
     phonenumber: str
-    parent: str
+    parent: uid
     # validator
     _uid_check_url = validator('url', allow_reuse=True)(str_length_255)
     _uid_check_address = validator('address', allow_reuse=True)(str_length_255)
     _uid_check_contactperson = validator('contactperson', allow_reuse=True)(str_length_255)
     _uid_check_code = validator('code', allow_reuse=True)(str_length_50)
     _uid_check_shortname = validator('shortname', allow_reuse=True)(str_length_50)
-    _uid_check_id = validator('id', allow_reuse=True)(must_be_valid_uid)
-    _uid_check_parent = validator('parent', allow_reuse=True)(must_be_valid_uid)
+ 
+
 
 
     
