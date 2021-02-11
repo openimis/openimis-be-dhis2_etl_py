@@ -20,6 +20,8 @@ class GeneralConfiguration(BaseConfiguration):
         config.policyStageCode = cfg['policyStateCode']
         config.policyStatusCode = cfg['policyStatusCode']
         config.claimStatusCode = cfg['claimStatusCode']
+        config.location = cfg['location']
+        config.jsonOutPath = cfg['jsonOutPath']
 
     @classmethod
     def get_dhis2(cls):
@@ -43,7 +45,12 @@ class GeneralConfiguration(BaseConfiguration):
     @classmethod
     def get_claim_program(cls):
         return cls.get_config().claimProgram
-
+    @classmethod
+    def get_location(cls):
+        return cls.get_config().location
+    @classmethod
+    def get_json_out_path(cls):
+        return cls.get_config().jsonOutPath
     @classmethod
     def get_gender_code(cls, code):
         return cls.get_config().genderCodes.get(code, 'Unknown')

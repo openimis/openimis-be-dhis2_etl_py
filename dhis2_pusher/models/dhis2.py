@@ -91,36 +91,65 @@ class TrackedEntityInstance(BaseModel):
 
 
 
-class organisationUnit(BaseModel):
+class OrganisationUnit(BaseModel):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
     id: Optional[uid]
     code: str
-    name: str
-    shortname: str
-    description: str
-    openingdate: date
-    closeddate: date
-    comment : str
-    featuretype: str
-    coordinates: Tuple[float, float] 
-    url: AnyUrl
-    contactperson: str
-    address: str
-    email: EmailStr
-    phonenumber: str
-    parent: uid
+    name: str # max 230
+    shortname: str # max 50
+    description: Optional[str]
+    openingdate: dateStr
+    closeddate: Optional[dateStr]
+    comment : Optional[str]
+    featuretype: Optional[str]  # NONE | MULTI_POLYGON | POLYGON | POINT | SYMBOL 
+    coordinates: Optional[Tuple[float, float]]
+    url: Optional[AnyUrl]
+    contactperson: Optional[str]
+    address: Optional[str]
+    email: Optional[EmailStr] # max 150
+    phonenumber: Optional[str] # max 150
+    parent: Optional[uid]
     # validator
     _uid_check_url = validator('url', allow_reuse=True)(str_length_255)
     _uid_check_address = validator('address', allow_reuse=True)(str_length_255)
     _uid_check_contactperson = validator('contactperson', allow_reuse=True)(str_length_255)
     _uid_check_code = validator('code', allow_reuse=True)(str_length_50)
     _uid_check_shortname = validator('shortname', allow_reuse=True)(str_length_50)
- 
 
+class OrganisationUnitGroup(BaseModel):
+    created: Optional[datetimeStr]
+    lastUpdated: Optional[datetimeStr]
+    id: Optional[uid]
+    code: Optional[str]
+    name: str
+    shortname: Optional[str]
+    description: Optional[str]
+    organisationUnits:List[OrganisationUnit]
+    # color
+    # symbol
 
+class OrganisationUnitGroupSet(BaseModel):
+    created: Optional[datetimeStr]
+    lastUpdated: Optional[datetimeStr]
+    id: Optional[uid]
+    code: Optional[str]
+    name: Optional[str]
+    description: Optional[str]
+    organisationUnitGroups:List[OrganisationUnitGroup]
+    # datadimention
+    # compulsory
+    # include sub hiearchy
 
-    
+class OrganisationUnitGroupSetBundle(BaseModel):
+    organisationUnitGroupSets:List[OrganisationUnitGroupSet]
+
+class OrganisationUnitGroupBundle(BaseModel):
+    organisationUnitGroups:List[OrganisationUnitGroup]
+
+class OrganisationUnitBundle(BaseModel):
+    organisationUnits:List[OrganisationUnit]
+
 class TrackedEntityInstanceBundle(BaseModel):
     trackedEntityInstances:List[TrackedEntityInstance]
 
@@ -129,3 +158,7 @@ class EventBundle(BaseModel):
 
 class EnrollmentBundle(BaseModel):
     enrolments:List[Enrollment]
+
+class DHIS2Ref(BaseModel):
+    id: Optional[uid]
+    code: Optional[str]

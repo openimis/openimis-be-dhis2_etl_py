@@ -15,6 +15,14 @@ DEFAULT_CFG = {
         "password":"district"
     },
     "salt":"LeSalt",
+    "jsonOutPath":'C:/temp',
+    "location":{
+        "rootOrgUnit":"Ee6vyMBI9UQ",
+        "attributes":{
+            "locationId":"gMNNTAdZbW1",
+            "locationType":"ffZOxd5V2UK"
+        }
+    },
     "genderCodes": {
         "M" : "Male",
         "F" : "Female",
