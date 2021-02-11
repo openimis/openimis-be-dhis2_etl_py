@@ -20,21 +20,24 @@ api = Api(dhis2.host, dhis2.username, dhis2.password)
 # define the page size
 page_size = int(GeneralConfiguration.get_default_page_size())
 
-def printPaginated(ressource,queryset, convertor):
+path = GeneralConfiguration.get_json_out_path()
+
+def printPaginated(ressource,queryset, convertor, **kwargs):
+
     p = Paginator(queryset, page_size)
     pages = p.num_pages
     curPage = 1
     timestamp = datetime.datetime.now().strftime("%d%m%Y%H%M%S")
     while curPage <= pages :
-        f = open(r'C:\temp\out_'+timestamp+'_'+ressource+'-'+str(curPage)+".json", "w+")
+        f = open(path + '\out_'+timestamp+'_'+ressource+'-'+str(curPage)+".json", "w+")
         page = p.page(curPage)
         Obj = page.object_list
-        objConv = convertor(Obj)
+        objConv = convertor(Obj, **kwargs)
         f.write(json.dumps(objConv.dict(exclude_none=True, exclude_defaults=True)))
         f.close()
         curPage+=1
 
-def postPaginated(ressource,queryset, convertor):
+def postPaginatedThreaded(ressource,queryset, convertor, **kwargs ):
     p = Paginator(queryset, page_size)
     pages = p.num_pages
     curPage = 1
@@ -42,7 +45,7 @@ def postPaginated(ressource,queryset, convertor):
     with  ThreadPoolExecutor(max_workers=4) as executor:
         while curPage <= pages :
             page = p.page(curPage)
-            futures.append(executor.submit(postPage, ressource = ressource, page = page, convertor = convertor))
+            futures.append(executor.submit(postPage, ressource = ressource, page = page, convertor = convertor , kwargs = kwargs))
             curPage+=1
     responses = []
     for future in futures:
@@ -51,11 +54,22 @@ def postPaginated(ressource,queryset, convertor):
             responses.append(res)
     return responses
 
+def postPaginated(ressource,queryset, convertor, **kwargs ):
+    p = Paginator(queryset, page_size)
+    pages = p.num_pages
+    curPage = 1
+    responses = []
+    while curPage <= pages :
+            page = p.page(curPage)
+            postPage(ressource,page,convertor, **kwargs)
+            # responses.append(postPage(ressource,page,convertor))
+            curPage+=1
+    return responses
 
-def postPage(ressource,page,convertor):
+def post(ressource,objs,convertor, **kwargs):
     # just to retrive the value of the queryset to avoid calling big count .... FIXME a better way must exist ...
-    obj = page.object_list
-    objConv = convertor(obj)
+
+    objConv = convertor(objs, **kwargs)
     
     # Send the Insuree page per page, page size defined by config get_default_page_size
     jsonPayload = objConv.dict(exclude_none=True, exclude_defaults=True)
@@ -64,7 +78,31 @@ def postPage(ressource,page,convertor):
             json = jsonPayload,\
             params = {'mergeMode': 'MERGE_IF_NOT_NULL','strategy':'CREATE_AND_UPDATE'}) #, "async":"false", "preheatCache":"true"})
         logger.info(response)
-        return response
+        # fix me to avoid too much ram
+        return None
+    except requests.exceptions.RequestException as e:
+        if e.code == 409:
+            response = {'status_code': e.code, 'url' : e.url, 'text' : e.description}
+            logger.debug(e)
+            return response
+            pass
+        else:
+            logger.error(e)    
+
+def postPage(ressource,page,convertor, **kwargs):
+    # just to retrive the value of the queryset to avoid calling big count .... FIXME a better way must exist ...
+    obj = page.object_list
+    objConv = convertor(obj, **kwargs)
+    
+    # Send the Insuree page per page, page size defined by config get_default_page_size
+    jsonPayload = objConv.dict(exclude_none=True, exclude_defaults=True)
+    try:
+        response = api.post(ressource,\
+            json = jsonPayload,\
+            params = {'mergeMode': 'MERGE_IF_NOT_NULL','strategy':'CREATE_AND_UPDATE'}) #, "async":"false", "preheatCache":"true"})
+        logger.info(response)
+        # fix me to avoid too much ram
+        return None
     except requests.exceptions.RequestException as e:
         if e.code == 409:
             response = {'status_code': e.code, 'url' : e.url, 'text' : e.description}
@@ -109,3 +147,23 @@ def toDateStr(dateIn):
         return None
 
 
+def build_dhis2_id(uuid):
+    
+    DHIS2IDCharDict = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: 'A', 11: 'B', 12: 'C', 13: 'D', 14: 'E', 15: 'F', 
+            16: 'G', 17: 'H', 18: 'I', 19: 'J', 20: 'K', 21: 'L', 22: 'M', 23: 'N', 24: 'O', 25: 'P', 26: 'Q', 27: 'R', 
+            28: 'S', 29: 'T', 30: 'U', 31: 'V', 32: 'W', 33: 'X', 34: 'Y', 35: 'Z', 36: 'a', 37: 'b', 38: 'c', 39: 'd', 
+            40: 'e', 41: 'f', 42: 'g', 43: 'h', 44: 'i', 45: 'j', 46: 'k', 47: 'l', 48: 'm', 49: 'n', 50: 'o', 51: 'p', 
+            52: 'q', 53: 'r', 54: 's', 55: 't', 56: 'u', 57: 'v', 58: 'w', 59: 'x', 60: 'y', 61: 'z', 62: 'A', 63: 'B'}
+    dhis2_id = ''
+    #remove the "-
+    tmp_uuid = uuid.replace('-','')
+    # trasform 2 hex (256) in to 0-9a-zA-Z(62)  for 22 symbol on 32 --> data loss = 1-(62/256*22/36) = 83,4%
+    for x in range(11):
+        int0 = int(tmp_uuid[0:1] ,16)
+        int1 = int(tmp_uuid[1:2] ,16)
+        char = int0*4+int(int1/4)
+        if x == 0 and char < 10:
+            char += 10
+        dhis2_id +=  DHIS2IDCharDict[char]
+        tmp_uuid = tmp_uuid[2:]
+    return dhis2_id[0:11]
