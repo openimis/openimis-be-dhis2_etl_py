@@ -9,7 +9,7 @@ from ..configurations import GeneralConfiguration
 from dhis2 import utils
 import hashlib 
 from ..models.dhis2 import *
-from ..utils import toDateStr, toDatetimeStr
+from ..utils import toDateStr, toDatetimeStr, build_dhis2_id
 
 claimProgram =  GeneralConfiguration.get_claim_program()
 salt = GeneralConfiguration.get_salt()
@@ -21,23 +21,14 @@ CLAIM_VALUATED = 16
 
 class ClaimConverter(BaseDHIS2Converter):
 
-    @classmethod
-    def to_tei_objs(cls, objs, event = False):
-        trackedEntityInstances = []
-        for claim in objs:
-            trackedEntityInstances.append(cls.to_tei_obj(claim))
-        return TrackedEntityInstanceBundle(trackedEntityInstances = trackedEntityInstances)
 
     @classmethod
-    def to_tei_obj(cls, claim, event = False):
+    def to_enrolment_obj(cls, claims, **kwargs):
         if claim is not None and claim.insuree is not None and claim.insuree.uuid is not None:
-            trackedEntity = cls.build_dhis2_id(claim.uuid)
-            orgUnit = cls.build_dhis2_id(claim.health_facility.uuid)
+            trackedEntity = build_dhis2_id(claim.insuree.uuid)
+            uid = build_dhis2_id(claim.uuid)
+            orgUnit = build_dhis2_id(claim.health_facility.uuid)
             attributes = []
-            # add insuranceID attributes
-            if claim.insuree is not None and claim.insuree.chf_id is not None and is_valid_uid(claimProgram['attributes']['insuranceId']):
-                    attributes.append(AttributeValue(attribute = claimProgram['attributes']['insuranceId'],\
-                    value = hashlib.md5((salt + claim.insuree.chf_id).encode('utf-8')).hexdigest())) 
             # claimAdministrator
             if claim.admin is not None and claim.admin.uuid is not None and is_valid_uid(claimProgram['attributes']['claimAdministrator']):
                     attributes.append(AttributeValue(attribute = claimProgram['attributes']['claimAdministrator'],\
@@ -74,43 +65,34 @@ class ClaimConverter(BaseDHIS2Converter):
             events = []
             if event:
                 if claimProgram['stages']['claimDetails'] is not None :
-                    events.append(cls.to_event_obj(claim)) # add claim details
+                    events.append(cls.to_event_obj(claim, claim = claim)) # add claim details
                 if claimProgram['stages']['items'] is not None :
                     for service in claim.services: 
-                        events.append(cls.to_event_item_obj(service)) # add claim items
+                        events.append(cls.to_event_item_obj(service, claim = claim)) # add claim items
                 if claimProgram['stages']['services'] is not None :
                     for items in claim.items: 
                         events.append(cls.to_event_service_obj(items)) # add claim service
-            enrollment = Enrollment(incidentDate = toDateStr(claim.date_claimed), program = claimProgram['id'],\
-                    enrollmentDate = toDateStr(claim.date_claimed), events = events, orgUnit = orgUnit, status = "COMPLETED" )
-            return TrackedEntityInstance(\
-                trackedEntityType = claimProgram['tieType'],\
-                id = trackedEntity,\
-                orgUnit = orgUnit,\
-                enrollments = [enrollment])
+            return Enrollment(enrollment = uid, trackedEntityInstance = trackedEntity,\
+              incidentDate = toDateStr(claim.date_claimed),enrollmentDate = toDateStr(claim.date_claimed),\
+              orgUnit = orgUnit, status = "COMPLETED",program = claimProgram['id'],\
+                  attributes = attributes,  events = events )
         else:
             return None
 
  
     @classmethod
-    def to_enrolment_objs(cls, claims):
+    def to_enrolment_objs(cls, claims, **kwargs):
         Enrollments = []
         for claim in claims:
             Enrollments.append(cls.to_enrollment_obj(claim))
         return  EnrollmentBundle(Enrollments = Enrollments)
 
-    @classmethod   
-    def to_enrolment_obj(cls, claims):
-        uid = cls.build_dhis2_id(claims.uuid)
-        return Enrollment(enrollment = uid, trackedEntityInstance = uid,\
-              incidentDate = toDateStr(claim.date_claimed),enrollmentDate = toDateStr(claim.date_claimed),\
-              orgUnit = cls.build_dhis2_id(claim.health_facility.uuid), status = "COMPLETED",program = claimProgram['id'] )
     @classmethod
-    def to_event_obj(cls, claim):
+    def to_event_obj(cls, claim, **kwargs):
         # add claim details event
         stageDE = claimProgram['stages']['claimDetails']['dataElements']
-        orgUnit = cls.build_dhis2_id(claim.health_facility.uuid)
-        trackedEntityInstance = cls.build_dhis2_id(claim.uuid)
+        orgUnit = build_dhis2_id(claim.health_facility.uuid)
+        trackedEntityInstance = build_dhis2_id(claim.uuid)
         dataValue = []
         # "status"
         if is_valid_uid(stageDE['status']):
@@ -178,9 +160,10 @@ class ClaimConverter(BaseDHIS2Converter):
 
 
     @classmethod
-    def to_event_item_obj(cls, item, claim = None):
-        orgUnit = cls.build_dhis2_id(claim.health_facility.uuid)
-        trackedEntityInstance = cls.build_dhis2_id(claim.uuid)
+    def to_event_item_obj(cls, item,  **kwargs):
+        claim  = kwargs.get('claim',item.claim)
+        orgUnit = build_dhis2_id(claim.health_facility.uuid)
+        trackedEntityInstance = build_dhis2_id(claim.insuree.uuid)
         stageDE = claimProgram['stages']['items']['dataElements']
         dataValue = []
         #"item":"VFWCqLKPuSd",
@@ -188,7 +171,7 @@ class ClaimConverter(BaseDHIS2Converter):
                 dataValue.append(EventDataValue(dataElement = stageDE['item'], \
                     value = item.item.code + " - " + item.item.name))
         #"quantity":"xBdXypAmk7V", # 
-        if is_valid_uid(stageDE['quantity'])and claim.qty_provided is not None:
+        if is_valid_uid(stageDE['quantity'])and item.qty_provided is not None:
                 dataValue.append(EventDataValue(dataElement = stageDE['quantity'], \
                     value = item.qty_provided)) 
         #"price":"Gu1DbTMoVGx",
@@ -222,9 +205,10 @@ class ClaimConverter(BaseDHIS2Converter):
            
 
     @classmethod
-    def to_event_service_obj(cls, service , claim = None):
-        trackedEntityInstance = cls.build_dhis2_id(claim.uuid)
-        orgUnit = cls.build_dhis2_id(claim.health_facility.uuid)
+    def to_event_service_obj(cls, service ,  **kwargs):
+        claim  = kwargs.get('claim',service.claim)
+        trackedEntityInstance = build_dhis2_id(claim.insuree.uuid)
+        orgUnit = build_dhis2_id(claim.health_facility.uuid)
         stageDE = claimProgram['stages']['services']['dataElements']
         dataValue = []
         #"adjustedAmount"not used
@@ -278,9 +262,9 @@ class ClaimConverter(BaseDHIS2Converter):
         
         
     @classmethod
-    def to_event_objs(cls, insureepolicies):
+    def to_event_objs(cls, claims, **kwargs):
         Enrollments =[]
-        for claim in insurees:
+        for claim in claims:
             Enrollments.append(cls.to_enrollment_obj(claim))
         return EventBundle(Enrollments)
 
