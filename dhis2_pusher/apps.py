@@ -1,8 +1,28 @@
 from django.apps import AppConfig
 
+import logging
+
+from .configurations import ModuleConfiguration
+
+MODULE_NAME = "dhis2_pusher"
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_CFG = {
+    "dhis2" : {
+        "host":"https://play.dhis2.org/2.35",
+        "username":"admin",
+        "password":"district"
+    },
     "salt":"LeSalt",
+    "jsonOutPath":'C:/temp',
+    "location":{
+        "rootOrgUnit":"Ee6vyMBI9UQ",
+        "attributes":{
+            "locationId":"gMNNTAdZbW1",
+            "locationType":"ffZOxd5V2UK"
+        }
+    },
     "genderCodes": {
         "M" : "Male",
         "F" : "Female",
@@ -20,15 +40,16 @@ DEFAULT_CFG = {
         "1" : "Yes"
     }, 
     "maritalStatusCodes":{
-        "M" : "Maried",
+        "M" : "Married",
         "D" : "Divorced",
         "W" : "Widowed",
-        "S" : "Single" # Default
+        "S" : "Single",
+        "NF" : "Not specified"# Default
     }, 
     "groupTypeCodes":{
         "C" : "Council",
         "O" : "Organisation",
-        "H" : "HouseHold",
+        "H" : "Household",
         "P" : "Priests",
         "S" : "Students",
         "T" : "Teachers",
@@ -45,34 +66,51 @@ DEFAULT_CFG = {
         "8" : "Postgraduate studies",
         "9" : "PhD",
         "10" : "Other" # default        
+    }, "policyStateCode":{
+        "N" : "New Policy",
+        "R" : "Renewed Policy"       
+    }, "policyStatusCode":{
+        "1" : "Idle",
+        "2" : "Active",
+        "4" : "Suspended",
+        "8" : "Expired",
+        "16" : "Ready",
+        "64" : "Other" # default        
+    }, "claimStatusCode":{
+        "2" : "Entered",
+        "4" : "Checked",
+        "1" : "Rejected",
+        "8" : "Processed",
+        "16" : "Valuated"    
     }, 
     "default_page_size":"250",
     "insureeProgram" : {
         "id" : "IR5BiEXrBD7",
         "teiType":"EoBGArVCQ69",
-        "stages": [
+        "stages": {
             "policy" : {
                 "id":"DVRNDUNwI9s",
                 "dataElements": {
                     "policyStage":"j028KRFsjx6", # categoryCombo "bjDvmb4bfuf"
                     "policyStatus":"Q0pEucwW60Z",
-                    "prodcut":"NAdBLHAdOGv",
+                    "product":"NAdBLHAdOGv",
                     "policyId":"NtslGBEMyMy", 
                     "PolicyValue":"mVeMk0sNLZb",
                     "expirityDate":"RzgHQtgsmfB" # note used
                     }
             }
-        ],
-        "attributes" : [
+        },
+        "attributes" : {
             "poverty" : "WeLouCfrfoF",
             "CHFId":"HaVpe5WsCRl", # should not use it
             "insuranceId":"g54R38QNwEi", # Salted data for privay reason
             "insureeId":"e9fOa40sDwR",  # should not use it
-            "familiyId":"DvT0LSMDW2f",
+            "familyId":"DvT0LSMDW2f",
             "dob":"woZmnhwGvu6",
             "education":"pWV8uthRZVY",
             "groupType":"QnAQO4Kd4I3",
             "firstName":"vYdz8EjQJe0", # not used for privacy reason
+            "lastName":"BRGgPOilUtC", # not used for privacy reason
             "firstServicePoint":"GZ6zgXS25VH",
             "gender":"QtkHTKL4EsU",
             "isHead":"siOTMqr9kw6",
@@ -81,10 +119,11 @@ DEFAULT_CFG = {
             "profession":"zy5Br9ZEDLY",
             "maritalSatus":"vncvDog0YwP",
             "phoneNumber": "r9hJ7SJbVvx", # TBC
-        ]
-    },    "ClaimProgram" : {
+        }
+    }, "claimProgram" : {
         "id" : "vPjOO7Jl6jC",
-        "stages": [
+        "teiType":"EoBGArVCQ69",
+        "stages":{
             "claimDetails" : {
                 "id" : "J6HPLSiv7Ij",
                 "dataElements": {
@@ -111,7 +150,8 @@ DEFAULT_CFG = {
                     "exeedingCeilingAmount":"krBi9DbQl4Y",
                     "renumeratedAmount":"WyAw53dfnMj", # not used
                     "seqId":"QmuynKAhycW" # same Service
-                    },
+                    } 
+            },
             "services": {
                 "id" : "u7wtwsIJ3Dz",
                 "dataElements": {
@@ -126,8 +166,9 @@ DEFAULT_CFG = {
                     "renumeratedAmount": "WyAw53dfnMj", # not used
                     "seqId":"QmuynKAhycW"
                     }
-        ],
-        "attributes" : [
+            }
+        },
+        "attributes" : {
             "insuranceId":"g54R38QNwEi", # Not part of the basic package
             "claimAdministrator":"wDBF7RjuEyp",
             "claimNumber" : "Z4yrjMuGkeY", # salted for privacy reason
@@ -138,7 +179,7 @@ DEFAULT_CFG = {
             "diagnoseSec4":"cPbpCJnkrci",
             "VisitType": "Hxyr4f36WHF"
         }
-    ]
+    }
 }
  # Population on location : id: "UbpmYBEmuwK" TBD
 
@@ -147,6 +188,7 @@ class Dhis2Config(AppConfig):
 
     def ready(self):
         from core.models import ModuleConfiguration
+        
         cfg = ModuleConfiguration.get_or_default(MODULE_NAME, DEFAULT_CFG)
         self.__configure_module(cfg)
 

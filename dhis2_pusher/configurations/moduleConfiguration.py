@@ -1,4 +1,5 @@
-from dhis2.configurations import BaseConfiguration, GeneralConfiguration
+from . import BaseConfiguration
+from .generalConfiguration import GeneralConfiguration
 from django.conf import settings
 
 

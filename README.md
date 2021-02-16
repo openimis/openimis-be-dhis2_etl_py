@@ -163,6 +163,16 @@ The Insuree program will be designed under the following considerations:
 
 1. **Tracked Entity Type** : Person
 
+| **Tracked Entity Attributes** | **Value Type** | **Menu Options** |
+| --- | --- | --- | --- |
+| **Family/Insuree** | Family ID | TEXT ||
+| Insuree ID | TEXT ||
+| CHF ID | TEXT ||
+| Family ID | TEXT ||
+| First Name | TEXT ||
+| Last name | TEXT ||
+
+
 1. **Enrollment entities** (as per openIMIS): All Insurees, including Household Heads.
 
 1. **Organisation Units** : The program will be assigned to the village level, as registration in openIMIS is happening at the point of insuree&#39;s residence which is the village in case of the Nepal implementation.
@@ -171,11 +181,15 @@ Below are the key attributes/data elements captured in the Insuree Program conce
 
 1. **Family/Insuree Registration**
 
-| **Program Name** | **Tracked Entity Attributes** | **Value Type** | **Menu Options** |
+| **Program Name** | **enrollment Attributes** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- |
 | **Family/Insuree** | Family ID | TEXT ||
+|| Family/group type | TEXT | Council, Organisation, Household, Priests, Students, Teacher, Others |
 || Insuree ID | TEXT ||
+|| Identification type| TEXT | Drivers's Licence, Voter's ID, National ID, Passport|
 || CHF ID | TEXT ||
+|| insurance number | TEXT ||
+|| phone number | TEXT ||
 || Poverty status | TEXT | Yes/No |
 || Household head | TEXT | Yes/No |
 || First name | TEXT ||
@@ -201,7 +215,8 @@ Below are the data elements captured in the Policy Details program stage concern
 ||| Product | TEXT | SHSDC-Non Poor, SHSDC FCHV, HIB-3500 |
 ||| Policy Stage | TEXT | New Policy, Renewed Policy |
 ||| Policy Status | TEXT | Idle, Active, Suspended, Expired |
-
+||| Policy value | ??? |  |
+||| Policy expirity  date | DATE |  |
 ### 3.2.2 Claims Management Program
 
 The Insuree program will be designed under the following considerations:
@@ -216,7 +231,7 @@ Below are the key attributes captured in the Claims Management Program concernin
 
 1. **Claim Registration Attributes**
 
-| **Program Name** | **Tracked Entity Attributes** | **Value Type** | **Menu Options** |
+| **Program Name** | **Enrollment Attributes** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- |
 | **Claims Management** | Claim administrator | TEXT | |
 || Claim number | NUMBER | |
