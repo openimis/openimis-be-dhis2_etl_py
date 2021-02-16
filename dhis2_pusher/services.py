@@ -15,7 +15,7 @@ from .configurations import GeneralConfiguration
 
 from django.db.models import Q, Prefetch
 # FIXME manage permissions
-from .utils import postPaginated, post
+from .utils import postPaginated, post, printPaginated
 
 # import the logging library
 import logging
@@ -58,11 +58,12 @@ def syncInsureePolicy(startDate,stopDate):
                 'family__family_type_id','other_names','gender_id','head','health_facility__uuid',\
                 'marital','family__location__uuid','uuid','validity_from','last_name')\
             .prefetch_related(Prefetch('insuree_policies', queryset=InsureePolicy.objects.filter(validity_to__isnull=True)\
+                    .filter(expiry_date__isnull=False)\
                     .select_related('policy')\
                     .select_related('policy__product').only('policy__stage','policy__status','policy__value','policy__product__code',\
                 'policy__product__name','policy__expiry_date', 'enrollment_date','id','insuree_id')))
             
-    return postPaginated('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs_event)
+    return postPaginated('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, event = True)
 
 
 
@@ -75,6 +76,7 @@ def syncPolicy(startDate,stopDate):
     policies = InsureePolicy.objects.filter(validity_to__isnull=True)\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
+            .filter(expiry_date__isnull=False)\
             .order_by('validity_from')\
             .select_related('insuree')\
             .select_related('policy')\
@@ -109,60 +111,67 @@ def syncRegion(startDate,stopDate):
     locations = Location.objects.filter(legacy_id__isnull=True)\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
-        .filter(type='R')
-    res=postPaginated('organisationUnits',locations, LocationConverter.to_org_unit_objs)   
-    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj, group_name='Region' )) 
+        .filter(type='R')\
+        .select_related('parent')
+    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj, group_name='Region', id = 'UMRPiQP7N4v' )) 
     return res
 
 def syncDistrict(startDate,stopDate):
     locations = Location.objects.filter(legacy_id__isnull=True)\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
-        .filter(type='D')
-    res=postPaginated('organisationUnits',locations, LocationConverter.to_org_unit_objs)   
-    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='District' )) 
+        .filter(type='D')\
+        .select_related('parent')
+    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='District', id = 'TMRPiQP7N4v' )) 
     return res
 
 def syncWard(startDate,stopDate):
     locations = Location.objects.filter(legacy_id__isnull=True)\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
-        .filter(type='W')
-    res=postPaginated('organisationUnits',locations, LocationConverter.to_org_unit_objs)   
-    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='Ward')) 
+        .filter(type='W')\
+        .select_related('parent')
+    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res.append(postPaginated('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='Ward', id = 'TMRPiQP8N4v')) 
     return res
 
 def syncVillage(startDate,stopDate):
     locations = Location.objects.filter(legacy_id__isnull=True)\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
-        .filter(type='V')
-    res=postPaginated('organisationUnits',locations, LocationConverter.to_org_unit_objs)   
-    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='Village' )) 
+        .filter(type='V')\
+        .select_related('parent')
+    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res.append(postPaginated('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='Village' , id = 'TMRPiQT7N4v')) 
     return res
 
 def syncHospital(startDate,stopDate):
     locations = HealthFacility.objects.filter(legacy_id__isnull=True)\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
-        .filter(level='H')
-    res=postPaginated('organisationUnits',locations, LocationConverter.to_org_unit_objs)   
-    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='Hospitals' )) 
+        .filter(level='H')\
+        .select_related('location')
+    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='Hospitals', id = 'WMRPiQP7N4v' )) 
     return res
 def syncDispensary(startDate,stopDate):
     locations = HealthFacility.objects.filter(legacy_id__isnull=True)\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
-        .filter(level='D')
-    res=postPaginated('organisationUnits',locations, LocationConverter.to_org_unit_objs)   
-    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj, group_name='Dispensary' )) 
+        .filter(level='D')\
+        .select_related('location')
+    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj, group_name='Dispensary' , id = 'XMRPiQP7N4v')) 
     return res
     
 def syncHealthCenter(startDate,stopDate):
     locations = HealthFacility.objects.filter(legacy_id__isnull=True)\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
-        .filter(level='D')
-    res=postPaginated('organisationUnits',locations, LocationConverter.to_org_unit_objs)   
-    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='HealthCenter' )) 
+        .filter(level='D')\
+        .select_related('location')
+    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='HealthCenter', id = 'YMRPiQP7N4v' )) 
     return res

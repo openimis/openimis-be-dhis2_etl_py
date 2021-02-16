@@ -9,31 +9,25 @@ from dhis2.utils import *
 uid = constr(regex="^[a-zA-Z][a-zA-Z0-9]{10}$")
 dateStr = constr(regex="^\d{4}-\d{2}-\d{2}$")
 datetimeStr = constr(regex="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$")
-# Create your models here.
-def must_be_valid_uid(uid):
-    if is_valid_uid(uid):
-        return uid
-    else:
-        raise ValidationError()
-    
-def str_length(str2Test, len):
-    if len(str2Test) <= len:
-        return str2Test
-    else:
-        raise ValidationError()
 
-def str_length_255(str2Test):
-    return str_length(str2Test, 255)
+str50 = constr(regex="^.{0-50}$")
+str130 = constr(regex="^.{0-130}$")
+str255  = constr(regex="^.{0-255}$")
 
-def str_length_50(str2Test):
-    return str_length(str2Test, 50)
+class DHIS2Ref(BaseModel):
+    id: Optional[uid]
+    code: Optional[str]
+
+class DeltaDHIS2Ref(BaseModel):
+    additions: List[DHIS2Ref] = []
+    deletions: List[DHIS2Ref] = []
 
 class AttributeValue(BaseModel):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
     attribute: uid
     value: str
-    storedBy: Optional[str]
+    storedBy: Optional[DHIS2Ref]
 
    
 
@@ -43,7 +37,7 @@ class EventDataValue(BaseModel):
     dataElement: uid
     value: str
     providedElsewhere: Optional[bool]
-    storedBy: Optional[uid]
+    storedBy: Optional[DHIS2Ref]
 
 
 
@@ -59,7 +53,7 @@ class Event(BaseModel):
     dueDate: Optional[dateStr]
     eventDate: dateStr
     completedDate: Optional[dateStr]
-    storedBy: Optional[uid]
+    storedBy: Optional[DHIS2Ref]
     dataValues: Union[Dict[str, EventDataValue], List[EventDataValue]] = []
 
 class Enrollment(BaseModel):
@@ -68,7 +62,7 @@ class Enrollment(BaseModel):
     id: Optional[uid]
     trackedEntityInstance: Optional[uid] # optionnal only if part of the TEI creation
     orgUnit: uid
-    storedBy: Optional[uid]
+    storedBy: Optional[DHIS2Ref]
     status: str
     incidentDate: dateStr
     enrollmentDate: dateStr
@@ -84,7 +78,7 @@ class TrackedEntityInstance(BaseModel):
     id: Optional[uid]
     trackedEntityType: uid
     orgUnit: uid
-    storedBy: Optional[uid]
+    storedBy: Optional[DHIS2Ref]
     enrollments: List[Enrollment] = []
     attributes: Union[Dict[str, AttributeValue], List[AttributeValue]] = []
     #validator('trackedEntity','orgUnit')
@@ -97,25 +91,27 @@ class OrganisationUnit(BaseModel):
     id: Optional[uid]
     code: str
     name: str # max 230
-    shortname: str # max 50
+    shortName: str # max 50
     description: Optional[str]
-    openingdate: dateStr
-    closeddate: Optional[dateStr]
+    openingDate: dateStr
+    closedDate: Optional[dateStr]
     comment : Optional[str]
-    featuretype: Optional[str]  # NONE | MULTI_POLYGON | POLYGON | POINT | SYMBOL 
+    featureType: Optional[str]  # NONE | MULTI_POLYGON | POLYGON | POINT | SYMBOL 
     coordinates: Optional[Tuple[float, float]]
     url: Optional[AnyUrl]
-    contactperson: Optional[str]
+    contactPerson: Optional[str]
     address: Optional[str]
     email: Optional[EmailStr] # max 150
-    phonenumber: Optional[str] # max 150
-    parent: Optional[uid]
+    phoneNumber: Optional[str] # max 150
+    parent: Optional[DHIS2Ref]
     # validator
-    _uid_check_url = validator('url', allow_reuse=True)(str_length_255)
-    _uid_check_address = validator('address', allow_reuse=True)(str_length_255)
-    _uid_check_contactperson = validator('contactperson', allow_reuse=True)(str_length_255)
-    _uid_check_code = validator('code', allow_reuse=True)(str_length_50)
-    _uid_check_shortname = validator('shortname', allow_reuse=True)(str_length_50)
+    #_uid_check_url = validator('url', allow_reuse=True)(str_length_255)
+    #_uid_check_address = validator('address', allow_reuse=True)(str_length_255)
+    #_uid_check_contactperson = validator('contactperson', allow_reuse=True)(str_length_255)
+    #_uid_check_code = validator('code', allow_reuse=True)(str_length_50)
+    #_uid_check_shortname = validator('shortname', allow_reuse=True)(str_length_50)
+
+
 
 class OrganisationUnitGroup(BaseModel):
     created: Optional[datetimeStr]
@@ -123,9 +119,9 @@ class OrganisationUnitGroup(BaseModel):
     id: Optional[uid]
     code: Optional[str]
     name: str
-    shortname: Optional[str]
+    shortName: Optional[str]
     description: Optional[str]
-    organisationUnits:List[OrganisationUnit]
+    organisationUnits:Union[List[DHIS2Ref],DeltaDHIS2Ref]
     # color
     # symbol
 
@@ -136,7 +132,7 @@ class OrganisationUnitGroupSet(BaseModel):
     code: Optional[str]
     name: Optional[str]
     description: Optional[str]
-    organisationUnitGroups:List[OrganisationUnitGroup]
+    organisationUnitGroups:Union[List[DHIS2Ref],DeltaDHIS2Ref]
     # datadimention
     # compulsory
     # include sub hiearchy
@@ -159,6 +155,3 @@ class EventBundle(BaseModel):
 class EnrollmentBundle(BaseModel):
     enrolments:List[Enrollment]
 
-class DHIS2Ref(BaseModel):
-    id: Optional[uid]
-    code: Optional[str]

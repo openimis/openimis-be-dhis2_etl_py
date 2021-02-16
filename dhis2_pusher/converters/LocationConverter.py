@@ -19,24 +19,23 @@ locationConfig = GeneralConfiguration.get_location()
 class LocationConverter(BaseDHIS2Converter):
 
     @classmethod
-    def to_org_unit_objs(cls, objs):
+    def to_org_unit_objs(cls, objs,  **kwargs):
         organisationUnits = []
         exclPaternName = '[Ff]unding.*'
-        exclPaternCode = '[Ff].+'
         for location in objs:
-            if re.match(exclPaternName, location.name) is False and re.match(exclPaternCode, location.code) is False:
-                organisationUnits.append(cls.to_tei_obj(location))
+            if not re.match(exclPaternName, location.name):
+                organisationUnits.append(cls.to_org_unit_obj(location))
         return OrganisationUnitBundle(organisationUnits = organisationUnits)
-
+ 
     @classmethod
-    def to_org_unit_obj(cls, location):
-        if hasattr(location,parent) and location.parent != None: # for imis location
+    def to_org_unit_obj(cls, location,  **kwargs):
+        if hasattr(location,'parent') and location.parent != None: # for imis location
             parentId = build_dhis2_id(location.parent.uuid)
-        elif hasattr(location,location) and location.location != None: # for HF
+        elif hasattr(location,'location') and location.location != None: # for HF
             parentId = build_dhis2_id(location.location.uuid)
         else:
             parentId = locationConfig['rootOrgUnit']    
-        if validity_to is None:
+        if location.validity_to is None:
             closedDate = None
         else:
             closedDate = toDateStr(location.validity_to)
@@ -44,14 +43,16 @@ class LocationConverter(BaseDHIS2Converter):
 
         return OrganisationUnit( name = location.name, shortName = location.name, code = location.uuid,\
             openingDate = '2000-01-01', id = build_dhis2_id(location.uuid), closedDate = closedDate,\
-                parent = DHIS2Ref( id = parentId), attributes = attributes)
+                parent = DHIS2Ref(id = parentId), attributes = attributes)
 
 
     @classmethod
-    def to_org_unit_group_obj(cls, locations, group_name):
+    def to_org_unit_group_obj(cls, locations, group_name, id):
         # **kwargs --> group_name
         organisationUnits = []
+        exclPaternName = '[Ff]unding.*'
         for location in locations:
-            organisationUnits.append(DHIS2Ref(id = build_dhis2_id(location.uuid) ))
-        return OrganisationUnitGroup(name = group_name, organisationUnits = organisationUnits)
+            if not re.match(exclPaternName, location.name):
+                organisationUnits.append(DHIS2Ref(id = build_dhis2_id(location.uuid) ))
+        return OrganisationUnitGroup(name = group_name, id=id, organisationUnits = DeltaDHIS2Ref( additions = organisationUnits ))
 

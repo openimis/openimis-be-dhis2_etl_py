@@ -65,13 +65,13 @@ class ClaimConverter(BaseDHIS2Converter):
             events = []
             if event:
                 if claimProgram['stages']['claimDetails'] is not None :
-                    events.append(cls.to_event_obj(claim, claim = claim)) # add claim details
+                    events.append(cls.to_event_obj(claim)) # add claim details
                 if claimProgram['stages']['items'] is not None :
                     for service in claim.services: 
                         events.append(cls.to_event_item_obj(service, claim = claim)) # add claim items
                 if claimProgram['stages']['services'] is not None :
                     for items in claim.items: 
-                        events.append(cls.to_event_service_obj(items)) # add claim service
+                        events.append(cls.to_event_service_obj(items, claim = claim)) # add claim service
             return Enrollment(enrollment = uid, trackedEntityInstance = trackedEntity,\
               incidentDate = toDateStr(claim.date_claimed),enrollmentDate = toDateStr(claim.date_claimed),\
               orgUnit = orgUnit, status = "COMPLETED",program = claimProgram['id'],\

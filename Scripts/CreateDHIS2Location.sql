@@ -92,7 +92,7 @@ sp_configure 'Ole Automation Procedures', 1;
 GO
 RECONFIGURE;
 GO
-USE [IMIS_20200925];
+
 DECLARE @ORG_UNITS_ATT_LOCID_CODE varchar(100) = 'gMNNTAdZbW1';
 DECLARE @ORG_UNITS_ATT_TYPE_CODE  varchar(100) = 'ffZOxd5V2UK';
 DECLARE @ORG_UNITS_ROOT varchar(11) = 'Paq10GBF7Wy';
@@ -117,6 +117,7 @@ DECLARE @LocationShortName varchar(100)
 DECLARE @LocationParentUid varchar(100)
 DECLARE @LocationAttLocId varchar(100)
 DECLARE @LocationAttType varchar(100)
+DECLARe @ValidityTo date
 
 DECLARE @JSON nvarchar(MAX);
 DECLARE @JSON1 nvarchar(MAX);
@@ -124,7 +125,7 @@ DECLARE @JSON2 nvarchar(MAX);
 
 DECLARE @RunningTotal BIGINT = 0;
 
-DECLARE @LOCATION TABLE(LocationCode  varchar(100),LocationUUID varchar(100),LocationUid  varchar(100),LocationName varchar(100), LocationParentUid varchar(100), LocationAttLocId varchar(100), LocationAttType varchar(100), LocationLevel int)
+DECLARE @LOCATION TABLE(LocationCode  varchar(100),LocationUUID varchar(100),LocationUid  varchar(100),LocationName varchar(100), LocationParentUid varchar(100), LocationAttLocId varchar(100), LocationAttType varchar(100), LocationLevel int, ValidityTo date)
 
 INSERT into @LOCATION  SELECT 
       l.[LocationCode] as LocationCode
@@ -134,10 +135,11 @@ INSERT into @LOCATION  SELECT
 	  ,dbo.ufn_dhis2_uid(p.LocationUUID) as LocationParentUid
       ,l.[LocationUUID] as LocationAttLocId
 	  ,l.[LocationType] as LocationAttType
+	  ,l.ValidityTo
 	  , 1 as LocationLevel
   FROM tblLocations l
   LEFT JOIN [tblLocations] p on  l.ParentLocationId = p.LocationId
-  WHERE l.ValidityTo is NULL and p.ValidityTo is NULL 
+  WHERE l.LegacyId is NULL and p.LegacyId is NULL 
   and l.LocationType in ('R')
   AND l.LocationName  not LIKE '%unding%' and l.LocationCode  not LIKE 'F%';
 
@@ -149,10 +151,11 @@ INSERT into @LOCATION  SELECT
 	  ,dbo.ufn_dhis2_uid(p.LocationUUID) as LocationParentUid
       ,l.[LocationUUID] as LocationAttLocId
 	  ,l.[LocationType] as LocationAttType
+	  ,l.ValidityTo
 	 , 2 as LocationLevel
   FROM tblLocations l
   LEFT JOIN [tblLocations] p on  l.ParentLocationId = p.LocationId
-  WHERE l.ValidityTo is NULL and p.ValidityTo is NULL 
+  WHERE l.LegacyId is NULL and p.LegacyId is NULL 
   and l.LocationType in ('D')
   AND l.LocationName  not LIKE '%unding%' and l.LocationCode  not LIKE 'F%'
   AND (SELECT COUNT(*) FROM @LOCATION  r WHERE r.LocationUUID=p.LocationUUID )=1;
@@ -165,10 +168,11 @@ INSERT into @LOCATION  SELECT
 	  ,dbo.ufn_dhis2_uid(p.LocationUUID) as LocationParentUid
       ,l.[LocationUUID] as LocationAttLocId
 	  ,l.[LocationType] as LocationAttType
+	  ,l.ValidityTo
 	 , 3 as LocationLevel
   FROM tblLocations l
   LEFT JOIN [tblLocations] p on  l.ParentLocationId = p.LocationId
-  WHERE l.ValidityTo is NULL and p.ValidityTo is NULL 
+  WHERE l.LegacyId is NULL and p.LegacyId is NULL 
   and l.LocationType in ('W')
   AND l.LocationName  not LIKE '%unding%' and l.LocationCode  not LIKE 'F%'
   AND (SELECT COUNT(*) FROM @LOCATION  r WHERE r.LocationUUID=p.LocationUUID )=1;
@@ -181,10 +185,11 @@ INSERT into @LOCATION  SELECT
 	  ,dbo.ufn_dhis2_uid(p.LocationUUID) as LocationParentUid
       ,l.[LocationUUID] as LocationAttLocId
 	  ,l.[LocationType] as LocationAttType
-	  , 5 as LocationLevel
+	  ,l.ValidityTo
+	  , 4 as LocationLevel
   FROM tblLocations l
   LEFT JOIN [tblLocations] p on  l.ParentLocationId = p.LocationId
-  WHERE l.ValidityTo is NULL and p.ValidityTo is NULL 
+  WHERE l.LegacyId is NULL and p.LegacyId is NULL 
   and l.LocationType in ('V')
   AND l.LocationName  not LIKE '%unding%' and l.LocationCode  not LIKE 'F%'
   AND (SELECT COUNT(*) FROM @LOCATION  r WHERE r.LocationUUID=p.LocationUUID )=1;
@@ -197,6 +202,7 @@ INSERT into @LOCATION  SELECT
 	  ,dbo.ufn_dhis2_uid(p.LocationUUID) as LocationParentUid
       ,l.[HfUUID] as LocationAttLocId
 	  ,l.[HfLevel] as LocationAttType
+	  ,l.ValidityTo
 	  , 5 as LocationLevel
   FROM tblHF l
   LEFT JOIN [tblLocations] p on  l.LocationId = p.LocationId
@@ -204,11 +210,11 @@ INSERT into @LOCATION  SELECT
   AND (SELECT COUNT(*) FROM @LOCATION  r WHERE r.LocationUUID=p.LocationUUID )=1;
 
 DECLARE CUR_TEST CURSOR FAST_FORWARD FOR
-    SELECT LocationCode, LocationUUID, LocationUid, LocationName, LocationParentUid, LocationAttLocId, LocationAttType FROM @LOCATION
+    SELECT LocationCode, LocationUUID, LocationUid, LocationName, LocationParentUid, LocationAttLocId, LocationAttType, ValidityTo FROM @LOCATION
   ORDER BY LocationLevel 
 
 OPEN CUR_TEST
-FETCH NEXT FROM CUR_TEST INTO @LocationCode, @LocationUUID, @LocationUid, @LocationName, @LocationParentUid, @LocationAttLocId, @LocationAttType
+FETCH NEXT FROM CUR_TEST INTO @LocationCode, @LocationUUID, @LocationUid, @LocationName, @LocationParentUid, @LocationAttLocId, @LocationAttType, @ValidityTo
  
 WHILE @@FETCH_STATUS = 0
 BEGIN
@@ -216,8 +222,8 @@ BEGIN
             + CASE WHEN LEN(@LocationParentUid)>1 THEN  @LocationParentUid  ELSE @ORG_UNITS_ROOT  END + '"}'
 
        
-            + '},';
-FETCH NEXT FROM CUR_TEST INTO @LocationCode, @LocationUUID, @LocationUid, @LocationName, @LocationParentUid, @LocationAttLocId, @LocationAttType
+            + '},' + CASE WHEN  @ValidityTo IS NULL THEN  ''  ELSE ', "closedDate":"' + YEAR(@ValidityTo)+ '-' + MONTH(@ValidityTo) + DAY(@ValidityTo) END  ;
+FETCH NEXT FROM CUR_TEST INTO @LocationCode, @LocationUUID, @LocationUid, @LocationName, @LocationParentUid, @LocationAttLocId, @LocationAttType,  @ValidityTo
 	SET @JSON = CASE WHEN @@FETCH_STATUS = 0 THEN @JSON ELSE LEFT(@JSON, LEN(@JSON) - 1) END
 	EXECUTE sp_OAMethod @FileID, 'WriteLine', Null, @JSON
 END
@@ -233,7 +239,13 @@ DEALLOCATE CUR_TEST
 
 
 -- ending the json
-EXECUTE sp_OAMethod @FileID, 'WriteLine', Null, ']}'
+EXECUTE sp_OAMethod @FileID, 'WriteLine', Null, ']'
+
+
+
+
+
+
 
 
 EXECUTE sp_OADestroy @FileID

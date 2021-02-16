@@ -110,6 +110,7 @@ DEFAULT_CFG = {
             "education":"pWV8uthRZVY",
             "groupType":"QnAQO4Kd4I3",
             "firstName":"vYdz8EjQJe0", # not used for privacy reason
+            "lastName":"BRGgPOilUtC", # not used for privacy reason
             "firstServicePoint":"GZ6zgXS25VH",
             "gender":"QtkHTKL4EsU",
             "isHead":"siOTMqr9kw6",
