@@ -45,7 +45,7 @@ def postPaginatedThreaded(ressource,queryset, convertor, **kwargs ):
     with  ThreadPoolExecutor(max_workers=4) as executor:
         while curPage <= pages :
             page = p.page(curPage)
-            futures.append(executor.submit(postPage, ressource = ressource, page = page, convertor = convertor , kwargs = kwargs))
+            futures.append(executor.submit(postPage, ressource = ressource, page = page, convertor = convertor , **kwargs))
             curPage+=1
     responses = []
     for future in futures:
