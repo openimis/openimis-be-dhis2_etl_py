@@ -167,7 +167,7 @@ class InsureeConverter(BaseDHIS2Converter):
             dataValue.append(EventDataValue(dataElement = stageDE['product'],\
                 value = insureepolicy.policy.product.code + " - " + insureepolicy.policy.product.name))
         if is_valid_uid(stageDE['PolicyValue']):
-            dataValue.append(EventDataValue(dataElement = stageDE['PolicyValue'], value = insureepolicy.policy.value if not None else 0))
+            dataValue.append(EventDataValue(dataElement = stageDE['PolicyValue'], value = insureepolicy.policy.value if insureepolicy.policy.value != None else 0))
         if is_valid_uid(stageDE['expirityDate']):
             dataValue.append(EventDataValue(dataElement = stageDE['expirityDate'], value = toDateStr(insureepolicy.policy.expiry_date)))
         #event.dataValue.append(EventDataValue(dataElement = stageDE['policyId'],build_dhis2_id(insureepolicy.policy.uuid)))
