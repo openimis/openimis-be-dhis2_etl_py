@@ -15,14 +15,14 @@ from .configurations import GeneralConfiguration
 
 from django.db.models import Q, Prefetch
 # FIXME manage permissions
-from .utils import postPaginated, post, printPaginated
+from .utils import *
 
 # import the logging library
 import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-
+postMethod = postPaginatedThreaded
 def syncInsuree(startDate,stopDate):
     # get the insuree matching the search
         # get all insuree so we have also the detelted ones
@@ -39,7 +39,7 @@ def syncInsuree(startDate,stopDate):
             .only('id','profession_id','family__poverty','chf_id','education_id','dob','family__uuid',\
                 'family__family_type_id','other_names','gender_id','head','health_facility__uuid',\
                 'marital','family__location__uuid','uuid','validity_from','last_name')
-    return postPaginated('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs)
+    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs)
 
 def syncInsureePolicy(startDate,stopDate):
     # get the insuree matching the search
@@ -63,7 +63,7 @@ def syncInsureePolicy(startDate,stopDate):
                     .select_related('policy__product').only('policy__stage','policy__status','policy__value','policy__product__code',\
                 'policy__product__name','policy__expiry_date', 'enrollment_date','id','insuree_id')))
             
-    return postPaginated('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, event = True)
+    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, event = True)
 
 
 
@@ -84,7 +84,7 @@ def syncPolicy(startDate,stopDate):
             .select_related('policy__product')\
             .only('insuree__family__location__uuid','policy__stage','policy__status','policy__value','policy__product__code','insuree__uuid',\
                 'policy__product__name','policy__expiry_date', 'enrollment_date')
-    return postPaginated('events',policies, InsureeConverter.to_event_objs)
+    return postMethod('events',policies, InsureeConverter.to_event_objs)
     
 def syncClaim(startDate,stopDate):
     # get only the last version of valudated or rejected claims (to sending multiple time the same claim)
@@ -105,7 +105,7 @@ def syncClaim(startDate,stopDate):
             .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True).select_related('service')))\
             .order_by('validity_from')
     # get the insuree matching the search
-    return postPaginated('trackedEntityInstances',claims, ClaimConverter.to_enrolment_objs)
+    return postMethod('trackedEntityInstances',claims, ClaimConverter.to_enrolment_objs)
 
 def syncRegion(startDate,stopDate):
     locations = Location.objects.filter(legacy_id__isnull=True)\
@@ -113,7 +113,7 @@ def syncRegion(startDate,stopDate):
         .filter(validity_from__gte=startDate)\
         .filter(type='R')\
         .select_related('parent')
-    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs)   
     res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj, group_name='Region', id = 'UMRPiQP7N4v' )) 
     return res
 
@@ -123,7 +123,7 @@ def syncDistrict(startDate,stopDate):
         .filter(validity_from__gte=startDate)\
         .filter(type='D')\
         .select_related('parent')
-    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs)   
     res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='District', id = 'TMRPiQP7N4v' )) 
     return res
 
@@ -133,7 +133,7 @@ def syncWard(startDate,stopDate):
         .filter(validity_from__gte=startDate)\
         .filter(type='W')\
         .select_related('parent')
-    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs)   
     res.append(postPaginated('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='Ward', id = 'TMRPiQP8N4v')) 
     return res
 
@@ -143,7 +143,7 @@ def syncVillage(startDate,stopDate):
         .filter(validity_from__gte=startDate)\
         .filter(type='V')\
         .select_related('parent')
-    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs)   
     res.append(postPaginated('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='Village' , id = 'TMRPiQT7N4v')) 
     return res
 
@@ -153,7 +153,7 @@ def syncHospital(startDate,stopDate):
         .filter(validity_from__gte=startDate)\
         .filter(level='H')\
         .select_related('location')
-    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs)   
     res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='Hospitals', id = 'WMRPiQP7N4v' )) 
     return res
 def syncDispensary(startDate,stopDate):
@@ -162,8 +162,8 @@ def syncDispensary(startDate,stopDate):
         .filter(validity_from__gte=startDate)\
         .filter(level='D')\
         .select_related('location')
-    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
-    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj, group_name='Dispensary' , id = 'XMRPiQP7N4v')) 
+    res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res.append(postPaginated('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj, group_name='Dispensary' , id = 'XMRPiQP7N4v')) 
     return res
     
 def syncHealthCenter(startDate,stopDate):
@@ -172,6 +172,6 @@ def syncHealthCenter(startDate,stopDate):
         .filter(validity_from__gte=startDate)\
         .filter(level='D')\
         .select_related('location')
-    res=postPaginated('metadata',locations, LocationConverter.to_org_unit_objs)   
-    res.append(post('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='HealthCenter', id = 'YMRPiQP7N4v' )) 
+    res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs)   
+    res.append(postPaginated('organisationUnitGroups',locations, LocationConverter.to_org_unit_group_obj,  group_name='HealthCenter', id = 'YMRPiQP7N4v' )) 
     return res
