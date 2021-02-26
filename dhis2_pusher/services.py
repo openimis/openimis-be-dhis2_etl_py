@@ -22,6 +22,7 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
+# postMethod = postPaginated
 postMethod = postPaginatedThreaded
 def syncInsuree(startDate,stopDate):
     # get the insuree matching the search
@@ -91,6 +92,7 @@ def syncClaim(startDate,stopDate):
     claims = Claim.objects.filter(validity_to__isnull=True)\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
+            .filter(insuree__legacy_id__isnull=True)\
             .filter(Q(status=CLAIM_VALUATED)| Q(status=CLAIM_REJECTED))\
             .order_by('validity_from')\
             .select_related('insuree')\
@@ -105,7 +107,7 @@ def syncClaim(startDate,stopDate):
             .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True).select_related('service')))\
             .order_by('validity_from')
     # get the insuree matching the search
-    return postMethod('trackedEntityInstances',claims, ClaimConverter.to_enrolment_objs)
+    return postMethod('enrollments',claims, ClaimConverter.to_enrollment_objs, event = True)
 
 def syncRegion(startDate,stopDate):
     locations = Location.objects.filter(legacy_id__isnull=True)\

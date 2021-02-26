@@ -5,7 +5,7 @@ openIMIS Module to push data into DHIS2
 
 
 This module will push data in two programs
-- Family-insuree [enrolment] Policy [event]
+- Family-insuree [enrollment] Policy [event]
 - Claims 
 
 ## Getting started
