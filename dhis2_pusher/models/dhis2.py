@@ -153,5 +153,5 @@ class EventBundle(BaseModel):
     events:List[Event]
 
 class EnrollmentBundle(BaseModel):
-    enrolments:List[Enrollment]
+    enrollments:List[Enrollment]
 

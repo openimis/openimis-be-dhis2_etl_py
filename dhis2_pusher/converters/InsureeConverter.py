@@ -53,7 +53,7 @@ class InsureeConverter(BaseDHIS2Converter):
                     value = insuree.last_name )) 
             orgUnit = build_dhis2_id(insuree.family.location.uuid)
             trackedEntity = build_dhis2_id(insuree.uuid)
-            enrollment = cls.to_enrolment_obj(insuree, event=event)
+            enrollment = cls.to_enrollment_obj(insuree, event=event)
             return TrackedEntityInstance(\
                 trackedEntityType = insureeProgram['teiType'],\
                 id = trackedEntity,\
@@ -67,7 +67,7 @@ class InsureeConverter(BaseDHIS2Converter):
 
  
     @classmethod
-    def to_enrolment_objs(cls, insurees,  event = False ):
+    def to_enrollment_objs(cls, insurees,  event = False ):
         #event  = kwargs.get('event',False)
         Enrollments = []
         for insuree in insurees:
@@ -75,7 +75,7 @@ class InsureeConverter(BaseDHIS2Converter):
         return EnrollmentBundle(Enrollments)
 
     @classmethod   
-    def to_enrolment_obj(cls, insuree, event = False):
+    def to_enrollment_obj(cls, insuree, event = False):
         uid = build_dhis2_id(insuree.uuid)
         #event  = kwargs.get('event',False)
         attributes = []
