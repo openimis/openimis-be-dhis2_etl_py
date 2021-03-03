@@ -44,7 +44,7 @@ class EventDataValue(BaseModel):
 class Event(BaseModel):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
-    id: Optional[uid]
+    event: Optional[uid]
     program: uid
     programStage: uid
     trackedEntityInstance: uid
@@ -59,7 +59,7 @@ class Event(BaseModel):
 class Enrollment(BaseModel):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
-    id: Optional[uid]
+    enrollment: Optional[uid]
     trackedEntityInstance: Optional[uid] # optionnal only if part of the TEI creation
     orgUnit: uid
     storedBy: Optional[DHIS2Ref]
@@ -75,7 +75,7 @@ class Enrollment(BaseModel):
 class TrackedEntityInstance(BaseModel):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
-    id: Optional[uid]
+    trackedEntityInstance: Optional[uid]
     trackedEntityType: uid
     orgUnit: uid
     storedBy: Optional[DHIS2Ref]
@@ -121,7 +121,7 @@ class OrganisationUnitGroup(BaseModel):
     name: str
     shortName: Optional[str]
     description: Optional[str]
-    organisationUnits:Union[List[DHIS2Ref],DeltaDHIS2Ref]
+    organisationUnits:Union[List[DHIS2Ref],DeltaDHIS2Ref] = []
     # color
     # symbol
 
@@ -132,7 +132,7 @@ class OrganisationUnitGroupSet(BaseModel):
     code: Optional[str]
     name: Optional[str]
     description: Optional[str]
-    organisationUnitGroups:Union[List[DHIS2Ref],DeltaDHIS2Ref]
+    organisationUnitGroups:Union[List[DHIS2Ref],DeltaDHIS2Ref] = []
     # datadimention
     # compulsory
     # include sub hiearchy

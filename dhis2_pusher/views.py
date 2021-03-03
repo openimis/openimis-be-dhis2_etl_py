@@ -58,13 +58,13 @@ def SyncDHIS2(id, startDate, stopDate, scope):
 
     if  scope == "orgunit":
         logger.debug("start orgUnit sync")
-        #syncRegionResponse = syncRegion(startDate,stopDate)
-        #syncDistrictResponse = syncDistrict(startDate,stopDate)
+        syncRegionResponse = syncRegion(startDate,stopDate)
+        syncDistrictResponse = syncDistrict(startDate,stopDate)
         syncWardResponse = syncWard(startDate,stopDate)
         syncVillageResponse = syncVillage(startDate,stopDate)
-        #syncHospitalResponse = syncHospital(startDate,stopDate)
-        #syncDispensaryResponse = syncDispensary(startDate,stopDate)
-        #syncHealthCenterResponse = syncHealthCenter(startDate,stopDate)
+        syncHospitalResponse = syncHospital(startDate,stopDate)
+        syncDispensaryResponse = syncDispensary(startDate,stopDate)
+        syncHealthCenterResponse = syncHealthCenter(startDate,stopDate)
         #responses.insert(claimResponse)
     #if scope == "all" or scope == "claimdetail":
     #    responses.insert(syncClaimDetail(startDate,stopDate))

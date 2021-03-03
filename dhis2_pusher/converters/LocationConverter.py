@@ -51,8 +51,11 @@ class LocationConverter(BaseDHIS2Converter):
         # **kwargs --> group_name
         organisationUnits = []
         exclPaternName = '[Ff]unding.*'
-        for location in locations:
-            if not re.match(exclPaternName, location.name):
-                organisationUnits.append(DHIS2Ref(id = build_dhis2_id(location.uuid) ))
-        return OrganisationUnitGroup(name = group_name, id=id, organisationUnits = DeltaDHIS2Ref( additions = organisationUnits ))
+        if locations is not None:
+            for location in locations:
+                if not re.match(exclPaternName, location.name):
+                    organisationUnits.append(DHIS2Ref(id = build_dhis2_id(location.uuid) ))
+            return OrganisationUnitGroupBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, id=id, organisationUnits = organisationUnits)])#  DeltaDHIS2Ref( additions = organisationUnits ))])
+        else:
+            return OrganisationUnitGroupBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, id=id)])
 
