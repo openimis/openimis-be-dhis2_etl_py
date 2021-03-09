@@ -37,8 +37,9 @@ def SyncDHIS2(id, startDate, stopDate, scope):
     if scope == "all" or scope == "insuree":
         logger.debug("start Insuree sync")
         insureeResponse = syncInsuree(startDate,stopDate)
-
-
+    if scope == 'enroll':
+        logger.debug("start Insuree enroll")
+        insureeResponse = enrollInsuree(startDate,stopDate)
         #responses.insert(insureeResponse)
     if scope == "all" or scope == "policy":
         logger.debug("start Policy sync")

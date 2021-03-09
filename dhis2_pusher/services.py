@@ -43,6 +43,24 @@ def syncInsuree(startDate,stopDate):
                 'marital','family__location__uuid','uuid','validity_from','last_name')
     return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs)
 
+def enrollInsuree(startDate,stopDate):
+    # get the insuree matching the search
+        # get all insuree so we have also the detelted ones
+    # .filter(Q(validity_to__isnull=True) | Q(validity_to__gte=stopDate))\
+    insurees = Insuree.objects\
+            .filter(validity_from__lte=stopDate)\
+            .filter(validity_from__gte=startDate)\
+            .filter(legacy_id__isnull=True)\
+            .order_by('validity_from')\
+            .select_related('gender')\
+            .select_related('family')\
+            .select_related('family__location')\
+            .select_related('health_facility')\
+            .only('id','profession_id','family__poverty','chf_id','education_id','dob','family__uuid',\
+                'family__family_type_id','other_names','gender_id','head','health_facility__uuid',\
+                'marital','family__location__uuid','uuid','validity_from','last_name')
+    return postMethod('enrollments',insurees, InsureeConverter.to_enrollment_objs, event = False)
+
 def syncInsureePolicy(startDate,stopDate):
     # get the insuree matching the search
         # get all insuree so we have also the detelted ones

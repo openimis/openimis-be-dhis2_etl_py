@@ -76,7 +76,7 @@ def post(ressource,objs,convertor, **kwargs):
     try:
         response = api.post(ressource,\
             json = jsonPayload,\
-            params = {'mergeMode': 'MERGE','strategy':'CREATE_AND_UPDATE'}) #, "async":"false", "preheatCache":"true"})
+            params = {'mergeMode': 'MERGE'}) #,'importStrategy':'CREATE_AND_UPDATE'}) #, "async":"false", "preheatCache":"true"})
         logger.info(response)
         # fix me to avoid too much ram
         return None
