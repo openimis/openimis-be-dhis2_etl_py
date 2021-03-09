@@ -56,9 +56,8 @@ class InsureeConverter(BaseDHIS2Converter):
             enrollment = cls.to_enrollment_obj(insuree, event=event)
             return TrackedEntityInstance(\
                 trackedEntityType = insureeProgram['teiType'],\
-                id = trackedEntity,\
+                trackedEntityInstance = trackedEntity,\
                 orgUnit = orgUnit,\
-                # add enroment
                 enrollments= [enrollment],\
                 attributes = attributes)
              
@@ -72,7 +71,7 @@ class InsureeConverter(BaseDHIS2Converter):
         Enrollments = []
         for insuree in insurees:
             Enrollments.append(cls.to_enrollment_obj(insuree, event=event))
-        return EnrollmentBundle(Enrollments)
+        return EnrollmentBundle(enrollments = Enrollments)
 
     @classmethod   
     def to_enrollment_obj(cls, insuree, event = False):
@@ -90,13 +89,15 @@ class InsureeConverter(BaseDHIS2Converter):
         if insuree.family.poverty is not None and is_valid_uid(insureeProgram['attributes']['poverty']):
             attributes.append(AttributeValue(attribute = insureeProgram['attributes']['poverty'],\
                 value =  GeneralConfiguration.get_boolean_code(insuree.family.poverty))) 
-        #  "CHFId" // duplicate
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['CHFId'],\
-                value =  hashlib.md5((salt + insuree.chf_id).encode('utf-8') ).hexdigest()))
+        
         # "insuranceId":"g54R38QNwEi", # Salted data for privay reason
         if insuree.chf_id is not None and is_valid_uid(insureeProgram['attributes']['insuranceId']):
             attributes.append(AttributeValue(attribute = insureeProgram['attributes']['insuranceId'],\
                 value =  hashlib.md5((salt + insuree.chf_id).encode('utf-8') ).hexdigest())) 
+        if insuree.chf_id is not None and is_valid_uid(insureeProgram['attributes']['CHFId']):
+        #  "CHFId" // duplicate
+            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['CHFId'],\
+                value =  hashlib.md5((salt + insuree.chf_id).encode('utf-8') ).hexdigest()))
         # "insureeId":"e9fOa40sDwR",  # should not use it
         # "familyId": attribute ,
         if insuree.family.uuid is not None and is_valid_uid(insureeProgram['attributes']['familyId']):
@@ -148,7 +149,7 @@ class InsureeConverter(BaseDHIS2Converter):
             for insureepolicy in insuree.insuree_policies.all():
                 events.append(cls.to_event_obj(insureepolicy,  insuree))
         return Enrollment( trackedEntityInstance = uid, incidentDate = toDateStr(insuree.validity_from), enrollmentDate = toDateStr(insuree.validity_from),\
-              orgUnit = build_dhis2_id(insuree.family.location.uuid), status = "COMPLETED", program = insureeProgram['id'],\
+              orgUnit = build_dhis2_id(insuree.family.location.uuid), status = "ACTIVE", program = insureeProgram['id'],\
                   events = events, attributes = attributes )
         
 
