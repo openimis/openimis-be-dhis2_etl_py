@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator
 from dhis2 import Api
-
+from .models.dhis2Enum import ImportStrategy, MergeMode
 from .configurations import GeneralConfiguration
 from dict2obj import Dict2Obj
 import datetime
@@ -8,6 +8,7 @@ import requests
 import re
 from concurrent.futures.thread import ThreadPoolExecutor
 import json
+import hashlib
 
 # import the logging library
 import logging
@@ -27,7 +28,7 @@ def printPaginated(ressource,queryset, convertor, **kwargs):
     p = Paginator(queryset, page_size)
     pages = p.num_pages
     curPage = 1
-    timestamp = datetime.datetime.now().strftime("%d%m%Y%H%M%S")
+    timestamp = datetime.datetime.now().strftime("%d%m%Y%H%M%S.%f")
     while curPage <= pages :
         f = open(path + '\out_'+timestamp+'_'+ressource+'-'+str(curPage)+".json", "w+")
         page = p.page(curPage)
@@ -42,10 +43,10 @@ def postPaginatedThreaded(ressource,queryset, convertor, **kwargs ):
     pages = p.num_pages
     curPage = 1
     futures = []
-    with  ThreadPoolExecutor(max_workers=4) as executor:
+    with  ThreadPoolExecutor(max_workers=6) as executor:
         while curPage <= pages :
             page = p.page(curPage)
-            futures.append(executor.submit(postPage, ressource = ressource, page = page, convertor = convertor , kwargs = kwargs))
+            futures.append(executor.submit(postPage, ressource = ressource, page = page, convertor = convertor , **kwargs))
             curPage+=1
     responses = []
     for future in futures:
@@ -76,7 +77,7 @@ def post(ressource,objs,convertor, **kwargs):
     try:
         response = api.post(ressource,\
             json = jsonPayload,\
-            params = {'mergeMode': 'MERGE','strategy':'CREATE_AND_UPDATE'}) #, "async":"false", "preheatCache":"true"})
+            params = {'mergeMode': MergeMode.merge}) #,'importStrategy':'CREATE_AND_UPDATE'}) #, "async":"false", "preheatCache":"true"})
         logger.info(response)
         # fix me to avoid too much ram
         return None
@@ -99,7 +100,7 @@ def postPage(ressource,page,convertor, **kwargs):
     try:
         response = api.post(ressource,\
             json = jsonPayload,\
-            params = {'mergeMode': 'MERGE','strategy':'CREATE_AND_UPDATE'}) #, "async":"false", "preheatCache":"true"})
+            params = {'mergeMode': MergeMode.merge,'strategy':ImportStrategy.createUpdate}) #, "async":"false", "preheatCache":"true"})
         logger.info(response)
         # fix me to avoid too much ram
         return None
@@ -147,7 +148,19 @@ def toDateStr(dateIn):
         return None
 
 
-def build_dhis2_id(uuid):
+def build_dhis2_id(uuid , salt = ""):
+    regex = re.compile("^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}$")
+   
+    tmp_uuid = ""
+    if (regex.match(str(uuid))):
+         #remove the "-" if any
+        tmp_uuid = uuid.replace('-','')
+    else:
+         # in case the table doesn't have uuid but id only
+        # the salt is important becasue the DHIS2 capture app doesn't support
+        # 2x the same id for metadata, event if it's from different kind
+        salteduuid =  salt + str(uuid)
+        tmp_uuid = hashlib.md5(salteduuid.encode()).hexdigest()
     
     DHIS2IDCharDict = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: 'A', 11: 'B', 12: 'C', 13: 'D', 14: 'E', 15: 'F', 
             16: 'G', 17: 'H', 18: 'I', 19: 'J', 20: 'K', 21: 'L', 22: 'M', 23: 'N', 24: 'O', 25: 'P', 26: 'Q', 27: 'R', 
@@ -155,8 +168,7 @@ def build_dhis2_id(uuid):
             40: 'e', 41: 'f', 42: 'g', 43: 'h', 44: 'i', 45: 'j', 46: 'k', 47: 'l', 48: 'm', 49: 'n', 50: 'o', 51: 'p', 
             52: 'q', 53: 'r', 54: 's', 55: 't', 56: 'u', 57: 'v', 58: 'w', 59: 'x', 60: 'y', 61: 'z', 62: 'A', 63: 'B'}
     dhis2_id = ''
-    #remove the "-
-    tmp_uuid = uuid.replace('-','')
+
     # trasform 2 hex (256) in to 0-9a-zA-Z(62)  for 22 symbol on 32 --> data loss = 1-(62/256*22/36) = 83,4%
     for x in range(11):
         int0 = int(tmp_uuid[0:1] ,16)

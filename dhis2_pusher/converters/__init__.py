@@ -11,12 +11,12 @@ class BaseDHIS2Converter(ABC):
         raise NotImplementedError('`to_tei_obj()` must be implemented.')  # pragma: no cover
  
     @classmethod
-    def to_enrolment_obj(cls, obj, **kwargs):
-        raise NotImplementedError('`to_enrolment_obj()` must be implemented.')  # pragma: no cover
+    def to_enrollment_obj(cls, obj, **kwargs):
+        raise NotImplementedError('`to_enrollment_obj()` must be implemented.')  # pragma: no cover
 
     @classmethod
-    def to_enrolment_objs(cls, objs, **kwargs):
-        raise NotImplementedError('`to_enrolment_objs()` must be implemented.')  # pragma: no cover
+    def to_enrollment_objs(cls, objs, **kwargs):
+        raise NotImplementedError('`to_enrollment_objs()` must be implemented.')  # pragma: no cover
 
     @classmethod
     def to_event_obj(cls, obj, **kwargs):
