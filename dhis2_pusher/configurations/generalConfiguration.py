@@ -10,12 +10,14 @@ class GeneralConfiguration(BaseConfiguration):
         config.salt = cfg['salt']
         config.insureeProgram = cfg['insureeProgram']
         config.claimProgram = cfg['claimProgram']
-        config.genderCodes = cfg['genderCodes']
-        config.educationCodes = cfg['educationCodes']
-        config.professionCodes = cfg['professionCodes']
+        config.optionSet = cfg['optionSet']
+        # config.genderCodes = cfg['genderCodes']
+        # config.educationCodes = cfg['educationCodes']
+        # config.professionCodes = cfg['professionCodes']
+        config.visitTypeCodes = cfg['visitTypeCodes']
         config.maritalStatusCodes = cfg['maritalStatusCodes']
         config.booleanCodes = cfg['booleanCodes']
-        config.groupTypeCodes = cfg['groupTypeCodes']
+        # config.groupTypeCodes = cfg['groupTypeCodes']
         config.default_page_size = cfg['default_page_size']
         config.policyStageCode = cfg['policyStateCode']
         config.policyStatusCode = cfg['policyStatusCode']
@@ -51,17 +53,23 @@ class GeneralConfiguration(BaseConfiguration):
     @classmethod
     def get_json_out_path(cls):
         return cls.get_config().jsonOutPath
-    @classmethod
-    def get_gender_code(cls, code):
-        return cls.get_config().genderCodes.get(code, 'Unknown')
 
+    
     @classmethod
-    def get_education_code(cls, code):
-        return cls.get_config().educationCodes.get(code, 'Other')
+    def get_option_set_uid(cls, name):
+        return cls.get_config().optionSet.get(name)
 
-    @classmethod
-    def get_profession_code(cls, code):
-        return cls.get_config().professionCodes.get(code, 'Other')
+    # @classmethod
+    # def get_gender_code(cls, code):
+    #     return cls.get_config().genderCodes.get(code, 'Unknown')
+
+    # @classmethod
+    # def get_education_code(cls, code):
+    #     return cls.get_config().educationCodes.get(code, 'Other')
+
+    # @classmethod
+    # def get_profession_code(cls, code):
+    #     return cls.get_config().professionCodes.get(code, 'Other')
 
 
     @classmethod
@@ -73,8 +81,13 @@ class GeneralConfiguration(BaseConfiguration):
         return cls.get_config().maritalStatusCodes.get(code, 'Single')
 
     @classmethod
-    def get_group_type_code(cls, code):
-        return cls.get_config().groupTypeCodes.get(code, 'Other')
+    def get_visit_type_code(cls, code):
+        return cls.get_config().visitTypeCodes.get(code, 'Other')
+
+
+    # @classmethod
+    # def get_group_type_code(cls, code):
+    #     return cls.get_config().groupTypeCodes.get(code, 'Other')
 
 
     @classmethod

@@ -8,7 +8,7 @@ from . import BaseDHIS2Converter
 from ..configurations import GeneralConfiguration
 from dhis2 import utils
 import hashlib 
-from ..models.dhis2 import *
+from ..models.dhis2Program import *
 from ..utils import toDateStr, toDatetimeStr, build_dhis2_id
 
 claimProgram =  GeneralConfiguration.get_claim_program()
@@ -60,7 +60,7 @@ class ClaimConverter(BaseDHIS2Converter):
             #    "VisitType"
             if claim.visit_type is not None and is_valid_uid(claimProgram['attributes']['VisitType']):
                     attributes.append(AttributeValue( attribute = claimProgram['attributes']['VisitType'],\
-                    value = claim.visit_type ))
+                    value = GeneralConfiguration.get_visit_type_code(claim.visit_type)))
              # add enroment
             events = []
             if event:

@@ -1,7 +1,7 @@
 from insuree.models import Insuree, Gender, Education, Profession, Family
 from location.models import Location
 from product.models import Product
-from ..models.dhis2 import *
+from ..models.dhis2Metadata import *
 from . import BaseDHIS2Converter
 from ..configurations import GeneralConfiguration
 from dhis2.utils import *

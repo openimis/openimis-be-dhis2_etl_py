@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
-from .services import *
-
+from .services.claimServices import *
+from .services.insureeServices import *
+from .services.locationServices import *
+from .services.optionSetServices import *
 # import the logging library
 import logging
 # Get an instance of a logger
@@ -8,21 +10,16 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 
 def startThreadTask(request):
-    #task = ThreadTask()
-    #task.save()
-    id = 1
     startDate = request.GET.get('startDate')
     stopDate = request.GET.get('stopDate')
     scope = request.GET.get('scope')
     if scope is None:
         scope = "all"
     if startDate != None and stopDate != None:
-        #t = threading.Thread(target=SyncDHIS2,args=(task.id, startDate, stopDate, scope))
-        #t.setDaemon(True)
-        #t.start()
+
         logger.debug("Start SyncDHIS2")
-        SyncDHIS2(id, startDate, stopDate, scope)
-        return JsonResponse({'id':id})
+        SyncDHIS2(startDate, stopDate, scope)
+        return JsonResponse({'Status':"Done"})
     else:
         return "Please specify startDate and stopDate using yyyy-mm-dd format"
 
@@ -30,8 +27,8 @@ def checkThreadTask(request,id):
     task = ThreadTask.objects.get(pk=id)
     return JsonResponse({'is_done':task.is_done})
 
-def SyncDHIS2(id, startDate, stopDate, scope):
-    logger.debug("Received task",id)
+def SyncDHIS2(startDate, stopDate, scope):
+    logger.debug("Received task")
     responses = []
     ##task = ThreadTask.objects.get(pk=id)
     if scope == "all" or scope == "insuree":
@@ -66,10 +63,14 @@ def SyncDHIS2(id, startDate, stopDate, scope):
         syncHospitalResponse = syncHospital(startDate,stopDate)
         syncDispensaryResponse = syncDispensary(startDate,stopDate)
         syncHealthCenterResponse = syncHealthCenter(startDate,stopDate)
-        #responses.insert(claimResponse)
-    #if scope == "all" or scope == "claimdetail":
-    #    responses.insert(syncClaimDetail(startDate,stopDate))
-    #task.is_done = True
-    ##task.save()
-    logger.debug("Finishing task",id)
+
+    if  scope == "optionset":
+        logger.debug("start OptionSets sync")
+        syncProductResponse = syncProduct(startDate,stopDate)
+        syncGenderResponse = syncGender(startDate,stopDate)
+        syncProfessionResponse = syncProfession(startDate,stopDate)
+        syncEducationResponse = syncEducation(startDate,stopDate)
+        syncGroupTypeResponse = syncGroupType(startDate,stopDate)
+        syncDiagnosisResponse = syncDiagnosis(startDate,stopDate)
+    logger.debug("Finishing task")
 

@@ -17,56 +17,33 @@ DEFAULT_CFG = {
     "salt":"LeSalt",
     "jsonOutPath":'C:/temp',
     "location":{
-        "rootOrgUnit":"Ee6vyMBI9UQ",
+        "rootOrgUnit":"DFNP94LIbPH",
         "attributes":{
             "locationId":"gMNNTAdZbW1",
             "locationType":"ffZOxd5V2UK"
         }
     },
-    "genderCodes": {
-        "M" : "Male",
-        "F" : "Female",
+    "optionSet":{
+        "gender": "GUdoValVQSh",
+        "profession": "Sd4u2gQx36n",
+        "groupType" : "iyfsslkBi1G",
+        "education" : "EiSeDNXxNjB",
+        "product" : "kCdTMGqxLGE",
+        "diagnosis" : "Gg8QVWm9zPh"
+    }, "visitTypeCodes" : {
         "O" : "Other",
-        "U" : "Unknown" # Default
-    },
-    "professionCodes": {
-        "4" : "Household",
-        "2" : "Employee",
-        "1" : "Selfemployee",
-        "0" : "Other" # default
-    },
-    "booleanCodes":{
-        "0" : "No", # Default
-        "1" : "Yes"
-    }, 
-    "maritalStatusCodes":{
+        "R" : "Referal",
+        "E" : "Emergency"
+    }, "maritalStatusCodes":{
         "M" : "Married",
         "D" : "Divorced",
         "W" : "Widowed",
         "S" : "Single",
-        "NF" : "Not specified"# Default
-    }, 
-    "groupTypeCodes":{
-        "C" : "Council",
-        "O" : "Organisation",
-        "H" : "Household",
-        "P" : "Priests",
-        "S" : "Students",
-        "T" : "Teachers",
-        "X" : "Other" # Default
-    },
-    "educationCodes":{
-        "1" : "Nursery",
-        "2" : "Primary school",
-        "3" : "Secondary school",
-        "4" : "Secondary school",
-        "5" : "Secondary school",
-        "6" : "Secondary school",
-        "7" : "University",
-        "8" : "Postgraduate studies",
-        "9" : "PhD",
-        "10" : "Other" # default        
-    }, "policyStateCode":{
+        "NF" : "Not specified"# Default 
+    },"booleanCodes":{
+         "0" : "No", # Default
+         "1" : "Yes"
+     }, "policyStateCode":{
         "N" : "New Policy",
         "R" : "Renewed Policy"       
     }, "policyStatusCode":{
@@ -195,3 +172,43 @@ class Dhis2Config(AppConfig):
     def __configure_module(self, cfg):
         ModuleConfiguration.build_configuration(cfg)
         logger.info('Module $s configured successfully', MODULE_NAME)
+
+# To be replaced by optionset
+
+    # "genderCodes": {
+    #     "M" : "Male",
+    #     "F" : "Female",
+    #     "O" : "Other",
+    #     "U" : "Unknown" # Default
+    # },
+    # "professionCodes": {
+    #     "4" : "Household",
+    #     "2" : "Employee",
+    #     "1" : "Selfemployee",
+    #     "0" : "Other" # default
+    # },
+    # "booleanCodes":{
+    #     "0" : "No", # Default
+    #     "1" : "Yes"
+    # },  
+    # "groupTypeCodes":{
+    #     "C" : "Council",
+    #     "O" : "Organisation",
+    #     "H" : "Household",
+    #     "P" : "Priests",
+    #     "S" : "Students",
+    #     "T" : "Teachers",
+    #     "X" : "Other" # Default
+    # },
+    # "educationCodes":{
+    #     "1" : "Nursery",
+    #     "2" : "Primary school",
+    #     "3" : "Secondary school",
+    #     "4" : "Secondary school",
+    #     "5" : "Secondary school",
+    #     "6" : "Secondary school",
+    #     "7" : "University",
+    #     "8" : "Postgraduate studies",
+    #     "9" : "PhD",
+    #     "10" : "Other" # default        
+    # }

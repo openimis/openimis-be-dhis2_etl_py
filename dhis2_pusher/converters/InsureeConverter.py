@@ -1,7 +1,7 @@
 from insuree.models import Insuree, Gender, Education, Profession, Family
 from location.models import Location
 from product.models import Product
-from ..models.dhis2 import *
+from ..models.dhis2Program import *
 from . import BaseDHIS2Converter
 from ..configurations import GeneralConfiguration
 from dhis2.utils import *
@@ -84,11 +84,11 @@ class InsureeConverter(BaseDHIS2Converter):
         # add profession attributes
         if insuree.profession_id is not None and is_valid_uid(insureeProgram['attributes']['profession']):
             attributes.append(AttributeValue(attribute = insureeProgram['attributes']['profession'],\
-                value = GeneralConfiguration.get_profession_code(insuree.profession_id))) 
+                value = insuree.profession_id)) 
         # add poverty attributes
         if insuree.family.poverty is not None and is_valid_uid(insureeProgram['attributes']['poverty']):
             attributes.append(AttributeValue(attribute = insureeProgram['attributes']['poverty'],\
-                value =  GeneralConfiguration.get_boolean_code(insuree.family.poverty))) 
+                value = insuree.family.poverty)) 
         
         # "insuranceId":"g54R38QNwEi", # Salted data for privay reason
         if insuree.chf_id is not None and is_valid_uid(insureeProgram['attributes']['insuranceId']):
@@ -110,11 +110,11 @@ class InsureeConverter(BaseDHIS2Converter):
         #"education"
         if insuree.education_id is not None and is_valid_uid(insureeProgram['attributes']['education']):
             attributes.append(AttributeValue(attribute = insureeProgram['attributes']['education'],\
-                value =  GeneralConfiguration.get_education_code(insuree.education_id))) 
+                value =  insuree.education_id)) 
         # "groupType",
         if insuree.family.family_type_id is not None and is_valid_uid(insureeProgram['attributes']['groupType']):
             attributes.append(AttributeValue(attribute = insureeProgram['attributes']['groupType'],\
-                    value =  GeneralConfiguration.get_group_type_code(insuree.family.family_type_id))) 
+                value =  insuree.family.family_type_id)) 
         # "firstName"
         if insuree.other_names is not None and is_valid_uid(insureeProgram['attributes']['firstName']):
             attributes.append(AttributeValue(attribute = insureeProgram['attributes']['firstName'],\
@@ -126,11 +126,11 @@ class InsureeConverter(BaseDHIS2Converter):
         #"gender":
         if insuree.gender_id is not None and is_valid_uid(insureeProgram['attributes']['gender']):
             attributes.append(AttributeValue(attribute = insureeProgram['attributes']['gender'],\
-                value =GeneralConfiguration.get_gender_code(insuree.gender_id))) 
+                value = insuree.gender_id)) 
         #"isHead":"siOTMqr9kw6",
         if insuree.head is not None and is_valid_uid(insureeProgram['attributes']['isHead']):
             attributes.append(AttributeValue(attribute = insureeProgram['attributes']['isHead'],\
-                value =GeneralConfiguration.get_boolean_code(insuree.head))) 
+                value = GeneralConfiguration.get_boolean_code(insuree.head))) 
         #"identificationId":"MFPEijajdy7", # not used for privacy reason
         #if insuree.passport is not None and is_valid_uid(insureeProgram['attributes']['identificationId']):
         #    attributes.append(AttributeValue(attribute = insureeProgram['attributes']['identificationId'],value = insuree.passport)) 
@@ -140,7 +140,7 @@ class InsureeConverter(BaseDHIS2Converter):
         #"maritalSatus":"vncvDog0YwP",
         if insuree.marital is not None and is_valid_uid(insureeProgram['attributes']['maritalSatus']):
             attributes.append(AttributeValue(attribute = insureeProgram['attributes']['maritalSatus'],\
-                value =GeneralConfiguration.get_marital_status_code(insuree.marital))) 
+                value = GeneralConfiguration.get_marital_status_code(insuree.marital)))
         #"phoneNumber": "r9hJ7SJbVvx", # TBC
         #if insuree.poverty is not None and is_valid_uid(insureeProgram['attributes']['poverty']):
         #attributes.append(AttributeValue(attribute = insureeProgram['attributes']['poverty'], value = insuree.poverty)) 
