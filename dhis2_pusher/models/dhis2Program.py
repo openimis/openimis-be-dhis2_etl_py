@@ -17,6 +17,7 @@ class EventDataValue(BaseModel):
     lastUpdated: Optional[datetimeStr]
     dataElement: uid
     value: str
+    valueType: Optional[ValueType]
     providedElsewhere: Optional[bool]
     storedBy: Optional[DHIS2Ref]
 
