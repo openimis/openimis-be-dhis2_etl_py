@@ -41,13 +41,13 @@ class LocationConverter(BaseDHIS2Converter):
             closedDate = toDateStr(location.validity_to)
         attributes = [] # TO DO ? not attributes found on DHIS2
 
-        return OrganisationUnit( name = location.name, shortName = location.name, code = location.uuid,\
+        return OrganisationUnit( name = location.code + ' - ' + location.name, shortName = location.code, code = location.uuid,\
             openingDate = '2000-01-01', id = build_dhis2_id(location.uuid), closedDate = closedDate,\
                 parent = DHIS2Ref(id = parentId), attributes = attributes)
 
 
     @classmethod
-    def to_org_unit_group_obj(cls, locations, group_name, id):
+    def to_org_unit_group_obj(cls, locations, group_name, id, **kwargs):
         # **kwargs --> group_name
         organisationUnits = []
         exclPaternName = '[Ff]unding.*'
