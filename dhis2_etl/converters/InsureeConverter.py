@@ -18,7 +18,7 @@ salt = GeneralConfiguration.get_salt()
 class InsureeConverter(BaseDHIS2Converter):
 
     @classmethod
-    def to_tei_objs(cls, objs,  event = False):
+    def to_tei_objs(cls, objs,  event = False, **kwargs):
         #event  = kwargs.get('event',False)
         trackedEntityInstances = []
         for insuree in objs:
@@ -26,7 +26,7 @@ class InsureeConverter(BaseDHIS2Converter):
         return TrackedEntityInstanceBundle(trackedEntityInstances = trackedEntityInstances)
 
     @classmethod
-    def to_tei_obj(cls, insuree,  event = False):
+    def to_tei_obj(cls, insuree,  event = False, **kwargs):
         #event  = kwargs.get('event',False)
         if insuree is not None and insuree.uuid is not None  and insuree.family is not None and insuree.family.uuid is not None:
             attributes = []
@@ -66,7 +66,7 @@ class InsureeConverter(BaseDHIS2Converter):
 
  
     @classmethod
-    def to_enrollment_objs(cls, insurees,  event = False ):
+    def to_enrollment_objs(cls, insurees,  event = False , **kwargs):
         #event  = kwargs.get('event',False)
         Enrollments = []
         for insuree in insurees:
@@ -74,7 +74,7 @@ class InsureeConverter(BaseDHIS2Converter):
         return EnrollmentBundle(enrollments = Enrollments)
 
     @classmethod   
-    def to_enrollment_obj(cls, insuree, event = False):
+    def to_enrollment_obj(cls, insuree, event = False, **kwargs):
         uid = build_dhis2_id(insuree.uuid)
         #event  = kwargs.get('event',False)
         attributes = []
@@ -154,31 +154,31 @@ class InsureeConverter(BaseDHIS2Converter):
         
 
     @classmethod
-    def to_event_obj(cls, insureepolicy, insuree = None):
+    def to_event_obj(cls, insureepolicy, insuree = None, **kwargs):
         #insuree  = kwargs.get('insuree',False)
         stageDE = insureeProgram['stages']["policy"]['dataElements']
-        dataValue = []
+        dataValues = []
         if is_valid_uid(stageDE['policyStage']):
-            dataValue.append(EventDataValue(dataElement = stageDE['policyStage'],\
+            dataValues.append(EventDataValue(dataElement = stageDE['policyStage'],\
                 value = GeneralConfiguration.get_policy_state_code(insureepolicy.policy.stage)))
         if is_valid_uid(stageDE['policyStatus']):
-            dataValue.append(EventDataValue(dataElement = stageDE['policyStatus'],\
+            dataValues.append(EventDataValue(dataElement = stageDE['policyStatus'],\
                 value = GeneralConfiguration.get_policy_status_code(insureepolicy.policy.status)))
         if is_valid_uid(stageDE['product']):
-            dataValue.append(EventDataValue(dataElement = stageDE['product'],\
-                value = insureepolicy.policy.product.code + " - " + insureepolicy.policy.product.name))
+            dataValues.append(EventDataValue(dataElement = stageDE['product'],\
+                value = insureepolicy.policy.product_id))
         if is_valid_uid(stageDE['PolicyValue']):
-            dataValue.append(EventDataValue(dataElement = stageDE['PolicyValue'], value = insureepolicy.policy.value if insureepolicy.policy.value != None else 0))
+            dataValues.append(EventDataValue(dataElement = stageDE['PolicyValue'], value = insureepolicy.policy.value if insureepolicy.policy.value != None else 0))
         if is_valid_uid(stageDE['expirityDate']):
-            dataValue.append(EventDataValue(dataElement = stageDE['expirityDate'], value = toDateStr(insureepolicy.policy.expiry_date)))
-        #event.dataValue.append(EventDataValue(dataElement = stageDE['policyId'],build_dhis2_id(insureepolicy.policy.uuid)))
+            dataValues.append(EventDataValue(dataElement = stageDE['expirityDate'], value = toDateStr(insureepolicy.policy.expiry_date)))
+        #event.dataValues.append(EventDataValue(dataElement = stageDE['policyId'],build_dhis2_id(insureepolicy.policy.uuid)))
         if  insuree is None:
             return Event(\
             program = insureeProgram['id'],\
             orgUnit = build_dhis2_id(insureepolicy.insuree.family.location.uuid),\
             eventDate = toDateStr(insureepolicy.enrollment_date), \
             status = "COMPLETED",\
-            dataValue = dataValue,\
+            dataValues = dataValues,\
             trackedEntityInstance = build_dhis2_id(insureepolicy.insuree.uuid),\
             programStage = insureeProgram['stages']["policy"]['id'])
         else:
@@ -187,7 +187,7 @@ class InsureeConverter(BaseDHIS2Converter):
             orgUnit = build_dhis2_id(insuree.family.location.uuid),\
             eventDate = toDateStr(insureepolicy.enrollment_date), \
             status = "COMPLETED",\
-            dataValue = dataValue,\
+            dataValues = dataValues,\
             trackedEntityInstance = build_dhis2_id(insuree.uuid),\
             programStage = insureeProgram['stages']["policy"]['id'])
 
@@ -195,7 +195,7 @@ class InsureeConverter(BaseDHIS2Converter):
 
 
     @classmethod
-    def to_event_objs(cls, insureepolicies):
+    def to_event_objs(cls, insureepolicies, **kwargs):
         events = [] 
         for insureepolicy in insureepolicies:
             events.append(cls.to_event_obj(insureepolicy))

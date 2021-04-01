@@ -20,13 +20,13 @@ class OptionSetConverter(BaseDHIS2Converter):
 
 
     @classmethod
-    def to_optionsets_bundled(cls, objs, optiontSetName = "",  code = 'id', valueType = ValueType.text):
+    def to_optionsets_bundled(cls, objs, optiontSetName = "",  code = 'id', valueType = ValueType.text, **kwargs):
         return OptionSetBundle(\
             optionSets = [cls.to_optionsets_obj(objs = objs, optiontSetName = optiontSetName\
                 , code = code, valueType = valueType)])
 
     @classmethod
-    def to_optionsets_obj(cls, objs, optiontSetName = "",  valueType = ValueType.text, code = 'id'):
+    def to_optionsets_obj(cls, objs, optiontSetName = "",  valueType = ValueType.text, code = 'id', **kwargs):
         #event  = kwargs.get('event',False)
         options = []
         for option in objs:
@@ -38,7 +38,7 @@ class OptionSetConverter(BaseDHIS2Converter):
 
     @classmethod
     def to_option_obj(cls, option, optiontSetName = "",  att1 = "name", att2 = "",\
-         code = 'id'):
+         code = 'id', **kwargs):
         if option is not None and hasattr(option, code) and  hasattr(option, att1):
             value = getattr(option, att1)
             if att2 != "":
@@ -54,7 +54,7 @@ class OptionSetConverter(BaseDHIS2Converter):
 
     @classmethod
     def to_option_objs(cls, objs, optiontSetName = "",  att1 = "name", att2 = "",\
-        code = 'id'):   
+        code = 'id', **kwargs):   
         options = []
         for option in objs:
             options.append(cls.to_option_obj(option  = option,\

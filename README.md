@@ -1,18 +1,27 @@
-# openimis-be-dhis2_py UNDER DEVELOPMENT: NOT working YEt
+# openimis-be-dhis2_py
 
 openIMIS Module to push data into DHIS2
 
 
+This module will push metadata
+- Location as OrgUnit
+- Health facility as OrgUnit
+- gender as optionset
+- profession as optionset
+- groupType as optionset
+- education as optionset
+- product as optionset
+- diagnosis as optionset
 
 This module will push data in two programs
-- Family-insuree [enrollment] Policy [event]
-- Claims 
+- Family-insuree [enrollment] Policy [program registration / event]
+- Claims (claim details[program registration / event], Claims Services[event], Claim Items[event])
 
 ## Getting started
 
-1. install DHIS2 2.33 or 2.34
+1. install DHIS2 2.33 or 2.34 or 2.35 
 
-1. get the metadata for the github repository https://github.com/openimis/openimis-dhis2-configuration_json
+1. get the metadata in the Script directory and take the right one for your DHIS2 instance
 
 1. Import the metadata in DHIS2 (http://<<dhis2Address>>/dhis-web-importexport/index.html#/import/metadata)
     - JSON Format
@@ -23,19 +32,48 @@ This module will push data in two programs
     - Atomic mode all
     - Merge mode
 
-1. Create the location json (see ./Script/CreateDHIS2Location.sql)
 
-1. Import the location json dhis2 (http://<<dhis2Address>>/dhis-web-importexport/index.html#/import/metadata)
+1. Push the optionset http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=optionset&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+
+1. Push the location http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=orgunit&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
 
 1. Assign name to the level in DHIS2 (http://<<dhis2Address>>/dhis-web-maintenance/index.html#/list/organisationUnitSection/organisationUnitLevel)
 
-1. Allow the family-insuree project to collect data on level 5
+1. Allow the family-insuree program to collect data on village: 
+  - Go at http://<<dhis2Address>>/dhis-web-maintenance/index.html#/edit/programSection/program/IR5BiEXrBD7
+  - in access tab, on orgUnit Group, select "Village"
+  - Click on "Select" on the orgUnit group line
+  - click on save for the program
 
-1. Allow the claim project to collect data on level 4 (Ideally we should have an OrgUniut Group for HF)
+1. Allow the family-insuree program to collect data on healthfacilities: 
+  - Go at http://<<dhis2Address>>/dhis-web-maintenance/index.html#/edit/programSection/program/vPjOO7Jl6jC
+  - in access tab, on orgUnit Group, select "HealthCenter"
+  - Click on "Select" on the orgUnit group line
+  - on orgUnit Group, select "Dispensary"
+  - Click on "Select" on the orgUnit group line
+  - on orgUnit Group, select "Hospitals"
+  - Click on "Select" on the orgUnit group line
+  - click on save for the program
 
 1. You are now ready to start the module
+  - to push insuree and Policies in the same time (good for first load) : http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=insureepolicies&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+    - to push insuree: http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=insuree&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+    - to push policy: http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=policy&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+    - to push claim: http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=claim&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+    - to push insurees, then policies, then claims: http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=all&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
 
+## development to do
 
+- use django scheduler instead of view for triggering the jobs
+- push the metadata along option set push
+- harmonising Service and Items attributes and Data elements
+- add perms and security if the view triggering the job is kept
+- harmonising usage of insuranceID, InsureeNumber, InsureeID in DHIS2
+- connection error management and DHIS2 answers parsing/logging (loggin only what matters and not including the 99% succesful)
+- remove not used optionset
+- add orgUnit in programs
+
+ 
 -------------------------------------------------------------------------------------
 Hisp india documetation for the programs
 -------------------------------------------------------------------------------------
@@ -44,7 +82,7 @@ Hisp india documetation for the programs
 
 ![](RackMultipart20201210-4-1agjxdr_html_8337311abc75b3be.gif) ![](RackMultipart20201210-4-1agjxdr_html_76e5e5e64c8f76d2.gif) ![](RackMultipart20201210-4-1agjxdr_html_f0378cec9a7f81b4.gif)
 
-**Version 2**
+**Version 2.1**
 
 # System Design Document
 
@@ -96,7 +134,7 @@ Hisp india documetation for the programs
 | --- | --- | --- |
 | Version 1 | February 6th 2020 | - |
 | Version 2 | May 26th 2020 | Updated Claims Management Program Design <br/>- Claim – Service program Stage<br/>- Claim – Item program Stage |
-
+| Version 2.1 | May 26th 2020 | Updated based on the django dhis2 ETL |
 
 # **Executive Summary**
 
@@ -198,8 +236,8 @@ Below are the key attributes/data elements captured in the Insuree Program conce
 || Gender | TEXT | Male, Female, Other |
 || Marital status | TEXT | Single, Married, Divorced, Widowed, Not Specified |
 || First service point | TEXT ||
-|| Education | TEXT | Nursery, Primary School, Secondary School, University, Post Graduate Studies, PhD, Others |
-|| Profession | TEXT | Household, Employed, Self-Employed, Others |
+|| Education | TEXT | Options depends on openIMIS database |
+|| Profession | TEXT | Options depends on openIMIS database |
 
 1. **Policy Details**
 
@@ -212,10 +250,10 @@ Below are the data elements captured in the Policy Details program stage concern
 | **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- | --- |
 | **Family/Insuree** | Policy Details | Policy ID | TEXT ||
-||| Product | TEXT | SHSDC-Non Poor, SHSDC FCHV, HIB-3500 |
+||| Product | TEXT | Options depends on openIMIS database |
 ||| Policy Stage | TEXT | New Policy, Renewed Policy |
 ||| Policy Status | TEXT | Idle, Active, Suspended, Expired |
-||| Policy value | ??? |  |
+||| Policy value | NUMBER |  |
 ||| Policy expirity  date | DATE |  |
 ### 3.2.2 Claims Management Program
 
@@ -235,12 +273,12 @@ Below are the key attributes captured in the Claims Management Program concernin
 | --- | --- | --- | --- |
 | **Claims Management** | Claim administrator | TEXT | |
 || Claim number | NUMBER | |
-|| Primary Diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-|| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-|| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-|| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-|| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-|| Visit type | TEXT | OPD, IPD, Emergency, Referral,Others |
+|| Primary Diagnosis | TEXT | Options depends on openIMIS database |
+|| Secondary diagnosis | TEXT | Options depends on openIMIS database |
+|| Secondary diagnosis | TEXT | Options depends on openIMIS database |
+|| Secondary diagnosis | TEXT | Options depends on openIMIS database |
+|| Secondary diagnosis | TEXT | Options depends on openIMIS database |
+|| Visit type | TEXT | Emergency, Referral,Others |
 
 1. **Claim Details**
 

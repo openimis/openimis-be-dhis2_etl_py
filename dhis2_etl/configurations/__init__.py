@@ -9,7 +9,7 @@ class BaseConfiguration(object):  # pragma: no cover
 
     @classmethod
     def get_config(cls):
-        module_name = "dhis2_pusher"
+        module_name = "dhis2_etl"
         return sys.modules[module_name]
 
 from .generalConfiguration import GeneralConfiguration
