@@ -4,7 +4,7 @@ import logging
 
 from .configurations import ModuleConfiguration
 
-MODULE_NAME = "dhis2_pusher"
+MODULE_NAME = "dhis2_etl"
 
 logger = logging.getLogger(__name__)
 

@@ -33,9 +33,9 @@ This module will push data in two programs
     - Merge mode
 
 
-1. Push the optionset http://<<openIMISAddress>>/iapi/dhis2_pusher/StartThreadTask?scope=optionset&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+1. Push the optionset http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=optionset&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
 
-1. Push the location http://<<openIMISAddress>>/iapi/dhis2_pusher/StartThreadTask?scope=orgunit&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+1. Push the location http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=orgunit&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
 
 1. Assign name to the level in DHIS2 (http://<<dhis2Address>>/dhis-web-maintenance/index.html#/list/organisationUnitSection/organisationUnitLevel)
 
@@ -56,11 +56,11 @@ This module will push data in two programs
   - click on save for the program
 
 1. You are now ready to start the module
-  - to push insuree and Policies in the same time (good for first load) : http://<<openIMISAddress>>/iapi/dhis2_pusher/StartThreadTask?scope=insureepolicies&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
-    - to push insuree: http://<<openIMISAddress>>/iapi/dhis2_pusher/StartThreadTask?scope=insuree&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
-    - to push policy: http://<<openIMISAddress>>/iapi/dhis2_pusher/StartThreadTask?scope=policy&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
-    - to push claim: http://<<openIMISAddress>>/iapi/dhis2_pusher/StartThreadTask?scope=claim&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
-    - to push insurees, then policies, then claims: http://<<openIMISAddress>>/iapi/dhis2_pusher/StartThreadTask?scope=all&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+  - to push insuree and Policies in the same time (good for first load) : http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=insureepolicies&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+    - to push insuree: http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=insuree&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+    - to push policy: http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=policy&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+    - to push claim: http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=claim&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+    - to push insurees, then policies, then claims: http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=all&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
 
 ## development to do
 
