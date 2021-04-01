@@ -24,8 +24,8 @@ page_size = int(GeneralConfiguration.get_default_page_size())
 path = GeneralConfiguration.get_json_out_path()
 
 def printPaginated(ressource,queryset, convertor, **kwargs):
-
-    p = Paginator(queryset, page_size)
+    local_page_size = kwargs.get('page_size',page_size)
+    p = Paginator(queryset, local_page_size)
     pages = p.num_pages
     curPage = 1
     timestamp = datetime.datetime.now().strftime("%d%m%Y%H%M%S.%f")
@@ -39,7 +39,8 @@ def printPaginated(ressource,queryset, convertor, **kwargs):
         curPage+=1
 
 def postPaginatedThreaded(ressource,queryset, convertor, **kwargs ):
-    p = Paginator(queryset, page_size)
+    local_page_size = kwargs.get('page_size',page_size)
+    p = Paginator(queryset, local_page_size)
     pages = p.num_pages
     curPage = 1
     futures = []
@@ -56,7 +57,8 @@ def postPaginatedThreaded(ressource,queryset, convertor, **kwargs ):
     return responses
 
 def postPaginated(ressource,queryset, convertor, **kwargs ):
-    p = Paginator(queryset, page_size)
+    local_page_size = kwargs.get('page_size',page_size)
+    p = Paginator(queryset, local_page_size)
     pages = p.num_pages
     curPage = 1
     responses = []
@@ -149,13 +151,11 @@ def toDateStr(dateIn):
 
 
 def build_dhis2_id(uuid , salt = ""):
-    regex = re.compile("^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}$")
-   
-    tmp_uuid = ""
-    if (regex.match(str(uuid))):
-         #remove the "-" if any
+    regex = re.compile("^[a-fA-F0-9\-]{32}$")
+    tmp_uuid = ''
+    if isinstance(uuid, str):   
         tmp_uuid = uuid.replace('-','')
-    else:
+    if (not regex.match(str(tmp_uuid))):
          # in case the table doesn't have uuid but id only
         # the salt is important becasue the DHIS2 capture app doesn't support
         # 2x the same id for metadata, event if it's from different kind
