@@ -69,6 +69,10 @@ This module will push data in two programs
 - harmonising Service and Items attributes and Data elements
 - add perms and security if the view triggering the job is kept
 - harmonising usage of insuranceID, InsureeNumber, InsureeID in DHIS2
+- connection error management and DHIS2 answers parsing/logging (loggin only what matters and not including the 99% succesful)
+- remove not used optionset
+- add orgUnit in programs
+
  
 -------------------------------------------------------------------------------------
 Hisp india documetation for the programs
@@ -78,7 +82,7 @@ Hisp india documetation for the programs
 
 ![](RackMultipart20201210-4-1agjxdr_html_8337311abc75b3be.gif) ![](RackMultipart20201210-4-1agjxdr_html_76e5e5e64c8f76d2.gif) ![](RackMultipart20201210-4-1agjxdr_html_f0378cec9a7f81b4.gif)
 
-**Version 2**
+**Version 2.1**
 
 # System Design Document
 
@@ -130,7 +134,7 @@ Hisp india documetation for the programs
 | --- | --- | --- |
 | Version 1 | February 6th 2020 | - |
 | Version 2 | May 26th 2020 | Updated Claims Management Program Design <br/>- Claim – Service program Stage<br/>- Claim – Item program Stage |
-
+| Version 2.1 | May 26th 2020 | Updated based on the django dhis2 ETL |
 
 # **Executive Summary**
 
@@ -232,8 +236,8 @@ Below are the key attributes/data elements captured in the Insuree Program conce
 || Gender | TEXT | Male, Female, Other |
 || Marital status | TEXT | Single, Married, Divorced, Widowed, Not Specified |
 || First service point | TEXT ||
-|| Education | TEXT | Nursery, Primary School, Secondary School, University, Post Graduate Studies, PhD, Others |
-|| Profession | TEXT | Household, Employed, Self-Employed, Others |
+|| Education | TEXT | Options depends on openIMIS database |
+|| Profession | TEXT | Options depends on openIMIS database |
 
 1. **Policy Details**
 
@@ -246,10 +250,10 @@ Below are the data elements captured in the Policy Details program stage concern
 | **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- | --- |
 | **Family/Insuree** | Policy Details | Policy ID | TEXT ||
-||| Product | TEXT | List of all products available in openIMIS |
+||| Product | TEXT | Options depends on openIMIS database |
 ||| Policy Stage | TEXT | New Policy, Renewed Policy |
 ||| Policy Status | TEXT | Idle, Active, Suspended, Expired |
-||| Policy value | ??? |  |
+||| Policy value | NUMBER |  |
 ||| Policy expirity  date | DATE |  |
 ### 3.2.2 Claims Management Program
 
@@ -269,11 +273,11 @@ Below are the key attributes captured in the Claims Management Program concernin
 | --- | --- | --- | --- |
 | **Claims Management** | Claim administrator | TEXT | |
 || Claim number | NUMBER | |
-|| Primary Diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-|| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-|| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-|| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
-|| Secondary diagnosis | TEXT | List of all ICD10 diagnosis available in openIMIS |
+|| Primary Diagnosis | TEXT | Options depends on openIMIS database |
+|| Secondary diagnosis | TEXT | Options depends on openIMIS database |
+|| Secondary diagnosis | TEXT | Options depends on openIMIS database |
+|| Secondary diagnosis | TEXT | Options depends on openIMIS database |
+|| Secondary diagnosis | TEXT | Options depends on openIMIS database |
 || Visit type | TEXT | Emergency, Referral,Others |
 
 1. **Claim Details**
