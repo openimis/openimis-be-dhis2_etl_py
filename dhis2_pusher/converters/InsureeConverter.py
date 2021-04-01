@@ -18,7 +18,7 @@ salt = GeneralConfiguration.get_salt()
 class InsureeConverter(BaseDHIS2Converter):
 
     @classmethod
-    def to_tei_objs(cls, objs,  event = False):
+    def to_tei_objs(cls, objs,  event = False, **kwargs):
         #event  = kwargs.get('event',False)
         trackedEntityInstances = []
         for insuree in objs:
@@ -26,7 +26,7 @@ class InsureeConverter(BaseDHIS2Converter):
         return TrackedEntityInstanceBundle(trackedEntityInstances = trackedEntityInstances)
 
     @classmethod
-    def to_tei_obj(cls, insuree,  event = False):
+    def to_tei_obj(cls, insuree,  event = False, **kwargs):
         #event  = kwargs.get('event',False)
         if insuree is not None and insuree.uuid is not None  and insuree.family is not None and insuree.family.uuid is not None:
             attributes = []
@@ -66,7 +66,7 @@ class InsureeConverter(BaseDHIS2Converter):
 
  
     @classmethod
-    def to_enrollment_objs(cls, insurees,  event = False ):
+    def to_enrollment_objs(cls, insurees,  event = False , **kwargs):
         #event  = kwargs.get('event',False)
         Enrollments = []
         for insuree in insurees:
@@ -74,7 +74,7 @@ class InsureeConverter(BaseDHIS2Converter):
         return EnrollmentBundle(enrollments = Enrollments)
 
     @classmethod   
-    def to_enrollment_obj(cls, insuree, event = False):
+    def to_enrollment_obj(cls, insuree, event = False, **kwargs):
         uid = build_dhis2_id(insuree.uuid)
         #event  = kwargs.get('event',False)
         attributes = []
@@ -154,7 +154,7 @@ class InsureeConverter(BaseDHIS2Converter):
         
 
     @classmethod
-    def to_event_obj(cls, insureepolicy, insuree = None):
+    def to_event_obj(cls, insureepolicy, insuree = None, **kwargs):
         #insuree  = kwargs.get('insuree',False)
         stageDE = insureeProgram['stages']["policy"]['dataElements']
         dataValue = []
@@ -195,7 +195,7 @@ class InsureeConverter(BaseDHIS2Converter):
 
 
     @classmethod
-    def to_event_objs(cls, insureepolicies):
+    def to_event_objs(cls, insureepolicies, **kwargs):
         events = [] 
         for insureepolicy in insureepolicies:
             events.append(cls.to_event_obj(insureepolicy))
