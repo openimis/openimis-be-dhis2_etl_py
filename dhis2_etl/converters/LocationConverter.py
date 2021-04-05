@@ -21,10 +21,10 @@ class LocationConverter(BaseDHIS2Converter):
     @classmethod
     def to_org_unit_objs(cls, objs,  **kwargs):
         organisationUnits = []
-        exclPaternName = '[Ff]unding.*'
+        #exclPaternName = '[Ff]unding.*'
         for location in objs:
-            if not re.match(exclPaternName, location.name):
-                organisationUnits.append(cls.to_org_unit_obj(location))
+            #if not re.match(exclPaternName, location.name):
+            organisationUnits.append(cls.to_org_unit_obj(location))
         return OrganisationUnitBundle(organisationUnits = organisationUnits)
  
     @classmethod
@@ -50,11 +50,11 @@ class LocationConverter(BaseDHIS2Converter):
     def to_org_unit_group_obj(cls, locations, group_name, id, **kwargs):
         # **kwargs --> group_name
         organisationUnits = []
-        exclPaternName = '[Ff]unding.*'
+        # exclPaternName = '[Ff]unding.*'
         if locations is not None:
             for location in locations:
-                if not re.match(exclPaternName, location.name):
-                    organisationUnits.append(DHIS2Ref(id = build_dhis2_id(location.uuid) ))
+                #if not re.match(exclPaternName, location.name):
+                organisationUnits.append(DHIS2Ref(id = build_dhis2_id(location.uuid) ))
             return OrganisationUnitGroupBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, id=id, organisationUnits = organisationUnits)])#  DeltaDHIS2Ref( additions = organisationUnits ))])
         else:
             return OrganisationUnitGroupBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, id=id)])
