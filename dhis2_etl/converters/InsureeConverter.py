@@ -88,7 +88,7 @@ class InsureeConverter(BaseDHIS2Converter):
         # add poverty attributes
         if insuree.family.poverty is not None and is_valid_uid(insureeProgram['attributes']['poverty']):
             attributes.append(AttributeValue(attribute = insureeProgram['attributes']['poverty'],\
-                value = insuree.family.poverty)) 
+                value = GeneralConfiguration.get_boolean_code(insuree.family.poverty))) 
         
         # "insuranceId":"g54R38QNwEi", # Salted data for privay reason
         if insuree.chf_id is not None and is_valid_uid(insureeProgram['attributes']['insuranceId']):
