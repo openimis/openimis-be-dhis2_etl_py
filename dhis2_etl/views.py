@@ -30,30 +30,35 @@ def checkThreadTask(request,id):
 def SyncDHIS2(startDate, stopDate, scope):
     logger.debug("Received task")
     responses = []
-    ##task = ThreadTask.objects.get(pk=id)
+    ## TEI and Program enrollment and event
+    #########################################
+    ## TODO policy only for renewalm insureePolicy for new
     if scope == "all" or scope == "insuree":
         logger.debug("start Insuree sync")
         insureeResponse = syncInsuree(startDate,stopDate)
+    if scope == "all" or scope == "policy":
+        logger.debug("start Policy sync")
+        policyResponse = syncPolicy(startDate,stopDate)
+    if scope == "all" or scope == "claim":
+        logger.debug("start Claim sync")
+        claimResponse = syncClaim(startDate,stopDate)
+    # OTHER program sync
+    ####################
+    # manual enrollment to policy program
     if scope == 'enroll':
         logger.debug("start Insuree enroll")
         insureeResponse = enrollInsuree(startDate,stopDate)
         #responses.insert(insureeResponse)
-    if scope == "all" or scope == "policy":
-        logger.debug("start Policy sync")
-        policyResponse = syncPolicy(startDate,stopDate)
-
-
-        #responses.insert(policyResponse)
-    if scope == "all" or scope == "claim":
-        logger.debug("start Claim sync")
-        claimResponse = syncClaim(startDate,stopDate)
- 
-
+    # syncInsuree and Policiy event
     if  scope == "insureepolicies":
         logger.debug("start Insuree & policy sync")
         insureePolicyResponse = syncInsureePolicy(startDate,stopDate)
 
-
+    if  scope == "insureepoliciesclaims":
+        logger.debug("start Insuree & policy & claim sync")
+        insureePolicyclaimResponse = syncInsureePolicyClaim(startDate,stopDate)
+    # ORGUNIT 
+    #########
     if  scope == "orgunit":
         logger.debug("start orgUnit sync")
         syncRegionResponse = syncRegion(startDate,stopDate)
@@ -67,7 +72,7 @@ def SyncDHIS2(startDate, stopDate, scope):
     # Optionset
     ###########
     if  scope == "optionset" :
-        logger.debug("start OptionSets sync")
+            logger.debug("start OptionSets sync")
     if  scope == "optionset" or scope == "product":
         syncProductResponse = syncProduct(startDate,stopDate)
     if  scope == "optionset" or scope == "gender":
