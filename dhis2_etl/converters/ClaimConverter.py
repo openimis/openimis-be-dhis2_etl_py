@@ -166,9 +166,9 @@ class ClaimConverter(BaseDHIS2Converter):
         stageDE = claimProgram['stages']['items']['dataElements']
         dataValues = []
         #"item":"VFWCqLKPuSd",
-        if is_valid_uid(stageDE['item']) and item.item is not None:
+        if is_valid_uid(stageDE['item']) and item.item_id is not None:
             dataValues.append(EventDataValue(dataElement = stageDE['item'], \
-                    value = item.item.code + " - " + item.item.name))
+                    value = item.item_id))
         #"quantity":"xBdXypAmk7V", # 
         if is_valid_uid(stageDE['quantity']) and item.qty_provided is not None:
             dataValues.append(EventDataValue(dataElement = stageDE['quantity'], \
@@ -224,9 +224,9 @@ class ClaimConverter(BaseDHIS2Converter):
             dataValues.append(EventDataValue(dataElement = stageDE['valuatedAmount'], \
                     value = service.remunerated_amount ))
         #"service":
-        if is_valid_uid(stageDE['service']) and service.service is not None:
+        if is_valid_uid(stageDE['service']) and service.service_id is not None:
             dataValues.append(EventDataValue(dataElement = stageDE['service'], \
-                    value = service.service.code + " - " + service.service.name))
+                    value = service.service_id))
         #"quantity":,
         if is_valid_uid(stageDE['quantity']) and service.qty_provided is not None:
             dataValues.append(EventDataValue(dataElement = stageDE['quantity'], \

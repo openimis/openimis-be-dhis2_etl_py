@@ -35,8 +35,8 @@ def syncClaim(startDate,stopDate):
             .select_related('insuree')\
             .select_related('admin')\
             .select_related('health_facility')\
-            .prefetch_related(Prefetch('items', queryset=ClaimItem.objects.filter(validity_to__isnull=True).select_related('item')))\
-            .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True).select_related('service')))\
+            .prefetch_related(Prefetch('items', queryset=ClaimItem.objects.filter(validity_to__isnull=True)))\
+            .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True)))\
             .order_by('validity_from')
     # get the insuree matching the search
     return postMethod('enrollments',claims, ClaimConverter.to_enrollment_objs, event = True)
