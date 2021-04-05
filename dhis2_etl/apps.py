@@ -29,7 +29,9 @@ DEFAULT_CFG = {
         "groupType" : "iyfsslkBi1G",
         "education" : "EiSeDNXxNjB",
         "product" : "kCdTMGqxLGE",
-        "diagnosis" : "Gg8QVWm9zPh"
+        "diagnosis" : "Gg8QVWm9zPh",
+        "item": "V2nNlKHYNHE",
+        "service": "FxKDNqNDuri"
     }, "visitTypeCodes" : {
         "O" : "Other",
         "R" : "Referal",

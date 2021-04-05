@@ -64,13 +64,25 @@ def SyncDHIS2(startDate, stopDate, scope):
         syncDispensaryResponse = syncDispensary(startDate,stopDate)
         syncHealthCenterResponse = syncHealthCenter(startDate,stopDate)
 
-    if  scope == "optionset":
+    # Optionset
+    ###########
+    if  scope == "optionset" :
         logger.debug("start OptionSets sync")
+    if  scope == "optionset" or scope == "product":
         syncProductResponse = syncProduct(startDate,stopDate)
+    if  scope == "optionset" or scope == "gender":
         syncGenderResponse = syncGender(startDate,stopDate)
+    if  scope == "optionset" or scope == "profession":
         syncProfessionResponse = syncProfession(startDate,stopDate)
+    if  scope == "optionset" or scope == "eduction":
         syncEducationResponse = syncEducation(startDate,stopDate)
+    if  scope == "optionset" or scope == "grouptype":
         syncGroupTypeResponse = syncGroupType(startDate,stopDate)
+    if  scope == "optionset" or scope == "diagnosis":
         syncDiagnosisResponse = syncDiagnosis(startDate,stopDate)
+    if  scope == "optionset" or scope == "item":
+        syncItemResponse =  syncItem(startDate,stopDate)
+    if  scope == "optionset" or scope == "service":
+        syncServiceResponse =  syncService(startDate,stopDate)
     logger.debug("Finishing task")
 
