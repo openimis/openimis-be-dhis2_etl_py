@@ -48,7 +48,7 @@ class InsureeConverter(BaseDHIS2Converter):
                 attributes.append(AttributeValue(attribute = insureeProgram['attributes']['firstName'],\
                     value = insuree.other_names )) 
             # "lastName"
-            if insuree.other_names is not None and is_valid_uid(insureeProgram['attributes']['lastName']):
+            if insuree.last_name is not None and is_valid_uid(insureeProgram['attributes']['lastName']):
                 attributes.append(AttributeValue(attribute = insureeProgram['attributes']['lastName'],\
                     value = insuree.last_name )) 
             orgUnit = build_dhis2_id(insuree.family.location.uuid)
@@ -78,7 +78,7 @@ class InsureeConverter(BaseDHIS2Converter):
         uid = build_dhis2_id(insuree.uuid)
         #event  = kwargs.get('event',False)
         attributes = []
-        if insuree.other_names is not None and is_valid_uid(insureeProgram['attributes']['lastName']):
+        if insuree.last_name is not None and is_valid_uid(insureeProgram['attributes']['lastName']):
             attributes.append(AttributeValue(attribute = insureeProgram['attributes']['lastName'],\
                 value = insuree.last_name )) 
         # add profession attributes
