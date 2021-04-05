@@ -152,9 +152,7 @@ def toDateStr(dateIn):
 
 def build_dhis2_id(uuid , salt = ""):
     regex = re.compile("^[a-fA-F0-9\-]{32}$")
-    tmp_uuid = ''
-    if isinstance(uuid, str):   
-        tmp_uuid = uuid.replace('-','')
+    tmp_uuid = str(uuid).replace('-','')
     if (not regex.match(str(tmp_uuid))):
          # in case the table doesn't have uuid but id only
         # the salt is important becasue the DHIS2 capture app doesn't support
