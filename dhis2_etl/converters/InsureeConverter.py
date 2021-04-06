@@ -19,11 +19,11 @@ salt = GeneralConfiguration.get_salt()
 class InsureeConverter(BaseDHIS2Converter):
 
     @classmethod
-    def to_tei_objs(cls, objs,  event = False, **kwargs):
+    def to_tei_objs(cls, objs,  event = False, claim = False, **kwargs):
         #event  = kwargs.get('event',False)
         trackedEntityInstances = []
         for insuree in objs:
-            trackedEntityInstances.append(cls.to_tei_obj(insuree, event=event))
+            trackedEntityInstances.append(cls.to_tei_obj(insuree, event = event, claim = claim))
         return TrackedEntityInstanceBundle(trackedEntityInstances = trackedEntityInstances)
 
     @classmethod
@@ -54,15 +54,16 @@ class InsureeConverter(BaseDHIS2Converter):
                     value = insuree.last_name )) 
             orgUnit = build_dhis2_id(insuree.family.location.uuid)
             trackedEntity = build_dhis2_id(insuree.uuid)
-            enrollment = cls.to_enrollment_obj(insuree, event=event)
+            enrollments = []
+            enrollments.append(cls.to_enrollment_obj(insuree, event=event))
             if claim is True:
-                for claim in insuree.claim_set:
-                    enrollment.append(ClaimConverter.to_enrollment_obj(claim, event = event))
+                for claim in insuree.claim_set.all():
+                    enrollments.append(ClaimConverter.to_enrollment_obj(claim, event = event))
             return TrackedEntityInstance(\
                 trackedEntityType = insureeProgram['teiType'],\
                 trackedEntityInstance = trackedEntity,\
                 orgUnit = orgUnit,\
-                enrollments= [enrollment],\
+                enrollments= enrollments,\
                 attributes = attributes)
              
         else:
@@ -151,7 +152,7 @@ class InsureeConverter(BaseDHIS2Converter):
         events = []
         if event:
             for insureepolicy in insuree.insuree_policies.all():
-                events.append(cls.to_event_obj(insureepolicy,  insuree))
+                events.append(cls.to_event_obj(insureepolicy, insuree = insuree))
         return Enrollment( enrollment = uid, trackedEntityInstance = uid, incidentDate = toDateStr(insuree.validity_from), enrollmentDate = toDateStr(insuree.validity_from),\
               orgUnit = build_dhis2_id(insuree.family.location.uuid), status = "ACTIVE", program = insureeProgram['id'],\
                   events = events, attributes = attributes )
