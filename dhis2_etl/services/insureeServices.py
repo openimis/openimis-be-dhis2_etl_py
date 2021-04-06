@@ -96,9 +96,8 @@ def syncPolicy(startDate,stopDate):
             .select_related('insuree')\
             .select_related('policy')\
             .select_related('insuree__family__location')\
-            .select_related('policy__product')\
-            .only('insuree__family__location__uuid','policy__stage','policy__status','policy__value','policy__product__code','insuree__uuid',\
-                'policy__product__name','policy__expiry_date', 'enrollment_date')
+            .only('policy__stage','policy__status','policy__value','policy__product_id',\
+                'policy__expiry_date', 'enrollment_date','id','insuree_id')
     return postMethod('events',policies, InsureeConverter.to_event_objs)
 
 def syncInsureePolicyClaim(startDate,stopDate):
@@ -124,8 +123,8 @@ def syncInsureePolicyClaim(startDate,stopDate):
             .prefetch_related(Prefetch('insuree_policies', queryset=InsureePolicy.objects.filter(validity_to__isnull=True)\
                     .filter(expiry_date__isnull=False)\
                     .select_related('policy')\
-                    .select_related('policy__product').only('policy__stage','policy__status','policy__value','policy__product__code',\
-                'policy__product__name','policy__expiry_date', 'enrollment_date','id','insuree_id')\
+                    .only('policy__stage','policy__status','policy__value','policy__product_id',\
+                'policy__expiry_date', 'enrollment_date','id','insuree_id')\
                     .order_by('validity_from')))\
             .prefetch_related(Prefetch('claim_set', Claim.objects.filter(validity_to__isnull=True)\
                 .filter(validity_from__lte=stopDate)\
