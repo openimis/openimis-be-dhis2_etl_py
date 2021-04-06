@@ -117,22 +117,22 @@ def syncItem(startDate,stopDate):
         att1 = 'code',\
         att2 = 'name',\
         code = 'id')
-    res = postMethod('metadata', diagnosis, OptionSetConverter.to_optionsets_bundled, \
+    res = postMethod('metadata', items, OptionSetConverter.to_optionsets_bundled, \
         optiontSetName = 'item',\
         code = 'id')
     return res
 
     
 def syncService(startDate,stopDate):
-    service = Service.objects.filter(legacy_id__isnull=True)\
+    services = Service.objects.filter(legacy_id__isnull=True)\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)
-    res = postMethod('metadata', diagnosis, OptionSetConverter.to_option_objs, \
+    res = postMethod('metadata', services, OptionSetConverter.to_option_objs, \
         optiontSetName = 'service',\
         att1 = 'code',\
         att2 = 'name',\
         code = 'id')
-    res = postMethod('metadata', diagnosis, OptionSetConverter.to_optionsets_bundled, \
+    res = postMethod('metadata', services, OptionSetConverter.to_optionsets_bundled, \
         optiontSetName = 'service',\
         code = 'id')
     return res

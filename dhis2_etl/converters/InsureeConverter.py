@@ -7,6 +7,7 @@ from ..configurations import GeneralConfiguration
 from dhis2.utils import *
 import hashlib 
 from ..utils import toDateStr, toDatetimeStr, build_dhis2_id
+from .ClaimConverter import ClaimConverter
 # import the logging library
 import logging
 # Get an instance of a logger
@@ -26,7 +27,7 @@ class InsureeConverter(BaseDHIS2Converter):
         return TrackedEntityInstanceBundle(trackedEntityInstances = trackedEntityInstances)
 
     @classmethod
-    def to_tei_obj(cls, insuree,  event = False, **kwargs):
+    def to_tei_obj(cls, insuree,  event = False, claim = False, **kwargs):
         #event  = kwargs.get('event',False)
         if insuree is not None and insuree.uuid is not None  and insuree.family is not None and insuree.family.uuid is not None:
             attributes = []
@@ -54,6 +55,9 @@ class InsureeConverter(BaseDHIS2Converter):
             orgUnit = build_dhis2_id(insuree.family.location.uuid)
             trackedEntity = build_dhis2_id(insuree.uuid)
             enrollment = cls.to_enrollment_obj(insuree, event=event)
+            if claim is True:
+                for claim in insuree.claim_set:
+                    enrollment.append(ClaimConverter.to_enrollment_obj(claim, event = event))
             return TrackedEntityInstance(\
                 trackedEntityType = insureeProgram['teiType'],\
                 trackedEntityInstance = trackedEntity,\

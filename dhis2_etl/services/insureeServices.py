@@ -100,3 +100,42 @@ def syncPolicy(startDate,stopDate):
             .only('insuree__family__location__uuid','policy__stage','policy__status','policy__value','policy__product__code','insuree__uuid',\
                 'policy__product__name','policy__expiry_date', 'enrollment_date')
     return postMethod('events',policies, InsureeConverter.to_event_objs)
+
+def syncInsureePolicyClaim(startDate,stopDate):
+    # FIXME add claim support
+    # get the insuree matching the search
+        # get all insuree so we have also the detelted ones
+    # .filter(Q(validity_to__isnull=True) | Q(validity_to__gte=stopDate))
+    # TODO reverse link clainm
+    from claim.models import Claim, ClaimItem, ClaimService
+    from ..converters.ClaimConverter import ClaimConverter, CLAIM_VALUATED, CLAIM_REJECTED
+    insurees = Insuree.objects\
+            .filter(validity_from__lte=stopDate)\
+            .filter(validity_from__gte=startDate)\
+            .filter(legacy_id__isnull=True)\
+            .order_by('validity_from')\
+            .select_related('gender')\
+            .select_related('family')\
+            .select_related('family__location')\
+            .select_related('health_facility')\
+                .only('id','profession_id','family__poverty','chf_id','education_id','dob','family__uuid',\
+                'family__family_type_id','other_names','gender_id','head','health_facility__uuid',\
+                'marital','family__location__uuid','uuid','validity_from','last_name')\
+            .prefetch_related(Prefetch('insuree_policies', queryset=InsureePolicy.objects.filter(validity_to__isnull=True)\
+                    .filter(expiry_date__isnull=False)\
+                    .select_related('policy')\
+                    .select_related('policy__product').only('policy__stage','policy__status','policy__value','policy__product__code',\
+                'policy__product__name','policy__expiry_date', 'enrollment_date','id','insuree_id')\
+                    .order_by('validity_from')))\
+            .prefetch_related(Prefetch('claim_set', Claim.objects.filter(validity_to__isnull=True)\
+                .filter(validity_from__lte=stopDate)\
+                .filter(validity_from__gte=startDate)\
+                .filter(insuree__legacy_id__isnull=True)\
+                .filter(Q(status=CLAIM_VALUATED)| Q(status=CLAIM_REJECTED))\
+                .order_by('validity_from')\
+                .select_related('admin')\
+                .select_related('health_facility')\
+                .prefetch_related(Prefetch('items', queryset=ClaimItem.objects.filter(validity_to__isnull=True)))\
+                .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True)))\
+                .order_by('validity_from')))
+    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, event = True, claim = True, page_size = 20)
