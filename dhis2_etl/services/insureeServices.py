@@ -137,4 +137,4 @@ def syncInsureePolicyClaim(startDate,stopDate):
                 .prefetch_related(Prefetch('items', queryset=ClaimItem.objects.filter(validity_to__isnull=True)))\
                 .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True)))\
                 .order_by('validity_from')))
-    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, event = True, claim = True, page_size = 20)
+    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, event = True, claim = True)
