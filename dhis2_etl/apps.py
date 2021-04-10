@@ -17,7 +17,7 @@ DEFAULT_CFG = {
     "salt":"LeSalt",
     "jsonOutPath":'C:/temp',
     "location":{
-        "rootOrgUnit":"DFNP94LIbPH",
+        "rootOrgUnit":"E0FtAX5eNc3",
         "attributes":{
             "locationId":"gMNNTAdZbW1",
             "locationType":"ffZOxd5V2UK"

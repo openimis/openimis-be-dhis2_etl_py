@@ -28,7 +28,7 @@ class Event(BaseModel):
     lastUpdated: Optional[datetimeStr]
     event: Optional[uid]
     program: uid
-    programStage: uid
+    programStage: Optional[uid]
     trackedEntityInstance: uid
     orgUnit: uid
     status: str
