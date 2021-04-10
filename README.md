@@ -72,9 +72,12 @@ This module will push data in two programs
 - add perms and security if the view triggering the job is kept
 - harmonising usage of insuranceID, InsureeNumber, InsureeID in DHIS2
 - connection error management and DHIS2 answers parsing/logging (loggin only what matters and not including the 99% succesful)
-- remove not used optionset
 - add orgUnit in programs
 - safely remove all personal data (firstname. lastname, ...) because those data should't be shared with a BI systems
+- push population to data set
+- pull population from dataset
+- use optionGroup in indicator iso option when the options are define in IMIS
+
 
  
 -------------------------------------------------------------------------------------
