@@ -5,6 +5,7 @@ from .services.locationServices import *
 from .services.optionSetServices import *
 # import the logging library
 import logging
+import re
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 # Create your views here.
@@ -13,9 +14,10 @@ def startThreadTask(request):
     startDate = request.GET.get('startDate')
     stopDate = request.GET.get('stopDate')
     scope = request.GET.get('scope')
+    regex = re.compile("^\d{4}-\d{2}-\d{2}$")
     if scope is None:
         scope = "all"
-    if startDate != None and stopDate != None:
+    if regex.match(startDate) and regex.match(startDate) :
 
         logger.debug("Start SyncDHIS2")
         SyncDHIS2(startDate, stopDate, scope)
@@ -89,5 +91,12 @@ def SyncDHIS2(startDate, stopDate, scope):
         syncItemResponse =  syncItem(startDate,stopDate)
     if  scope == "optionset" or scope == "service":
         syncServiceResponse =  syncService(startDate,stopDate)
+
+
+    # Dataset
+    if  scope == "population":
+        syncPopulationResponse =  syncPopulation(startDate)
+
+
     logger.debug("Finishing task")
 
