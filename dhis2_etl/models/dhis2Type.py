@@ -4,15 +4,20 @@ from pydantic import constr
 from pydantic import  BaseModel
 from typing import List, Optional
 from .dhis2Enum import ValueType
-
+#normal uid
 uid = constr(regex="^[a-zA-Z][a-zA-Z0-9]{10}$")
+# for Dataelement with Categories
+uidList = constr(regex="^[a-zA-Z][a-zA-Z0-9]{10}(.[a-zA-Z][a-zA-Z0-9]{10})*$")
+# dates
 dateStr = constr(regex="^\d{4}-\d{2}-\d{2}$")
 datetimeStr = constr(regex="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$")
+# string
 str50 = constr(regex="^.{0,50}$")
 str130 = constr(regex="^.{0,130}$")
 str150 = constr(regex="^.{0,150}$")
 str230  = constr(regex="^.{0,230}$")
 str255  = constr(regex="^.{0,255}$")
+period= constr(regex="^[0-9]{4-6-8}$")
 
 class DHIS2Ref(BaseModel):
     id: Optional[uid]
@@ -28,4 +33,5 @@ class AttributeValue(BaseModel):
     attribute: uid
     value: str
     storedBy: Optional[DHIS2Ref]
+
 
