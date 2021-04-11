@@ -63,6 +63,15 @@ DEFAULT_CFG = {
         "16" : "Valuated"    
     }, 
     "default_page_size":"250",
+    "populationDataset":{
+        "id":"bKrBgAUWYK3",
+        "dataElements":{
+            "malePopulation":"UbpmYBEmuwK.UBIvj1vbywS",
+            "femalePopulation":"UbpmYBEmuwK.rcSbWNhTs6X",
+            "otherPopulation":"UbpmYBEmuwK.C5CknYRHX9S",
+            "familyPopulation":"OYwANZ2NBcZ"
+        }
+    },
     "insureeProgram" : {
         "id" : "IR5BiEXrBD7",
         "teiType":"EoBGArVCQ69",
