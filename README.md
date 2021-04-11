@@ -76,7 +76,9 @@ This module will push data in two programs
 - safely remove all personal data (firstname. lastname, ...) because those data should't be shared with a BI systems
 - push population to data set
 - pull population from dataset
-- use optionGroup in indicator iso option when the options are define in IMIS
+- use optionGroup in indicator iso option when the options are defined in IMIS (but for gender)
+- add DE family in population dataset
+- add cat to population male/female/other
 
 
  
