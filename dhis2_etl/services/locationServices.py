@@ -96,3 +96,13 @@ def syncHealthCenter(startDate,stopDate):
     res.append(post('metadata',None, LocationConverter.to_org_unit_group_obj,  group_name='HealthCenter', id = 'YMRPiQP7N4v' )) 
     res.append(postPaginated('metadata',locations, LocationConverter.to_org_unit_group_obj,  group_name='HealthCenter', id = 'YMRPiQP7N4v'  )) 
     return res
+
+def syncPopulation(atDate):
+    # from < date and to null or to < data
+    atYear = atDate[ 0: 3]
+    locations = Location.objects\
+        .filter(validity_from__lte=atDate)\
+        .filter(Q(validity_to__gte=atDate)|Q(validity_to__isnull=True))\
+        .filter(type='V')\
+    res=postMethod('metadata',locations, LocationConverter.to_population_datasets, data_set_period = atYear )   
+        return res
