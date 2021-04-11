@@ -10,6 +10,7 @@ class GeneralConfiguration(BaseConfiguration):
         config.salt = cfg['salt']
         config.insureeProgram = cfg['insureeProgram']
         config.claimProgram = cfg['claimProgram']
+        config.populationDataset = cfg['populationDataset']
         config.optionSet = cfg['optionSet']
         # config.genderCodes = cfg['genderCodes']
         # config.educationCodes = cfg['educationCodes']
@@ -47,6 +48,9 @@ class GeneralConfiguration(BaseConfiguration):
     @classmethod
     def get_claim_program(cls):
         return cls.get_config().claimProgram
+    @classmethod
+    def get_population_dataset(cls):
+        return cls.get_config().populationDataset
     @classmethod
     def get_location(cls):
         return cls.get_config().location
