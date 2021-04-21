@@ -99,10 +99,11 @@ def syncHealthCenter(startDate,stopDate):
 
 def syncPopulation(atDate):
     # from < date and to null or to < data
-    atYear = atDate[ 0: 3]
+    atYear = atDate[ 0: 4]
     locations = Location.objects\
         .filter(validity_from__lte=atDate)\
         .filter(Q(validity_to__gte=atDate)|Q(validity_to__isnull=True))\
         .filter(type='V')\
+        .filter(Q(male_population__gt=0)|Q(female_population__gt=0)|Q(other_population__gt=0)|Q(families__gt=0))
     res=postMethod('metadata',locations, LocationConverter.to_population_datasets, data_set_period = atYear )   
-        return res
+    return res

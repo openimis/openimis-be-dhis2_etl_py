@@ -8,12 +8,12 @@ from uuid import uuid4
 from pydantic import constr, BaseModel, ValidationError, validator, Field, AnyUrl, EmailStr
 from dhis2.utils import *
 from .dhis2Enum import FeatureType, ValueType
-from .dhis2Type import uid, uidList, dateStr, datetimeStr, DHIS2Ref, DeltaDHIS2Ref, str50, str150, str230, str130, str255
+from .dhis2Type import uid, uidList, dateStr, datetimeStr, DHIS2Ref, DeltaDHIS2Ref, str50, str150, str230, str130, str255, period
 
 class DataElementValue(BaseModel):
     dataElement: uidList
-    period: period, 
-    orgUnit: uid, 
+    period: period
+    orgUnit: uid
     value: Optional[str]
     attributeOptionCombo: Optional[uid] 
     categoryOptionCombo: Optional[uid] 	
@@ -28,7 +28,7 @@ class DataElementValue(BaseModel):
 
 # class to send data to dataset
 class DataValueSet(BaseModel):
-    dataSet: uid,
+    dataSet: uid
     completeDate: dateStr
     period: period
     orgUnit: uid
@@ -36,5 +36,5 @@ class DataValueSet(BaseModel):
     attributeOptionCombo: Optional[uid]
     attributeCategoryOptions : List[uid] = []
 
- class DataValueSetBundle(BaseModel):
+class DataValueSetBundle(BaseModel):
      dataValueSets: List[DataValueSet]

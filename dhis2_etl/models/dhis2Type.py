@@ -17,7 +17,7 @@ str130 = constr(regex="^.{0,130}$")
 str150 = constr(regex="^.{0,150}$")
 str230  = constr(regex="^.{0,230}$")
 str255  = constr(regex="^.{0,255}$")
-period= constr(regex="^[0-9]{4-6-8}$")
+period= constr(regex="^(?:[0-9]{4})|(?:[0-9]{6})|(?:[0-9]{8})$")
 
 class DHIS2Ref(BaseModel):
     id: Optional[uid]
