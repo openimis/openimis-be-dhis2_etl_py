@@ -64,6 +64,11 @@ This module will push data in two programs
     - to push claim: http://[openIMISAddress]/iapi/dhis2_etl/StartThreadTask?scope=claim&startDate=[dateOfFirstOpeimisUsage]&stopDate=[dataOfToday]
     - to push insurees, then policies, then claims: http://[openIMISAddress]/iapi/dhis2_etl/StartThreadTask?scope=all&startDate=[dateOfFirstOpeimisUsage]&stopDate=[dataOfToday]
 
+1. customisation of the dataElement
+    - to get the categoryOptionCombos for the population https://[dhis2Address]/api/categoryOptionCombos
+    - Other uid can be found at the end of url when browsing on dhis2 webapp
+    - update the app.py 
+
 ## development to do
 
 - use django scheduler instead of view for triggering the jobs
@@ -78,7 +83,7 @@ This module will push data in two programs
 - pull population from dataset
 - use optionGroup in indicator iso option when the options are defined in IMIS (but for gender)
 - add DE family in population dataset
-- add cat to population male/female/other
+
 
 
  
