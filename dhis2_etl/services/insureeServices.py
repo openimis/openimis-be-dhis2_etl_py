@@ -76,7 +76,7 @@ def syncInsureePolicy(startDate,stopDate):
                     .filter(expiry_date__isnull=False)\
                     .select_related('policy')\
                     .select_related('policy__product').only('policy__stage','policy__status','policy__value','policy__product__code',\
-                'policy__product__name','policy__expiry_date', 'enrollment_date','id','insuree_id')))
+                'policy__product__name','expiry_date','start_date ','effective_date ', 'enrollment_date','id','insuree_id')))
             
     return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, event = True)
 
@@ -97,7 +97,7 @@ def syncPolicy(startDate,stopDate):
             .select_related('policy')\
             .select_related('insuree__family__location')\
             .only('policy__stage','policy__status','policy__value','policy__product_id',\
-                'policy__expiry_date', 'enrollment_date','id','insuree_id')
+                'expiry_date','start_date ','effective_date ', 'enrollment_date','id','insuree_id')
     return postMethod('events',policies, InsureeConverter.to_event_objs)
 
 def syncInsureePolicyClaim(startDate,stopDate):
@@ -124,7 +124,7 @@ def syncInsureePolicyClaim(startDate,stopDate):
                     .filter(expiry_date__isnull=False)\
                     .select_related('policy')\
                     .only('policy__stage','policy__status','policy__value','policy__product_id',\
-                'policy__expiry_date', 'enrollment_date','id','insuree_id')\
+                'expiry_date','start_date ','effective_date ', 'enrollment_date','id','insuree_id')\
                     .order_by('validity_from')))\
             .prefetch_related(Prefetch('claim_set', Claim.objects.filter(validity_to__isnull=True)\
                 .filter(validity_from__lte=stopDate)\
