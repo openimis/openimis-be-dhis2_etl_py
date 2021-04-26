@@ -62,40 +62,62 @@ class LocationConverter(BaseDHIS2Converter):
             return OrganisationUnitGroupBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, id=id)])
     @classmethod
     def to_population_datasets(cls, villages, data_set_period, **kwargs):
-        dataSets = []
+        dataValues = []
         if villages is not None:
             for village in villages:
                 #if not re.match(exclPaternName, location.name):
-                dataSets.append(cls.to_population_dataset(village,data_set_period))
-            return DataValueSetBundle(dataValueSets = dataSets)
+                villageDataValues = cls.to_population_dataset(village,data_set_period)
+                if villageDataValues is not None and villageDataValues.dataValues is not None and len(villageDataValues.dataValues)>0:
+                    dataValues += villageDataValues.dataValues
+            return DataValueBundle(dataValues = dataValues)
         else:
             null
     @classmethod
     def to_population_dataset(cls, village, data_set_period, **kwargs):
         dataElementValues = []
+        
+
         if village.male_population is not None and\
-             village.male_population >0 and is_valid_uid(populationDataset['dataElements']['malePopulation']):
+             village.male_population >0 and populationDataset.get('dataElements').get('malePopulation') is not None:
+            DataElement = populationDataset.get('dataElements').get('malePopulation').split('.')
+            DataElementID = DataElement[0]
+            DataElementCOC = None
+            if len(DataElement) > 1:
+                DataElementCOC = DataElement[1]    
             dataElementValues.append(DataElementValue(period = data_set_period,\
-                 value = village.male_population,\
-                 dataElement = populationDataset['dataElements']['malePopulation'],
-                 orgUnit = build_dhis2_id(village.uuid)))
+                 dataElement = DataElementID,\
+                 categoryOptionCombo = DataElementCOC,\
+                 orgUnit = build_dhis2_id(village.uuid),\
+                 value = village.male_population))
         if village.female_population is not None and\
-            village.female_population >0 and is_valid_uid(populationDataset['dataElements']['femalePopulation']):
+            village.female_population >0 and populationDataset.get('dataElements').get('femalePopulation') is not None:
+            DataElement = populationDataset.get('dataElements').get('femalePopulation').split('.')
+            DataElementID = DataElement[0]
+            DataElementCOC = None
+            if len(DataElement) > 1:
+                DataElementCOC = DataElement[1]    
             dataElementValues.append(DataElementValue(period = data_set_period,\
-                 value = village.male_population,\
-                 dataElement = populationDataset['dataElements']['femalePopulation'],
-                 orgUnit = build_dhis2_id(village.uuid)))
+                 dataElement = DataElementID,\
+                 categoryOptionCombo = DataElementCOC,\
+                 orgUnit = build_dhis2_id(village.uuid),\
+                 value = village.female_population))
         if village.other_population is not None and\
-            village.other_population  >0 and is_valid_uid(populationDataset['dataElements']['otherPopulation']):
+            village.other_population  >0 and populationDataset.get('dataElements').get('otherPopulation') is not None:
+            DataElement = populationDataset.get('dataElements').get('otherPopulation').split('.')
+            DataElementID = DataElement[0]
+            DataElementCOC = None
+            if len(DataElement) > 1:
+                DataElementCOC = DataElement[1]    
             dataElementValues.append(DataElementValue(period = data_set_period,\
-                 value = village.male_population,\
-                 dataElement = populationDataset['dataElements']['otherPopulation'],
-                 orgUnit = build_dhis2_id(village.uuid)))
+                 dataElement = DataElementID,\
+                 categoryOptionCombo = DataElementCOC,\
+                 orgUnit = build_dhis2_id(village.uuid),\
+                 value = village.other_population))
         if village.families is not None and\
-             village.families >0 and is_valid_uid(populationDataset['dataElements']['familyPopulation']):
+             village.families >0 and is_valid_uid(populationDataset.get('dataElements').get('familyPopulation')):
             dataElementValues.append(DataElementValue(period = data_set_period,\
                  value = village.male_population,\
-                 dataElement = populationDataset['dataElements']['familyPopulation'],
+                 dataElement = populationDataset.get('dataElements').get('familyPopulation'),
                  orgUnit = build_dhis2_id(village.uuid)))
         # in case no cat are configured
         if (village.male_population is not None or village.female_population is not None or village.other_population is not None ) and\
@@ -109,10 +131,6 @@ class LocationConverter(BaseDHIS2Converter):
                 value += village.other_population
             dataElementValues.append(DataElementValue(period = data_set_period,\
                  value = value,\
-                 dataElement = populationDataset['dataElements']['population'],
+                 dataElement = populationDataset.get('dataElements').get('population'),
                  orgUnit = build_dhis2_id(village.uuid)))
-        return DataValueSet(   dataSet = populationDataset['id'],\
-            completeDate =  datetime.datetime.now().strftime("%Y-%m-%d"),\
-            period = data_set_period,\
-            orgUnit = build_dhis2_id(village.uuid),\
-            dataValues = dataElementValues)
+        return DataValueBundle( dataValues = dataElementValues)

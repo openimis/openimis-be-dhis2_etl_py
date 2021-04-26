@@ -11,9 +11,9 @@ from .dhis2Enum import FeatureType, ValueType
 from .dhis2Type import uid, uidList, dateStr, datetimeStr, DHIS2Ref, DeltaDHIS2Ref, str50, str150, str230, str130, str255, period
 
 class DataElementValue(BaseModel):
-    dataElement: uidList
-    period: period
-    orgUnit: uid
+    dataElement: uid
+    period: Optional[period]
+    orgUnit: Optional[uid]
     value: Optional[str]
     attributeOptionCombo: Optional[uid] 
     categoryOptionCombo: Optional[uid] 	
@@ -23,8 +23,6 @@ class DataElementValue(BaseModel):
     comment: Optional[str] 
     followup: Optional[bool]
     deleted: Optional[bool]
-    
-
 
 # class to send data to dataset
 class DataValueSet(BaseModel):
@@ -37,4 +35,7 @@ class DataValueSet(BaseModel):
     attributeCategoryOptions : List[uid] = []
 
 class DataValueSetBundle(BaseModel):
-     dataValueSets: List[DataValueSet]
+    dataValueSets: List[DataValueSet]
+
+class DataValueBundle(BaseModel):
+    dataValues: List[DataElementValue] = []
