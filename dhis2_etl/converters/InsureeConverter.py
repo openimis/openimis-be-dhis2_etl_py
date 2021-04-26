@@ -179,7 +179,7 @@ class InsureeConverter(BaseDHIS2Converter):
         if is_valid_uid(stageDE.get('startDate')) and insureepolicy.start_date is not None:
             dataValues.append(EventDataValue(dataElement = stageDE.get('startDate'), value = toDateStr(insureepolicy.start_date   )))
         if is_valid_uid(stageDE.get('effectiveDate')) and insureepolicy.effective_date is not None :
-            dataValues.append(EventDataValue(dataElement = stageDE.get('effectiveDate'), value = toDateStr(insureepolicy.effective_date  )))
+            dataValues.append(EventDataValue(dataElement = stageDE.get('effectiveDate'), value = toDateStr(insureepolicy.effective_date)))
         #event.dataValues.append(EventDataValue(dataElement = stageDE.get('policyId'),build_dhis2_id(insureepolicy.policy.uuid)))
         if  insuree is None:
             return Event(\
@@ -190,7 +190,7 @@ class InsureeConverter(BaseDHIS2Converter):
             status = "COMPLETED",\
             dataValues = dataValues,\
             trackedEntityInstance = build_dhis2_id(insureepolicy.insuree.uuid),\
-            programStage = insureeProgram['stages']["policy"]['id'])
+            programStage = insureeProgram.get('stages').get('policy').get('id'))
         else:
             return Event(\
             event = build_dhis2_id(insureepolicy.id, 'insureePolicy'),\
@@ -200,7 +200,7 @@ class InsureeConverter(BaseDHIS2Converter):
             status = "COMPLETED",\
             dataValues = dataValues,\
             trackedEntityInstance = build_dhis2_id(insuree.uuid),\
-            programStage = insureeProgram['stages']["policy"]['id'])
+            programStage = insureeProgram.get('stages').get('policy').get('id'))
 
         
 
