@@ -84,7 +84,9 @@ DEFAULT_CFG = {
                     "product":"NAdBLHAdOGv",
                     "policyId":"NtslGBEMyMy", 
                     "PolicyValue":"mVeMk0sNLZb",
-                    "expirityDate":"RzgHQtgsmfB" # note used
+                    "expiryDate":"RzgHQtgsmfB",
+                    "startDate":"h2Ck7EyokyI",
+                    "effectiveDate":"zrfmkobtJfx"
                     }
             }
         },
