@@ -97,7 +97,7 @@ def syncPolicy(startDate,stopDate):
             .select_related('policy')\
             .select_related('insuree__family__location')\
             .only('policy__stage','insuree__family__location__uuid','policy__status','policy__value','policy__product_id',\
-                'expiry_date','start_date','effective_date', 'enrollment_date','id','insuree_id')
+                'expiry_date','start_date','effective_date', 'enrollment_date','id','insuree_id','insuree__uuid')
     return postMethod('events',policies, InsureeConverter.to_event_objs)
 
 def syncInsureePolicyClaim(startDate,stopDate):
