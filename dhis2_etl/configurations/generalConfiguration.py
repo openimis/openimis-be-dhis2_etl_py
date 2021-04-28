@@ -38,7 +38,7 @@ class GeneralConfiguration(BaseConfiguration):
         return cls.get_config().salt
     @classmethod
     def get_policy_state_code(cls, code):
-        return cls.get_config().policyStageCode.get(str(int(code)), 'New Policy')
+        return cls.get_config().policyStageCode.get(str(code), 'New Policy')
     @classmethod
     def get_policy_status_code(cls, code):
         return cls.get_config().policyStatusCode.get(str(int(code)), 'Idle')
