@@ -38,13 +38,13 @@ class GeneralConfiguration(BaseConfiguration):
         return cls.get_config().salt
     @classmethod
     def get_policy_state_code(cls, code):
-        return cls.get_config().policyStageCode.get(code, 'New Policy')
+        return cls.get_config().policyStageCode.get(str(int(code)), 'New Policy')
     @classmethod
     def get_policy_status_code(cls, code):
-        return cls.get_config().policyStatusCode.get(code, 'Idle')
+        return cls.get_config().policyStatusCode.get(str(int(code)), 'Idle')
     @classmethod 
     def get_claim_status_code(cls, code):
-        return cls.get_config().claimStatusCode.get(code, 'Valuated')
+        return cls.get_config().claimStatusCode.get(str(int(code)), 'Valuated')
     @classmethod
     def get_claim_program(cls):
         return cls.get_config().claimProgram
@@ -82,11 +82,11 @@ class GeneralConfiguration(BaseConfiguration):
 
     @classmethod
     def get_marital_status_code(cls, code):
-        return cls.get_config().maritalStatusCodes.get(code, 'Single')
+        return cls.get_config().maritalStatusCodes.get(str(code), 'Single')
 
     @classmethod
     def get_visit_type_code(cls, code):
-        return cls.get_config().visitTypeCodes.get(code, 'Other')
+        return cls.get_config().visitTypeCodes.get(str(code), 'Other')
 
 
     # @classmethod
