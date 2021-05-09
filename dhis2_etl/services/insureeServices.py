@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 postMethod = postPaginated
 # postMethod = postPaginatedThreaded
-# postMethod = printPaginated
+#postMethod = printPaginated
 def syncInsuree(startDate,stopDate):
     # get the insuree matching the search
         # get all insuree so we have also the detelted ones
@@ -36,7 +36,7 @@ def syncInsuree(startDate,stopDate):
             .only('id','profession_id','family__poverty','chf_id','education_id','dob','family__uuid',\
                 'family__family_type_id','other_names','gender_id','head','health_facility__uuid',\
                 'marital','family__location__uuid','uuid','validity_from','last_name')
-    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs)
+    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, page_size=200)
 
 def enrollInsuree(startDate,stopDate):
     # get the insuree matching the search
@@ -54,7 +54,7 @@ def enrollInsuree(startDate,stopDate):
             .only('id','profession_id','family__poverty','chf_id','education_id','dob','family__uuid',\
                 'family__family_type_id','other_names','gender_id','head','health_facility__uuid',\
                 'marital','family__location__uuid','uuid','validity_from','last_name')
-    return postMethod('enrollments',insurees, InsureeConverter.to_enrollment_objs, event = False)
+    return postMethod('enrollments',insurees, InsureeConverter.to_enrollment_objs, event = False,  page_size=200)
 
 def syncInsureePolicy(startDate,stopDate):
     # get the insuree matching the search
@@ -78,7 +78,7 @@ def syncInsureePolicy(startDate,stopDate):
                     .select_related('policy__product').only('policy__stage','policy__status','policy__value','policy__product__code',\
                 'policy__product__name','expiry_date','start_date','effective_date', 'enrollment_date','id','insuree_id')))
             
-    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, event = True)
+    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, event = True,  page_size=200)
 
 
 
@@ -98,7 +98,7 @@ def syncPolicy(startDate,stopDate):
             .select_related('insuree__family__location')\
             .only('policy__stage','insuree__family__location__uuid','policy__status','policy__value','policy__product_id',\
                 'expiry_date','start_date','effective_date', 'enrollment_date','id','insuree_id','insuree__uuid')
-    return postMethod('events',policies, InsureeConverter.to_event_objs)
+    return postMethod('events',policies, InsureeConverter.to_event_objs, page_size=100)
 
 def syncInsureePolicyClaim(startDate,stopDate):
     # FIXME add claim support
