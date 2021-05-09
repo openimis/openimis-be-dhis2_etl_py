@@ -26,7 +26,7 @@ class DataElementValue(BaseModel):
 
 # class to send data to dataset
 class DataValueSet(BaseModel):
-    dataSet: uid
+    dataSet: Optional[uid]
     completeDate: dateStr
     period: period
     orgUnit: uid
@@ -35,7 +35,7 @@ class DataValueSet(BaseModel):
     attributeCategoryOptions : List[uid] = []
 
 class DataValueSetBundle(BaseModel):
-    dataValueSets: List[DataValueSet]
+    dataValueSets: List[DataValueSet] = []
 
 class DataValueBundle(BaseModel):
     dataValues: List[DataElementValue] = []

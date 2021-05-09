@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 postMethod = postPaginated
 # postMethod = postPaginatedThreaded
 # postMethod = printPaginated   
-
+ 
 
 def syncRegion(startDate,stopDate):
     locations = Location.objects.filter(legacy_id__isnull=True)\
@@ -99,11 +99,16 @@ def syncHealthCenter(startDate,stopDate):
 
 def syncPopulation(atDate):
     # from < date and to null or to < data
+    # issue old data don't get uuid 
     atYear = atDate[ 0: 4]
     locations = Location.objects\
         .filter(validity_from__lte=atDate)\
         .filter(Q(validity_to__gte=atDate)|Q(validity_to__isnull=True))\
         .filter(type='V')\
         .filter(Q(male_population__gt=0)|Q(female_population__gt=0)|Q(other_population__gt=0)|Q(families__gt=0))
-    res=postMethod('metadata',locations, LocationConverter.to_population_datasets, data_set_period = atYear )   
-    return res
+        # .select_related
+    res=postMethod('dataValueSets',locations, LocationConverter.to_population_datavaluesets, data_set_period = atYear, page_size = 1000)   
+    #if locations is not None:
+    #    for location in locations:
+    #        res=post('dataValueSets',location, LocationConverter.to_population_dataset, data_set_period = atYear)
+    #return res
