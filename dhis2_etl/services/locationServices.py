@@ -26,7 +26,8 @@ def syncRegion(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(type='R')\
-        .select_related('parent')
+        .select_related('parent')\
+        .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
     res.append(post('metadata',None, LocationConverter.to_org_unit_group_obj, group_name='Region', id = 'UMRPiQP7N4v' )) 
     res.append(postPaginated('metadata',locations, LocationConverter.to_org_unit_group_obj, group_name='Region', id = 'UMRPiQP7N4v'  )) 
@@ -37,7 +38,8 @@ def syncDistrict(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(type='D')\
-        .select_related('parent')
+        .select_related('parent')\
+        .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
     res.append(post('metadata',None, LocationConverter.to_org_unit_group_obj,  group_name='District', id = 'TMRPiQP7N4v' )) 
     res.append(postPaginated('metadata',locations, LocationConverter.to_org_unit_group_obj,  group_name='District', id = 'TMRPiQP7N4v'  )) 
@@ -48,7 +50,8 @@ def syncWard(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(type='W')\
-        .select_related('parent')
+        .select_related('parent')\
+        .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
     res.append(post('metadata',None, LocationConverter.to_org_unit_group_obj,  group_name='Ward', id = 'TMRPiQP8N4v')) 
     res.append(postPaginated('metadata',locations, LocationConverter.to_org_unit_group_obj,  group_name='Ward', id = 'TMRPiQP8N4v' )) 
@@ -59,7 +62,8 @@ def syncVillage(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(type='V')\
-        .select_related('parent')
+        .select_related('parent')\
+        .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
     res.append(post('metadata',None, LocationConverter.to_org_unit_group_obj,  group_name='Village' , id = 'TMRPiQT7N4v')) 
     res.append(postPaginated('metadata',locations, LocationConverter.to_org_unit_group_obj,  group_name='Village' , id = 'TMRPiQT7N4v' )) 
@@ -70,7 +74,8 @@ def syncHospital(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(level='H')\
-        .select_related('location')
+        .select_related('location')\
+        .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
     res.append(post('metadata',None, LocationConverter.to_org_unit_group_obj,  group_name='Hospitals', id = 'WMRPiQP7N4v' )) 
     res.append(postPaginated('metadata',locations, LocationConverter.to_org_unit_group_obj,  group_name='Hospitals', id = 'WMRPiQP7N4v'  )) 
@@ -80,7 +85,8 @@ def syncDispensary(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(level='D')\
-        .select_related('location')
+        .select_related('location')\
+        .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
     res.append(post('metadata',None, LocationConverter.to_org_unit_group_obj, group_name='Dispensary' , id = 'XMRPiQP7N4v')) 
     res.append(postPaginated('metadata',locations, LocationConverter.to_org_unit_group_obj, group_name='Dispensary' , id = 'XMRPiQP7N4v' )) 
@@ -91,7 +97,8 @@ def syncHealthCenter(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(level='C')\
-        .select_related('location')
+        .select_related('location')\
+        .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
     res.append(post('metadata',None, LocationConverter.to_org_unit_group_obj,  group_name='HealthCenter', id = 'YMRPiQP7N4v' )) 
     res.append(postPaginated('metadata',locations, LocationConverter.to_org_unit_group_obj,  group_name='HealthCenter', id = 'YMRPiQP7N4v'  )) 
@@ -105,7 +112,8 @@ def syncPopulation(atDate):
         .filter(validity_from__lte=atDate)\
         .filter(Q(validity_to__gte=atDate)|Q(validity_to__isnull=True))\
         .filter(type='V')\
-        .filter(Q(male_population__gt=0)|Q(female_population__gt=0)|Q(other_population__gt=0)|Q(families__gt=0))
+        .filter(Q(male_population__gt=0)|Q(female_population__gt=0)|Q(other_population__gt=0)|Q(families__gt=0))\
+        .order_by('validity_from')
         # .select_related
     res=postMethod('dataValueSets',locations, LocationConverter.to_population_datavaluesets, data_set_period = atYear, page_size = 1000)   
     #if locations is not None:
