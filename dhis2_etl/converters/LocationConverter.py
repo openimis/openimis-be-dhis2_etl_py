@@ -24,7 +24,6 @@ class LocationConverter(BaseDHIS2Converter):
         return OrganisationUnitBundle(organisationUnits = [OrganisationUnit( name = locationConfig['rootOrgUnitCode'] + ' - '+locationConfig['rootOrgUnitName'],\
             shortName = locationConfig['rootOrgUnitName'], code = locationConfig['rootOrgUnitCode'],\
             openingDate = '2000-01-01', id = locationConfig['rootOrgUnit'])])
-    :
 
 
     @classmethod
