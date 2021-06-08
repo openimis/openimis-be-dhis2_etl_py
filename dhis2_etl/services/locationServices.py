@@ -21,7 +21,7 @@ postMethod = postPaginated
 # postMethod = printPaginated   
 
 def createRootOrgUnit():
-   res=postRaw('metadata',LocationConverter.getRootOrgUnit())
+   return postRaw('metadata',LocationConverter.getRootOrgUnit())
 
 
 
