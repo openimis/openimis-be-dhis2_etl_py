@@ -26,7 +26,6 @@ def createRootOrgUnit():
 
 
 
-
 def syncRegion(startDate,stopDate):
     locations = Location.objects.filter(legacy_id__isnull=True)\
         .filter(validity_from__lte=stopDate)\
