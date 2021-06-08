@@ -20,9 +20,9 @@ postMethod = postPaginated
 # postMethod = postPaginatedThreaded
 # postMethod = printPaginated   
 
-def createRootOrgUnit(){
+def createRootOrgUnit():
    res=postRaw('metadata',LocationConverter.getRootOrgUnit())
-}
+
 
 
 
