@@ -19,7 +19,13 @@ logger = logging.getLogger(__name__)
 postMethod = postPaginated
 # postMethod = postPaginatedThreaded
 # postMethod = printPaginated   
- 
+
+def createRootOrgUnit(){
+   res=postRaw('metadata',LocationConverter.getRootOrgUnit())
+}
+
+
+
 
 def syncRegion(startDate,stopDate):
     locations = Location.objects.filter(legacy_id__isnull=True)\

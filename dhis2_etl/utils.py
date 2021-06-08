@@ -115,6 +115,25 @@ def postPage(ressource,page,convertor, **kwargs):
         else:
             logger.error(e)
 
+def postRaw(ressource,objConv, **kwargs):   
+    # Send the Insuree page per page, page size defined by config get_default_page_size
+    jsonPayload = objConv.dict(exclude_none=True, exclude_defaults=True)
+    try:
+        response = api.post(ressource,\
+            json = jsonPayload,\
+            params = {'mergeMode': MergeMode.merge,'strategy':ImportStrategy.createUpdate}) #, "async":"false", "preheatCache":"true"})
+        logger.info(response)
+        # fix me to avoid too much ram
+        return None
+    except requests.exceptions.RequestException as e:
+        if e.code == 409:
+            response = {'status_code': e.code, 'url' : e.url, 'text' : e.description}
+            logger.debug(e)
+            return response
+            pass
+        else:
+            logger.error(e)
+
 def toDatetimeStr(dateIn): 
     if dateIn is None:
         return None

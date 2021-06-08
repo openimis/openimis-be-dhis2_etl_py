@@ -18,6 +18,8 @@ DEFAULT_CFG = {
     "jsonOutPath":'C:/temp',
     "location":{
         "rootOrgUnit":"E0FtAX5eNc3",
+        "rootOrgUnitName":"DemOpenIMIS",
+        "rootOrgUnitCode":"Root",
         "attributes":{
             "locationId":"gMNNTAdZbW1",
             "locationType":"ffZOxd5V2UK"

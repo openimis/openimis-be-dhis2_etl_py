@@ -19,6 +19,13 @@ locationConfig = GeneralConfiguration.get_location()
 populationDataset = GeneralConfiguration.get_population_dataset()
 
 class LocationConverter(BaseDHIS2Converter):
+    @classmethod
+    def getRootOrgUnit(){
+        return OrganisationUnitBundle(organisationUnits = [OrganisationUnit( name = locationConfig['rootOrgUnitCode'] + ' - '+locationConfig['rootOrgUnitName'],\
+            shortName = locationConfig['rootOrgUnitName'], code = locationConfig['rootOrgUnitCode'],\
+            openingDate = '2000-01-01', id = locationConfig['rootOrgUnit'])])
+    }
+
 
     @classmethod
     def to_org_unit_objs(cls, objs,  **kwargs):

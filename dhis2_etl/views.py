@@ -61,6 +61,9 @@ def SyncDHIS2(startDate, stopDate, scope):
         insureePolicyclaimResponse = syncInsureePolicyClaim(startDate,stopDate)
     # ORGUNIT 
     #########
+    if scope == 'createRoot':
+        sync = createRootOrgUnit()
+
     if  scope == "orgunit":
         logger.debug("start orgUnit sync")
         syncRegionResponse = syncRegion(startDate,stopDate)
