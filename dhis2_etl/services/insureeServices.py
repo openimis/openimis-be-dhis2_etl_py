@@ -27,7 +27,7 @@ def syncInsuree(startDate,stopDate):
     insurees = Insuree.objects\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
-            .filter(legacy_id__isnull=True)\
+            .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))\
             .order_by('validity_from')\
             .select_related('gender')\
             .select_related('family')\
@@ -63,7 +63,7 @@ def syncInsureePolicy(startDate,stopDate):
     insurees = Insuree.objects\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
-            .filter(legacy_id__isnull=True)\
+            .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')) )\
             .order_by('validity_from')\
             .select_related('gender')\
             .select_related('family')\
@@ -101,7 +101,6 @@ def syncPolicy(startDate,stopDate):
     return postMethod('events',policies, InsureeConverter.to_event_objs, page_size=100)
 
 def syncInsureePolicyClaim(startDate,stopDate):
-    # FIXME add claim support
     # get the insuree matching the search
         # get all insuree so we have also the detelted ones
     # .filter(Q(validity_to__isnull=True) | Q(validity_to__gte=stopDate))
@@ -111,7 +110,7 @@ def syncInsureePolicyClaim(startDate,stopDate):
     insurees = Insuree.objects\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
-            .filter(legacy_id__isnull=True)\
+            .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')) )\
             .order_by('validity_from')\
             .select_related('gender')\
             .select_related('family')\
@@ -121,7 +120,9 @@ def syncInsureePolicyClaim(startDate,stopDate):
                 'family__family_type_id','other_names','gender_id','head','health_facility__uuid',\
                 'marital','family__location__uuid','uuid','validity_from','last_name')\
             .prefetch_related(Prefetch('insuree_policies', queryset=InsureePolicy.objects.filter(validity_to__isnull=True)\
-                    .filter(expiry_date__isnull=False)\
+                .filter(validity_from__lte=stopDate)\
+                .filter(validity_from__gte=startDate)\
+                .filter(expiry_date__isnull=False)\
                     .select_related('policy')\
                     .only('policy__stage','policy__status','policy__value','policy__product_id',\
                 'expiry_date','start_date','effective_date', 'enrollment_date','id','insuree_id')\
@@ -129,7 +130,6 @@ def syncInsureePolicyClaim(startDate,stopDate):
             .prefetch_related(Prefetch('claim_set', Claim.objects.filter(validity_to__isnull=True)\
                 .filter(validity_from__lte=stopDate)\
                 .filter(validity_from__gte=startDate)\
-                .filter(insuree__legacy_id__isnull=True)\
                 .filter(Q(status=CLAIM_VALUATED)| Q(status=CLAIM_REJECTED))\
                 .order_by('validity_from')\
                 .select_related('admin')\
