@@ -8,7 +8,7 @@ from insuree.models import Insuree, InsureePolicy
 #from policy.models import Policy
 #from django.core.serializers.json import DjangoJSONEncoder
 
-from django.db.models import Q, Prefetch
+from django.db.models import Q, Prefetch, F
 # FIXME manage permissions
 from ..utils import *
 
