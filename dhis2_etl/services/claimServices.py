@@ -21,15 +21,15 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-postMethod = postPaginated
+# postMethod = postPaginated
 # postMethod = postPaginatedThreaded
-# postMethod = printPaginated   
+postMethod = printPaginated
+
 def syncClaim(startDate,stopDate):
     # get only the last version of valudated or rejected claims (to sending multiple time the same claim)
     claims = Claim.objects.filter(validity_to__isnull=True)\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
-            .filter(insuree__legacy_id__isnull=True)\
             .filter(Q(status=CLAIM_VALUATED)| Q(status=CLAIM_REJECTED))\
             .order_by('validity_from')\
             .select_related('insuree')\
@@ -47,7 +47,6 @@ def syncClaimEvent(startDate,stopDate):
     claims = Claim.objects.filter(validity_to__isnull=True)\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
-            .filter(insuree__legacy_id__isnull=True)\
             .filter(Q(status=CLAIM_VALUATED)| Q(status=CLAIM_REJECTED))\
             .order_by('validity_from')\
             .select_related('insuree')\
