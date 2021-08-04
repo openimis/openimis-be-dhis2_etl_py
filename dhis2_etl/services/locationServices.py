@@ -27,7 +27,7 @@ def createRootOrgUnit():
 
 
 def syncRegion(startDate,stopDate):
-    locations = Location.objects.filter(legacy_id__isnull=True)\
+    locations = Location.objects.filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(type='R')\
@@ -39,7 +39,7 @@ def syncRegion(startDate,stopDate):
     return res
 
 def syncDistrict(startDate,stopDate):
-    locations = Location.objects.filter(legacy_id__isnull=True)\
+    locations = Location.objects.filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(type='D')\
@@ -51,7 +51,7 @@ def syncDistrict(startDate,stopDate):
     return res
 
 def syncWard(startDate,stopDate):
-    locations = Location.objects.filter(legacy_id__isnull=True)\
+    locations = Location.objects.filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(type='W')\
@@ -63,7 +63,7 @@ def syncWard(startDate,stopDate):
     return res
 
 def syncVillage(startDate,stopDate):
-    locations = Location.objects.filter(legacy_id__isnull=True)\
+    locations = Location.objects.filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(type='V')\
@@ -75,7 +75,7 @@ def syncVillage(startDate,stopDate):
     return res
 
 def syncHospital(startDate,stopDate):
-    locations = HealthFacility.objects.filter(Q(legacy_id__isnull=True)  |Q(legacy_id=F('id')))\
+    locations = HealthFacility.objects.filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(level='H')\
@@ -86,7 +86,7 @@ def syncHospital(startDate,stopDate):
     res.append(postPaginated('metadata',locations, LocationConverter.to_org_unit_group_obj,  group_name='Hospitals', id = 'WMRPiQP7N4v'  )) 
     return res
 def syncDispensary(startDate,stopDate):
-    locations = HealthFacility.objects.filter(Q(legacy_id__isnull=True)  |Q(legacy_id=F('id')))\
+    locations = HealthFacility.objects.filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(level='D')\
@@ -98,7 +98,7 @@ def syncDispensary(startDate,stopDate):
     return res
     
 def syncHealthCenter(startDate,stopDate):
-    locations = HealthFacility.objects.filter(Q(legacy_id__isnull=True) |Q(legacy_id=F('id')))\
+    locations = HealthFacility.objects.filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(level='C')\
