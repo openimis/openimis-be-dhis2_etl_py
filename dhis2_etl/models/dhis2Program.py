@@ -29,7 +29,7 @@ class Event(BaseModel):
     event: Optional[uid]
     program: uid
     programStage: Optional[uid]
-    trackedEntityInstance: uid
+    trackedEntityInstance: Optional[uid]
     orgUnit: uid
     status: str
     dueDate: Optional[dateStr]

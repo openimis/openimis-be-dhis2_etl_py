@@ -160,6 +160,7 @@ DEFAULT_CFG = {
                     }
             }
         },
+        
         "attributes" : {
             "insuranceId":"g54R38QNwEi", # Not part of the basic package
             "claimAdministrator":"wDBF7RjuEyp",
@@ -170,6 +171,17 @@ DEFAULT_CFG = {
             "diagnoseSec3":"gRLd9ezU69M",
             "diagnoseSec4":"cPbpCJnkrci",
             "VisitType": "Hxyr4f36WHF"
+        }
+    },"fundingProgram" : {
+        "id" : "xB6Q2acQejV",
+        "stages":{
+            "funding" : {
+                "id" : "EPFYYYVuiSw",
+                "dataElements": {
+                    "product":"NAdBLHAdOGv",
+                    "amount":"IHim9F2Hzj4", 
+                    }
+            }
         }
     }
 }
