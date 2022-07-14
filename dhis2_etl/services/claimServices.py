@@ -47,7 +47,7 @@ def syncClaimEvent(startDate,stopDate):
     claims = Claim.objects.filter(validity_to__isnull=True)\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
-            .filter(Q(status=CLAIM_VALUATED)| Q(status=CLAIM_REJECTED))\
+            .filter(Q(status=CLAIM_VALUATED) | Q(status=CLAIM_REJECTED))\
             .order_by('validity_from')\
             .select_related('insuree')\
             .select_related('admin')\
@@ -56,4 +56,4 @@ def syncClaimEvent(startDate,stopDate):
             .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True).select_related('service')))\
             .order_by('validity_from')
     # get the insuree matching the search
-    return postMethod('events',claims, ClaimConverter.to_event_objs, event = True)
+    return postMethod('events', claims, ClaimConverter.to_event_objs, event=True)
