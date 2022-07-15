@@ -85,6 +85,7 @@ def syncHospital(startDate,stopDate):
     res.append(post('metadata',None, LocationConverter.to_org_unit_group_obj,  group_name='Hospitals', id = 'WMRPiQP7N4v' )) 
     res.append(postPaginated('metadata',locations, LocationConverter.to_org_unit_group_obj,  group_name='Hospitals', id = 'WMRPiQP7N4v'  )) 
     return res
+
 def syncDispensary(startDate,stopDate):
     locations = HealthFacility.objects.filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))\
         .filter(validity_from__lte=stopDate)\

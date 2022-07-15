@@ -16,6 +16,14 @@ DEFAULT_CFG = {
     },
     "salt":"LeSalt",
     "jsonOutPath":'C:/temp',
+    "scheduled_integration": {
+        "claims":  False,
+        "policies": False,
+        "contribution": False,
+        "product": False,
+        "other_optionset": False,
+        "location": False
+    },
     "location":{
         "rootOrgUnit":"E0FtAX5eNc3",
         "rootOrgUnitName":"DemOpenIMIS",
@@ -185,7 +193,8 @@ DEFAULT_CFG = {
         }
     }
 }
- # Population on location : id: "UbpmYBEmuwK" TBD
+# Population on location : id: "UbpmYBEmuwK" TBD
+
 
 class Dhis2Config(AppConfig):
     name = MODULE_NAME

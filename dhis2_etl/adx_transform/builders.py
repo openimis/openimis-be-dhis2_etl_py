@@ -1,6 +1,6 @@
 import itertools
 
-from django.db.models import Q, Model
+from django.db.models import Q, Model, F
 from typing import Collection, List, Type
 from uuid import UUID
 
@@ -67,7 +67,8 @@ class ADXDataValueBuilder:
         return qs
 
     def _filter_period(self, qs, period):
-        return qs.filter(validity_from__gte=period.from_date, validity_from__lte=period.to_date)
+        return qs.filter(validity_from__gte=period.from_date, validity_from__lte=period.to_date)\
+            .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))
 
 
 class ADXGroupBuilder:

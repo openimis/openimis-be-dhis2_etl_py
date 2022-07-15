@@ -37,7 +37,6 @@ def syncGender(startDate,stopDate):
         code = 'code')
     res = postMethod('metadata', genders, OptionSetConverter.to_optionsets_bundled, \
         optiontSetName = 'gender',\
-
         code = 'code')
     return res
 
