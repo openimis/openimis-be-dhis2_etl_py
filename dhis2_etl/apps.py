@@ -207,7 +207,7 @@ class Dhis2Config(AppConfig):
 
     def __configure_module(self, cfg):
         ModuleConfiguration.build_configuration(cfg)
-        logger.info('Module $s configured successfully', MODULE_NAME)
+        logger.info('Module %s configured successfully', MODULE_NAME)
 
 # To be replaced by optionset
 
