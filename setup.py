@@ -21,7 +21,6 @@ setup(
     install_requires=[
         'django',
         'django-db-signals',
-        'django-jsonfallback',
         'dhis2.py',
         'pydantic[email,typing_extensions,dotenv]',
         'dict2obj',
@@ -31,12 +30,14 @@ setup(
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 2.1',
+        'Framework :: Django :: 3.1',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Affero General Public License v3',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
 )
