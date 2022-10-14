@@ -28,11 +28,6 @@ class DailySyncTests(TestCase):
         self.post_method_called_with = {}
         self.post_multiple_called_with = []
 
-    def tearDown(self) -> None:
-        super(DailySyncTests, self).tearDown()
-        self.post_method_called_with = {}
-        self.post_multiple_called_with = []
-
     def test_has_model_changed_in_timeframe(self):
         model = Insuree
         timeframe = self.timeframe
@@ -59,7 +54,6 @@ class DailySyncTests(TestCase):
             self._test_sync_func(sync_func, post_method, 'metadata', OptionSetConverter.to_optionsets_bundled,
                                  [product], {'optiontSetName': 'product', 'code': 'id'})
 
-
     def test_other_optionset_sync(self):
         sync_func = SyncFunction("other_optionset", sync_optionset_if_changed, True)
         o_s = {
@@ -75,13 +69,16 @@ class DailySyncTests(TestCase):
             expected_calls = [
                 {'ressource': 'metadata', 'objs': o_s[Gender], 'convertor': OptionSetConverter.to_optionsets_bundled,
                  'kwargs': {'optiontSetName': 'gender', 'code': 'code'}},
-                {'ressource': 'metadata', 'objs': o_s[Profession], 'convertor': OptionSetConverter.to_optionsets_bundled,
+                {'ressource': 'metadata', 'objs': o_s[Profession],
+                 'convertor': OptionSetConverter.to_optionsets_bundled,
                  'kwargs': {'optiontSetName': 'profession', 'code': 'id'}},
-                {'ressource': 'metadata', 'objs': o_s[FamilyType], 'convertor': OptionSetConverter.to_optionsets_bundled,
+                {'ressource': 'metadata', 'objs': o_s[FamilyType],
+                 'convertor': OptionSetConverter.to_optionsets_bundled,
                  'kwargs': {'optiontSetName': 'groupType', 'code': 'code'}},
                 {'ressource': 'metadata', 'objs': o_s[Education], 'convertor': OptionSetConverter.to_optionsets_bundled,
                  'kwargs': {'optiontSetName': 'education', 'code': 'id'}},
-                {'ressource': 'metadata', 'objs': [o_s[Diagnosis]], 'convertor': OptionSetConverter.to_optionsets_bundled,
+                {'ressource': 'metadata', 'objs': [o_s[Diagnosis]],
+                 'convertor': OptionSetConverter.to_optionsets_bundled,
                  'kwargs': {'optiontSetName': 'diagnosis', 'code': 'id'}},
                 {'ressource': 'metadata', 'objs': [o_s[Item]], 'convertor': OptionSetConverter.to_optionsets_bundled,
                  'kwargs': {'optiontSetName': 'item', 'code': 'id'}},
@@ -107,7 +104,9 @@ class DailySyncTests(TestCase):
             self.assertIsNotNone(insuree)
             product = create_test_product("VISIT", custom_props={"max_no_visits": 1})
             policy, insuree_policy = create_test_policy2(product, insuree,
-                                        custom_props={'expiry_date': datetime.datetime(2018, 12, 15), 'validity_from': datetime.datetime(2018, 12, 10, 5)})
+                                                         custom_props={'expiry_date': datetime.datetime(2018, 12, 15),
+                                                                       'validity_from': datetime.datetime(2018, 12, 10,
+                                                                                                          5)})
             insuree_policy.validity_from = datetime.datetime(2018, 12, 10, 5)
             insuree_policy.expiry_date = datetime.datetime(2018, 12, 15, 5)
             insuree_policy.save()
