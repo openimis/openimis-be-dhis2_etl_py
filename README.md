@@ -23,7 +23,7 @@ This module will push data in two programs
 
 1. get the metadata in the Script directory and take the right one for your DHIS2 instance
 
-1. Import the metadata in DHIS2 (http://<<dhis2Address>>/dhis-web-importexport/index.html#/import/metadata)
+1. Import the metadata in DHIS2 (http://[dhis2Address]/dhis-web-importexport/index.html#/import/metadata)
     - JSON Format
     - UID identifier
     - Report Error
@@ -33,34 +33,41 @@ This module will push data in two programs
     - Merge mode
 
 
-1. Push the optionset http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=optionset&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+1. create a root orgunit in DHIS 2 https://[dhis2Address]/dhis-web-maintenance/index.html#/list/organisationUnitSection and copy the uid in app.py
 
-1. Push the location http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=orgunit&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+1. Push the optionset http://[openIMISAddress]/iapi/dhis2_etl/StartThreadTask?scope=optionset&startDate=[dateOfFirstOpeimisUsage]&stopDate=[dataOfToday]
 
-1. Assign name to the level in DHIS2 (http://<<dhis2Address>>/dhis-web-maintenance/index.html#/list/organisationUnitSection/organisationUnitLevel)
+1. Push the location http://[openIMISAddress]/iapi/dhis2_etl/StartThreadTask?scope=orgunit&startDate=[dateOfFirstOpeimisUsage]&stopDate=[dataOfToday]
+
+1. Assign name to the level in DHIS2 (http://[dhis2Address]/dhis-web-maintenance/index.html#/list/organisationUnitSection/organisationUnitLevel)
 
 1. Allow the family-insuree program to collect data on village: 
-  - Go at http://<<dhis2Address>>/dhis-web-maintenance/index.html#/edit/programSection/program/IR5BiEXrBD7
-  - in access tab, on orgUnit Group, select "Village"
-  - Click on "Select" on the orgUnit group line
-  - click on save for the program
+    - Go at http://[dhis2Address]/dhis-web-maintenance/index.html#/edit/programSection/program/IR5BiEXrBD7
+    - in access tab, on orgUnit Group, select "Village"
+    - Click on "Select" on the orgUnit group line
+    - click on save for the program
 
 1. Allow the family-insuree program to collect data on healthfacilities: 
-  - Go at http://<<dhis2Address>>/dhis-web-maintenance/index.html#/edit/programSection/program/vPjOO7Jl6jC
-  - in access tab, on orgUnit Group, select "HealthCenter"
-  - Click on "Select" on the orgUnit group line
-  - on orgUnit Group, select "Dispensary"
-  - Click on "Select" on the orgUnit group line
-  - on orgUnit Group, select "Hospitals"
-  - Click on "Select" on the orgUnit group line
-  - click on save for the program
+    - Go at http://[dhis2Address]/dhis-web-maintenance/index.html#/edit/programSection/program/vPjOO7Jl6jC
+    - in access tab, on orgUnit Group, select "HealthCenter"
+    - Click on "Select" on the orgUnit group line
+    - on orgUnit Group, select "Dispensary"
+    - Click on "Select" on the orgUnit group line
+    - on orgUnit Group, select "Hospitals"
+    - Click on "Select" on the orgUnit group line
+    - click on save for the program
 
 1. You are now ready to start the module
-  - to push insuree and Policies in the same time (good for first load) : http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=insureepolicies&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
-    - to push insuree: http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=insuree&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
-    - to push policy: http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=policy&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
-    - to push claim: http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=claim&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
-    - to push insurees, then policies, then claims: http://<<openIMISAddress>>/iapi/dhis2_etl/StartThreadTask?scope=all&startDate=<dateOfFirstOpeimisUsage>&stopDate=<dataOfToday>
+    - to push insuree and Policies in the same time (good for first load) : http://[openIMISAddress]/iapi/dhis2_etl/StartThreadTask?scope=insureepolicies&startDate=[dateOfFirstOpeimisUsage]&stopDate=[dataOfToday]
+    - to push insuree: http://[openIMISAddress]/iapi/dhis2_etl/StartThreadTask?scope=insuree&startDate=[dateOfFirstOpeimisUsage]&stopDate=[dataOfToday]
+    - to push policy: http://[openIMISAddress]/iapi/dhis2_etl/StartThreadTask?scope=policy&startDate=[dateOfFirstOpeimisUsage]&stopDate=[dataOfToday]
+    - to push claim: http://[openIMISAddress]/iapi/dhis2_etl/StartThreadTask?scope=claim&startDate=[dateOfFirstOpeimisUsage]&stopDate=[dataOfToday]
+    - to push insurees, then policies, then claims: http://[openIMISAddress]/iapi/dhis2_etl/StartThreadTask?scope=all&startDate=[dateOfFirstOpeimisUsage]&stopDate=[dataOfToday]
+
+1. customisation of the dataElement
+    - to get the categoryOptionCombos for the population https://[dhis2Address]/api/categoryOptionCombos
+    - Other uid can be found at the end of url when browsing on dhis2 webapp
+    - update the app.py 
 
 ## development to do
 
@@ -70,8 +77,14 @@ This module will push data in two programs
 - add perms and security if the view triggering the job is kept
 - harmonising usage of insuranceID, InsureeNumber, InsureeID in DHIS2
 - connection error management and DHIS2 answers parsing/logging (loggin only what matters and not including the 99% succesful)
-- remove not used optionset
 - add orgUnit in programs
+- safely remove all personal data (firstname. lastname, ...) because those data should't be shared with a BI systems
+- push population to data set
+- pull population from dataset
+- use optionGroup in indicator iso option when the options are defined in IMIS (but for gender)
+- add DE family in population dataset
+
+
 
  
 -------------------------------------------------------------------------------------
@@ -310,7 +323,7 @@ Below are the data elements captured in the Claim - Services program stage conce
 
 | **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- | --- |
-| Claim - Services | Claimed Service | Service | TEXT||
+| Claim - Services | Claimed Service | Service | TEXT | Options depends on openIMIS database |
 ||| Service Quantity | NUMBER ||
 ||| Service Price | NUMBER ||
 ||| Adjusted amount - Service | NUMBER ||
@@ -331,8 +344,8 @@ Below are the data elements captured in the Claim – Items program stage concer
 
 | **Program Name** | **Program Stage Name** | **Data Elements** | **Value Type** | **Menu Options** |
 | --- | --- | --- | --- | --- |
-| **Claims Management** | Claim - Items | Claimed Item | NUMBER |
- ||| Item Quantity | NUMBER |
+| **Claims Management** | Claim - Items | Claimed Item | NUMBER | Options depends on openIMIS database |
+ ||| Item Quantity | NUMBER ||
  ||| Item Price | NUMBER ||
  ||| Adjusted amount - Item | NUMBER ||
  ||| Approved amount – Item | NUMBER ||
@@ -441,3 +454,62 @@ This user role allows the user to enter data for the respective facility, genera
 ## 4.4 Health Insurance Board/National Insurance Agency
 
 User roles will be created and assigned to a user belonging to Health Insurance Board/National Insurance Agency in the country to allow them to access data for their specific thematic areas such as Beneficiary Enrollments/Coverage, Claims etc. and evaluate across the country/region/district depending upon their administrative authority. They can access reports, perform data analysis and use dashboards.
+
+
+# **ADX Formatting** 
+### ADX Data definition 
+ADX Data definition can be defined using `dhis2_etl.adx_transform.adx_models.ADXMappingCubeDefinition`. 
+```python 
+ADXMappingCubeDefinition(
+    name=str, # Name of ADX Mapping Definition 
+    period_type=ISOFormatPeriodType(), # Format of handled period type, at the moment only ISO Format is supported 
+    groups=[
+        ADXMappingGroupDefinition(
+            comment=str, # Generic comment 
+            dataset=Model, # Django model, used as base for data value calcultions
+            data_values=[
+                ADXMappingDataValueDefinition(
+                    data_element=str, # Name of calculated value 
+                    related_from_dataset_func=function # Function extracting collection from group dataset object
+                    aggregation_function=function # Function transofrming filtered queryset to dataset value 
+                    categories=[
+                        ADXMappingCategoryDefinition(
+                            category_name=str,
+                            category_options=[
+                                ADXCategoryOptionDefinition(
+                                    code=code,
+                                    filter=function # Function Filtering output of `related_from_dataset_func`
+                                )
+    ])])])])
+```
+#### Example definition: [HF Number of insurees](dhis2_etl/tests/adx_tests.py)
+
+### ADX Data Storage 
+`dhis2_etl.adx_transform.adx_mapper.ADXBuilder` is used for creating ADX Data collection
+based on data definition. 
+Example:
+
+```python
+from dhis2_etl.adx_transform.builders import ADXBuilder
+from dhis2_etl.adx_transform.adx_models.adx_definition import ADXMappingGroupDefinition
+
+definition = ADXMappingGroupDefinition(...)
+builder = ADXBuilder(definition)
+period_type = "2019-01-01/P2Y"  # In format accepted by definition.period_type
+org_units = HealthFaciltity.objects.filter(validity_to__isnull=True).values_list("uuid", flat=True)  # All HF
+builder.create_adx_cube(period_type, org_units)  # Returns ADXMapping object
+```
+
+### ADX Formatters
+ADX Formatters allow transforming ADXMapping objects to diffrent formats. 
+At the moment only XML Format is implemented.
+
+```python
+from dhis2_etl.adx_transform.formatters import XMLFormatter
+from dhis2_etl.adx_transform.adx_models.adx_data import ADXMapping
+
+adx_format = ADXMapping(...)
+xml_formatter = XMLFormatter()
+xml_format = xml_formatter.format_adx(adx_format)
+```
+

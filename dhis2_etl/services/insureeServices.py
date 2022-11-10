@@ -8,7 +8,7 @@ from insuree.models import Insuree, InsureePolicy
 #from policy.models import Policy
 #from django.core.serializers.json import DjangoJSONEncoder
 
-from django.db.models import Q, Prefetch
+from django.db.models import Q, Prefetch, F
 # FIXME manage permissions
 from ..utils import *
 
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 postMethod = postPaginated
 # postMethod = postPaginatedThreaded
-# postMethod = printPaginated
+#postMethod = printPaginated
 def syncInsuree(startDate,stopDate):
     # get the insuree matching the search
         # get all insuree so we have also the detelted ones
@@ -27,7 +27,7 @@ def syncInsuree(startDate,stopDate):
     insurees = Insuree.objects\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
-            .filter(legacy_id__isnull=True)\
+            .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))\
             .order_by('validity_from')\
             .select_related('gender')\
             .select_related('family')\
@@ -36,7 +36,7 @@ def syncInsuree(startDate,stopDate):
             .only('id','profession_id','family__poverty','chf_id','education_id','dob','family__uuid',\
                 'family__family_type_id','other_names','gender_id','head','health_facility__uuid',\
                 'marital','family__location__uuid','uuid','validity_from','last_name')
-    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs)
+    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, page_size=200)
 
 def enrollInsuree(startDate,stopDate):
     # get the insuree matching the search
@@ -54,7 +54,7 @@ def enrollInsuree(startDate,stopDate):
             .only('id','profession_id','family__poverty','chf_id','education_id','dob','family__uuid',\
                 'family__family_type_id','other_names','gender_id','head','health_facility__uuid',\
                 'marital','family__location__uuid','uuid','validity_from','last_name')
-    return postMethod('enrollments',insurees, InsureeConverter.to_enrollment_objs, event = False)
+    return postMethod('enrollments',insurees, InsureeConverter.to_enrollment_objs, event = False,  page_size=200)
 
 def syncInsureePolicy(startDate,stopDate):
     # get the insuree matching the search
@@ -63,7 +63,7 @@ def syncInsureePolicy(startDate,stopDate):
     insurees = Insuree.objects\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
-            .filter(legacy_id__isnull=True)\
+            .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')) )\
             .order_by('validity_from')\
             .select_related('gender')\
             .select_related('family')\
@@ -76,9 +76,9 @@ def syncInsureePolicy(startDate,stopDate):
                     .filter(expiry_date__isnull=False)\
                     .select_related('policy')\
                     .select_related('policy__product').only('policy__stage','policy__status','policy__value','policy__product__code',\
-                'policy__product__name','policy__expiry_date', 'enrollment_date','id','insuree_id')))
+                'policy__product__name','expiry_date','start_date','effective_date', 'enrollment_date','id','insuree_id')))
             
-    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, event = True)
+    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, event = True,  page_size=200)
 
 
 
@@ -96,7 +96,45 @@ def syncPolicy(startDate,stopDate):
             .select_related('insuree')\
             .select_related('policy')\
             .select_related('insuree__family__location')\
-            .select_related('policy__product')\
-            .only('insuree__family__location__uuid','policy__stage','policy__status','policy__value','policy__product__code','insuree__uuid',\
-                'policy__product__name','policy__expiry_date', 'enrollment_date')
-    return postMethod('events',policies, InsureeConverter.to_event_objs)
+            .only('policy__stage','insuree__family__location__uuid','policy__status','policy__value','policy__product_id',\
+                'expiry_date','start_date','effective_date', 'enrollment_date','id','insuree_id','insuree__uuid')
+    return postMethod('events',policies, InsureeConverter.to_event_objs, page_size=100)
+
+def syncInsureePolicyClaim(startDate,stopDate):
+    # get the insuree matching the search
+        # get all insuree so we have also the detelted ones
+    # .filter(Q(validity_to__isnull=True) | Q(validity_to__gte=stopDate))
+    # TODO reverse link clainm
+    from claim.models import Claim, ClaimItem, ClaimService
+    from ..converters.ClaimConverter import ClaimConverter, CLAIM_VALUATED, CLAIM_REJECTED
+    insurees = Insuree.objects\
+            .filter(validity_from__lte=stopDate)\
+            .filter(validity_from__gte=startDate)\
+            .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')) )\
+            .order_by('validity_from')\
+            .select_related('gender')\
+            .select_related('family')\
+            .select_related('family__location')\
+            .select_related('health_facility')\
+                .only('id','profession_id','family__poverty','chf_id','education_id','dob','family__uuid',\
+                'family__family_type_id','other_names','gender_id','head','health_facility__uuid',\
+                'marital','family__location__uuid','uuid','validity_from','last_name')\
+            .prefetch_related(Prefetch('insuree_policies', queryset=InsureePolicy.objects.filter(validity_to__isnull=True)\
+                .filter(validity_from__lte=stopDate)\
+                .filter(validity_from__gte=startDate)\
+                .filter(expiry_date__isnull=False)\
+                    .select_related('policy')\
+                    .only('policy__stage','policy__status','policy__value','policy__product_id',\
+                'expiry_date','start_date','effective_date', 'enrollment_date','id','insuree_id')\
+                    .order_by('validity_from')))\
+            .prefetch_related(Prefetch('claim_set', Claim.objects.filter(validity_to__isnull=True)\
+                .filter(validity_from__lte=stopDate)\
+                .filter(validity_from__gte=startDate)\
+                .filter(Q(status=CLAIM_VALUATED)| Q(status=CLAIM_REJECTED))\
+                .order_by('validity_from')\
+                .select_related('admin')\
+                .select_related('health_facility')\
+                .prefetch_related(Prefetch('items', queryset=ClaimItem.objects.filter(validity_to__isnull=True)))\
+                .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True)))\
+                .order_by('validity_from')))
+    return postMethod('trackedEntityInstances',insurees, InsureeConverter.to_tei_objs, event = True, claim = True)

@@ -8,7 +8,7 @@ from django.http import  JsonResponse
 from ..converters.OptionSetConverter import OptionSetConverter
 from insuree.models import Gender, Profession, FamilyType, Education
 from product.models import Product
-from medical.models import Diagnosis
+from medical.models import Diagnosis, Item, Service
 #from policy.models import Policy
 #from django.core.serializers.json import DjangoJSONEncoder
 
@@ -37,7 +37,6 @@ def syncGender(startDate,stopDate):
         code = 'code')
     res = postMethod('metadata', genders, OptionSetConverter.to_optionsets_bundled, \
         optiontSetName = 'gender',\
-
         code = 'code')
     return res
 
@@ -104,5 +103,35 @@ def syncDiagnosis(startDate,stopDate):
         code = 'id')
     res = postMethod('metadata', diagnosis, OptionSetConverter.to_optionsets_bundled, \
         optiontSetName = 'diagnosis',\
+        code = 'id')
+    return res
+
+    
+def syncItem(startDate,stopDate):
+    items = Item.objects.filter(legacy_id__isnull=True)\
+        .filter(validity_from__lte=stopDate)\
+        .filter(validity_from__gte=startDate)
+    res = postMethod('metadata', items, OptionSetConverter.to_option_objs, \
+        optiontSetName = 'item',\
+        att1 = 'code',\
+        att2 = 'name',\
+        code = 'id')
+    res = postMethod('metadata', items, OptionSetConverter.to_optionsets_bundled, \
+        optiontSetName = 'item',\
+        code = 'id')
+    return res
+
+    
+def syncService(startDate,stopDate):
+    services = Service.objects.filter(legacy_id__isnull=True)\
+        .filter(validity_from__lte=stopDate)\
+        .filter(validity_from__gte=startDate)
+    res = postMethod('metadata', services, OptionSetConverter.to_option_objs, \
+        optiontSetName = 'service',\
+        att1 = 'code',\
+        att2 = 'name',\
+        code = 'id')
+    res = postMethod('metadata', services, OptionSetConverter.to_optionsets_bundled, \
+        optiontSetName = 'service',\
         code = 'id')
     return res

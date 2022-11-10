@@ -21,22 +21,22 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-postMethod = postPaginated
+# postMethod = postPaginated
 # postMethod = postPaginatedThreaded
-# postMethod = printPaginated   
+postMethod = printPaginated
+
 def syncClaim(startDate,stopDate):
     # get only the last version of valudated or rejected claims (to sending multiple time the same claim)
     claims = Claim.objects.filter(validity_to__isnull=True)\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
-            .filter(insuree__legacy_id__isnull=True)\
             .filter(Q(status=CLAIM_VALUATED)| Q(status=CLAIM_REJECTED))\
             .order_by('validity_from')\
             .select_related('insuree')\
             .select_related('admin')\
             .select_related('health_facility')\
-            .prefetch_related(Prefetch('items', queryset=ClaimItem.objects.filter(validity_to__isnull=True).select_related('item')))\
-            .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True).select_related('service')))\
+            .prefetch_related(Prefetch('items', queryset=ClaimItem.objects.filter(validity_to__isnull=True)))\
+            .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True)))\
             .order_by('validity_from')
     # get the insuree matching the search
     return postMethod('enrollments',claims, ClaimConverter.to_enrollment_objs, event = True)
@@ -47,8 +47,7 @@ def syncClaimEvent(startDate,stopDate):
     claims = Claim.objects.filter(validity_to__isnull=True)\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\
-            .filter(insuree__legacy_id__isnull=True)\
-            .filter(Q(status=CLAIM_VALUATED)| Q(status=CLAIM_REJECTED))\
+            .filter(Q(status=CLAIM_VALUATED) | Q(status=CLAIM_REJECTED))\
             .order_by('validity_from')\
             .select_related('insuree')\
             .select_related('admin')\
@@ -57,4 +56,4 @@ def syncClaimEvent(startDate,stopDate):
             .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True).select_related('service')))\
             .order_by('validity_from')
     # get the insuree matching the search
-    return postMethod('events',claims, ClaimConverter.to_event_objs, event = True)
+    return postMethod('events', claims, ClaimConverter.to_event_objs, event=True)

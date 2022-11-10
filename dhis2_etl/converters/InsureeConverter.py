@@ -7,6 +7,7 @@ from ..configurations import GeneralConfiguration
 from dhis2.utils import *
 import hashlib 
 from ..utils import toDateStr, toDatetimeStr, build_dhis2_id
+from .ClaimConverter import ClaimConverter
 # import the logging library
 import logging
 # Get an instance of a logger
@@ -18,47 +19,51 @@ salt = GeneralConfiguration.get_salt()
 class InsureeConverter(BaseDHIS2Converter):
 
     @classmethod
-    def to_tei_objs(cls, objs,  event = False, **kwargs):
+    def to_tei_objs(cls, objs,  event = False, claim = False, **kwargs):
         #event  = kwargs.get('event',False)
         trackedEntityInstances = []
         for insuree in objs:
-            trackedEntityInstances.append(cls.to_tei_obj(insuree, event=event))
+            trackedEntityInstances.append(cls.to_tei_obj(insuree, event = event, claim = claim))
         return TrackedEntityInstanceBundle(trackedEntityInstances = trackedEntityInstances)
 
     @classmethod
-    def to_tei_obj(cls, insuree,  event = False, **kwargs):
+    def to_tei_obj(cls, insuree,  event = False, claim = False, **kwargs):
         #event  = kwargs.get('event',False)
         if insuree is not None and insuree.uuid is not None  and insuree.family is not None and insuree.family.uuid is not None:
             attributes = []
             # add insureeId
-            if insuree.uuid is not None and is_valid_uid(insureeProgram['attributes']['insureeId']):
-                attributes.append(AttributeValue(attribute = insureeProgram['attributes']['insuranceId'],\
+            if insuree.uuid is not None and is_valid_uid(insureeProgram.get('attributes').get('insureeId')):
+                attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('insuranceId'),\
                     value =  insuree.uuid))
             # CHIF ID
-            if insuree.chf_id is not None and is_valid_uid(insureeProgram['attributes']['CHFId']):
-                attributes.append(AttributeValue(attribute = insureeProgram['attributes']['CHFId'],\
+            if insuree.chf_id is not None and is_valid_uid(insureeProgram.get('attributes').get('CHFId')):
+                attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('CHFId'),\
                     value =  hashlib.md5((salt + insuree.chf_id).encode('utf-8') ).hexdigest()))
 
             # "familyId": attribute ,
-            if insuree.family.uuid is not None and is_valid_uid(insureeProgram['attributes']['familyId']):
-                attributes.append(AttributeValue(attribute = insureeProgram['attributes']['familyId'],\
+            if insuree.family.uuid is not None and is_valid_uid(insureeProgram.get('attributes').get('familyId')):
+                attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('familyId'),\
                     value =  insuree.family.uuid)) 
             # "firstName"
-            if insuree.other_names is not None and is_valid_uid(insureeProgram['attributes']['firstName']):
-                attributes.append(AttributeValue(attribute = insureeProgram['attributes']['firstName'],\
+            if insuree.other_names is not None and is_valid_uid(insureeProgram.get('attributes').get('firstName')):
+                attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('firstName'),\
                     value = insuree.other_names )) 
             # "lastName"
-            if insuree.other_names is not None and is_valid_uid(insureeProgram['attributes']['lastName']):
-                attributes.append(AttributeValue(attribute = insureeProgram['attributes']['lastName'],\
+            if insuree.last_name is not None and is_valid_uid(insureeProgram.get('attributes').get('lastName')):
+                attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('lastName'),\
                     value = insuree.last_name )) 
             orgUnit = build_dhis2_id(insuree.family.location.uuid)
             trackedEntity = build_dhis2_id(insuree.uuid)
-            enrollment = cls.to_enrollment_obj(insuree, event=event)
+            enrollments = []
+            enrollments.append(cls.to_enrollment_obj(insuree, event=event))
+            if claim is True:
+                for claim in insuree.claim_set.all():
+                    enrollments.append(ClaimConverter.to_enrollment_obj(claim, event = event))
             return TrackedEntityInstance(\
                 trackedEntityType = insureeProgram['teiType'],\
                 trackedEntityInstance = trackedEntity,\
                 orgUnit = orgUnit,\
-                enrollments= [enrollment],\
+                enrollments= enrollments,\
                 attributes = attributes)
              
         else:
@@ -78,77 +83,77 @@ class InsureeConverter(BaseDHIS2Converter):
         uid = build_dhis2_id(insuree.uuid)
         #event  = kwargs.get('event',False)
         attributes = []
-        if insuree.other_names is not None and is_valid_uid(insureeProgram['attributes']['lastName']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['lastName'],\
+        if insuree.last_name is not None and is_valid_uid(insureeProgram.get('attributes').get('lastName')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('lastName'),\
                 value = insuree.last_name )) 
         # add profession attributes
-        if insuree.profession_id is not None and is_valid_uid(insureeProgram['attributes']['profession']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['profession'],\
+        if insuree.profession_id is not None and is_valid_uid(insureeProgram.get('attributes').get('profession')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('profession'),\
                 value = insuree.profession_id)) 
         # add poverty attributes
-        if insuree.family.poverty is not None and is_valid_uid(insureeProgram['attributes']['poverty']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['poverty'],\
-                value = insuree.family.poverty)) 
+        if insuree.family.poverty is not None and is_valid_uid(insureeProgram.get('attributes').get('poverty')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('poverty'),\
+                value = GeneralConfiguration.get_boolean_code(insuree.family.poverty))) 
         
         # "insuranceId":"g54R38QNwEi", # Salted data for privay reason
-        if insuree.chf_id is not None and is_valid_uid(insureeProgram['attributes']['insuranceId']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['insuranceId'],\
+        if insuree.chf_id is not None and is_valid_uid(insureeProgram.get('attributes').get('insuranceId')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('insuranceId'),\
                 value =  hashlib.md5((salt + insuree.chf_id).encode('utf-8') ).hexdigest())) 
-        if insuree.chf_id is not None and is_valid_uid(insureeProgram['attributes']['CHFId']):
+        if insuree.chf_id is not None and is_valid_uid(insureeProgram.get('attributes').get('CHFId')):
         #  "CHFId" // duplicate
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['CHFId'],\
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('CHFId'),\
                 value =  hashlib.md5((salt + insuree.chf_id).encode('utf-8') ).hexdigest()))
         # "insureeId":"e9fOa40sDwR",  # should not use it
         # "familyId": attribute ,
-        if insuree.family.uuid is not None and is_valid_uid(insureeProgram['attributes']['familyId']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['familyId'],\
+        if insuree.family.uuid is not None and is_valid_uid(insureeProgram.get('attributes').get('familyId')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('familyId'),\
                 value =  insuree.family.uuid)) 
         # "dob"
-        if insuree.dob is not None and is_valid_uid(insureeProgram['attributes']['dob']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['dob'],\
+        if insuree.dob is not None and is_valid_uid(insureeProgram.get('attributes').get('dob')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('dob'),\
                 value =  toDateStr(insuree.dob))) 
         #"education"
-        if insuree.education_id is not None and is_valid_uid(insureeProgram['attributes']['education']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['education'],\
+        if insuree.education_id is not None and is_valid_uid(insureeProgram.get('attributes').get('education')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('education'),\
                 value =  insuree.education_id)) 
         # "groupType",
-        if insuree.family.family_type_id is not None and is_valid_uid(insureeProgram['attributes']['groupType']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['groupType'],\
+        if insuree.family.family_type_id is not None and is_valid_uid(insureeProgram.get('attributes').get('groupType')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('groupType'),\
                 value =  insuree.family.family_type_id)) 
         # "firstName"
-        if insuree.other_names is not None and is_valid_uid(insureeProgram['attributes']['firstName']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['firstName'],\
+        if insuree.other_names is not None and is_valid_uid(insureeProgram.get('attributes').get('firstName')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('firstName'),\
                 value = insuree.other_names )) 
         #"firstServicePoint":"GZ6zgXS25VH",
-        if insuree.health_facility is not None and is_valid_uid(insureeProgram['attributes']['firstServicePoint']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['firstServicePoint'],\
+        if insuree.health_facility is not None and is_valid_uid(insureeProgram.get('attributes').get('firstServicePoint')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('firstServicePoint'),\
                 value =  build_dhis2_id(insuree.health_facility.uuid))) 
         #"gender":
-        if insuree.gender_id is not None and is_valid_uid(insureeProgram['attributes']['gender']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['gender'],\
+        if insuree.gender_id is not None and is_valid_uid(insureeProgram.get('attributes').get('gender')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('gender'),\
                 value = insuree.gender_id)) 
         #"isHead":"siOTMqr9kw6",
-        if insuree.head is not None and is_valid_uid(insureeProgram['attributes']['isHead']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['isHead'],\
+        if insuree.head is not None and is_valid_uid(insureeProgram.get('attributes').get('isHead')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('isHead'),\
                 value = GeneralConfiguration.get_boolean_code(insuree.head))) 
         #"identificationId":"MFPEijajdy7", # not used for privacy reason
-        #if insuree.passport is not None and is_valid_uid(insureeProgram['attributes']['identificationId']):
-        #    attributes.append(AttributeValue(attribute = insureeProgram['attributes']['identificationId'],value = insuree.passport)) 
+        #if insuree.passport is not None and is_valid_uid(insureeProgram.get('attributes').get('identificationId')):
+        #    attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('identificationId'),value = insuree.passport)) 
         #"identificationSource":"jOnARr3GARW", # not used for now
-        #if insuree.card_issued is not None and is_valid_uid(insureeProgram['attributes']['identificationSource']):
-        #    attributes.append(AttributeValue(attribute = insureeProgram['attributes']['identificationSource'], value = GeneralConfiguration.get_identification_source_code(insuree.card_issued_id))) 
+        #if insuree.card_issued is not None and is_valid_uid(insureeProgram.get('attributes').get('identificationSource')):
+        #    attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('identificationSource'), value = GeneralConfiguration.get_identification_source_code(insuree.card_issued_id))) 
         #"maritalSatus":"vncvDog0YwP",
-        if insuree.marital is not None and is_valid_uid(insureeProgram['attributes']['maritalSatus']):
-            attributes.append(AttributeValue(attribute = insureeProgram['attributes']['maritalSatus'],\
+        if insuree.marital is not None and is_valid_uid(insureeProgram.get('attributes').get('maritalSatus')):
+            attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('maritalSatus'),\
                 value = GeneralConfiguration.get_marital_status_code(insuree.marital)))
         #"phoneNumber": "r9hJ7SJbVvx", # TBC
-        #if insuree.poverty is not None and is_valid_uid(insureeProgram['attributes']['poverty']):
-        #attributes.append(AttributeValue(attribute = insureeProgram['attributes']['poverty'], value = insuree.poverty)) 
+        #if insuree.poverty is not None and is_valid_uid(insureeProgram.get('attributes').get('poverty')):
+        #attributes.append(AttributeValue(attribute = insureeProgram.get('attributes').get('poverty'), value = insuree.poverty)) 
         events = []
         if event:
             for insureepolicy in insuree.insuree_policies.all():
-                events.append(cls.to_event_obj(insureepolicy,  insuree))
-        return Enrollment( trackedEntityInstance = uid, incidentDate = toDateStr(insuree.validity_from), enrollmentDate = toDateStr(insuree.validity_from),\
+                events.append(cls.to_event_obj(insureepolicy, insuree = insuree))
+        return Enrollment( enrollment = uid, trackedEntityInstance = uid, incidentDate = toDateStr(insuree.validity_from), enrollmentDate = toDateStr(insuree.validity_from),\
               orgUnit = build_dhis2_id(insuree.family.location.uuid), status = "ACTIVE", program = insureeProgram['id'],\
                   events = events, attributes = attributes )
         
@@ -156,40 +161,46 @@ class InsureeConverter(BaseDHIS2Converter):
     @classmethod
     def to_event_obj(cls, insureepolicy, insuree = None, **kwargs):
         #insuree  = kwargs.get('insuree',False)
-        stageDE = insureeProgram['stages']["policy"]['dataElements']
+        stageDE = insureeProgram.get('stages').get('policy').get('dataElements')
         dataValues = []
-        if is_valid_uid(stageDE['policyStage']):
-            dataValues.append(EventDataValue(dataElement = stageDE['policyStage'],\
+        if is_valid_uid(stageDE.get('policyStage')):
+            dataValues.append(EventDataValue(dataElement = stageDE.get('policyStage'),\
                 value = GeneralConfiguration.get_policy_state_code(insureepolicy.policy.stage)))
-        if is_valid_uid(stageDE['policyStatus']):
-            dataValues.append(EventDataValue(dataElement = stageDE['policyStatus'],\
+        if is_valid_uid(stageDE.get('policyStatus')):
+            dataValues.append(EventDataValue(dataElement = stageDE.get('policyStatus'),\
                 value = GeneralConfiguration.get_policy_status_code(insureepolicy.policy.status)))
-        if is_valid_uid(stageDE['product']):
-            dataValues.append(EventDataValue(dataElement = stageDE['product'],\
+        if is_valid_uid(stageDE.get('product')):
+            dataValues.append(EventDataValue(dataElement = stageDE.get('product'),\
                 value = insureepolicy.policy.product_id))
-        if is_valid_uid(stageDE['PolicyValue']):
-            dataValues.append(EventDataValue(dataElement = stageDE['PolicyValue'], value = insureepolicy.policy.value if insureepolicy.policy.value != None else 0))
-        if is_valid_uid(stageDE['expirityDate']):
-            dataValues.append(EventDataValue(dataElement = stageDE['expirityDate'], value = toDateStr(insureepolicy.policy.expiry_date)))
-        #event.dataValues.append(EventDataValue(dataElement = stageDE['policyId'],build_dhis2_id(insureepolicy.policy.uuid)))
+        if is_valid_uid(stageDE.get('PolicyValue')):
+            dataValues.append(EventDataValue(dataElement = stageDE.get('PolicyValue'), value = insureepolicy.policy.value if insureepolicy.policy.value != None else 0))
+        if is_valid_uid(stageDE.get('expiryDate')) and insureepolicy.expiry_date is not None:
+            dataValues.append(EventDataValue(dataElement = stageDE.get('expiryDate'), value = toDateStr(insureepolicy.expiry_date )))
+        if is_valid_uid(stageDE.get('startDate')) and insureepolicy.start_date is not None:
+            dataValues.append(EventDataValue(dataElement = stageDE.get('startDate'), value = toDateStr(insureepolicy.start_date   )))
+        if is_valid_uid(stageDE.get('effectiveDate')) and insureepolicy.effective_date is not None :
+            dataValues.append(EventDataValue(dataElement = stageDE.get('effectiveDate'), value = toDateStr(insureepolicy.effective_date)))
+        #event.dataValues.append(EventDataValue(dataElement = stageDE.get('policyId'),build_dhis2_id(insureepolicy.policy.uuid)))
         if  insuree is None:
             return Event(\
+            event = build_dhis2_id(insureepolicy.id, 'insureePolicy'),\
             program = insureeProgram['id'],\
             orgUnit = build_dhis2_id(insureepolicy.insuree.family.location.uuid),\
             eventDate = toDateStr(insureepolicy.enrollment_date), \
             status = "COMPLETED",\
             dataValues = dataValues,\
             trackedEntityInstance = build_dhis2_id(insureepolicy.insuree.uuid),\
-            programStage = insureeProgram['stages']["policy"]['id'])
+            programStage = insureeProgram.get('stages').get('policy').get('id'))
         else:
             return Event(\
+            event = build_dhis2_id(insureepolicy.id, 'insureePolicy'),\
             program = insureeProgram['id'],\
             orgUnit = build_dhis2_id(insuree.family.location.uuid),\
             eventDate = toDateStr(insureepolicy.enrollment_date), \
             status = "COMPLETED",\
             dataValues = dataValues,\
             trackedEntityInstance = build_dhis2_id(insuree.uuid),\
-            programStage = insureeProgram['stages']["policy"]['id'])
+            programStage = insureeProgram.get('stages').get('policy').get('id'))
 
         
 

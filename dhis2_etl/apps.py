@@ -16,8 +16,18 @@ DEFAULT_CFG = {
     },
     "salt":"LeSalt",
     "jsonOutPath":'C:/temp',
+    "scheduled_integration": {
+        "claims":  False,
+        "policies": False,
+        "contribution": False,
+        "product": False,
+        "other_optionset": False,
+        "location": False
+    },
     "location":{
-        "rootOrgUnit":"DFNP94LIbPH",
+        "rootOrgUnit":"E0FtAX5eNc3",
+        "rootOrgUnitName":"DemOpenIMIS",
+        "rootOrgUnitCode":"Root",
         "attributes":{
             "locationId":"gMNNTAdZbW1",
             "locationType":"ffZOxd5V2UK"
@@ -29,7 +39,9 @@ DEFAULT_CFG = {
         "groupType" : "iyfsslkBi1G",
         "education" : "EiSeDNXxNjB",
         "product" : "kCdTMGqxLGE",
-        "diagnosis" : "Gg8QVWm9zPh"
+        "diagnosis" : "Gg8QVWm9zPh",
+        "item": "V2nNlKHYNHE",
+        "service": "FxKDNqNDuri"
     }, "visitTypeCodes" : {
         "O" : "Other",
         "R" : "Referal",
@@ -61,6 +73,15 @@ DEFAULT_CFG = {
         "16" : "Valuated"    
     }, 
     "default_page_size":"250",
+    "populationDataset":{
+        "id":"bKrBgAUWYK3",
+        "dataElements":{
+            "malePopulation":"UbpmYBEmuwK.UBIvj1vbywS",
+            "femalePopulation":"UbpmYBEmuwK.rcSbWNhTs6X",
+            "otherPopulation":"UbpmYBEmuwK.C5CknYRHX9S",
+            "familyPopulation":"OYwANZ2NBcZ"
+        }
+    },
     "insureeProgram" : {
         "id" : "IR5BiEXrBD7",
         "teiType":"EoBGArVCQ69",
@@ -73,7 +94,9 @@ DEFAULT_CFG = {
                     "product":"NAdBLHAdOGv",
                     "policyId":"NtslGBEMyMy", 
                     "PolicyValue":"mVeMk0sNLZb",
-                    "expirityDate":"RzgHQtgsmfB" # note used
+                    "expiryDate":"RzgHQtgsmfB",
+                    "startDate":"h2Ck7EyokyI",
+                    "effectiveDate":"zrfmkobtJfx"
                     }
             }
         },
@@ -145,6 +168,7 @@ DEFAULT_CFG = {
                     }
             }
         },
+        
         "attributes" : {
             "insuranceId":"g54R38QNwEi", # Not part of the basic package
             "claimAdministrator":"wDBF7RjuEyp",
@@ -156,9 +180,21 @@ DEFAULT_CFG = {
             "diagnoseSec4":"cPbpCJnkrci",
             "VisitType": "Hxyr4f36WHF"
         }
+    },"fundingProgram" : {
+        "id" : "xB6Q2acQejV",
+        "stages":{
+            "funding" : {
+                "id" : "EPFYYYVuiSw",
+                "dataElements": {
+                    "product":"NAdBLHAdOGv",
+                    "amount":"IHim9F2Hzj4", 
+                    }
+            }
+        }
     }
 }
- # Population on location : id: "UbpmYBEmuwK" TBD
+# Population on location : id: "UbpmYBEmuwK" TBD
+
 
 class Dhis2Config(AppConfig):
     name = MODULE_NAME
@@ -171,7 +207,7 @@ class Dhis2Config(AppConfig):
 
     def __configure_module(self, cfg):
         ModuleConfiguration.build_configuration(cfg)
-        logger.info('Module $s configured successfully', MODULE_NAME)
+        logger.info('Module %s configured successfully', MODULE_NAME)
 
 # To be replaced by optionset
 

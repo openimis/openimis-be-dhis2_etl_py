@@ -1,6 +1,7 @@
 from . import BaseConfiguration
 import json
 
+
 class GeneralConfiguration(BaseConfiguration):
 
     @classmethod
@@ -10,6 +11,8 @@ class GeneralConfiguration(BaseConfiguration):
         config.salt = cfg['salt']
         config.insureeProgram = cfg['insureeProgram']
         config.claimProgram = cfg['claimProgram']
+        config.fundingProgram = cfg['fundingProgram']
+        config.populationDataset = cfg['populationDataset']
         config.optionSet = cfg['optionSet']
         # config.genderCodes = cfg['genderCodes']
         # config.educationCodes = cfg['educationCodes']
@@ -24,6 +27,7 @@ class GeneralConfiguration(BaseConfiguration):
         config.claimStatusCode = cfg['claimStatusCode']
         config.location = cfg['location']
         config.jsonOutPath = cfg['jsonOutPath']
+        config.scheduled_integration = cfg['scheduled_integration']
 
     @classmethod
     def get_dhis2(cls):
@@ -32,32 +36,50 @@ class GeneralConfiguration(BaseConfiguration):
     @classmethod
     def get_insuree_program(cls):
         return cls.get_config().insureeProgram
+
     @classmethod
     def get_salt(cls):
         return cls.get_config().salt
+
     @classmethod
     def get_policy_state_code(cls, code):
-        return cls.get_config().policyStageCode.get(code, 'New Policy')
+        return cls.get_config().policyStageCode.get(str(code), 'New Policy')
+
     @classmethod
     def get_policy_status_code(cls, code):
-        return cls.get_config().policyStatusCode.get(code, 'Idle')
+        return cls.get_config().policyStatusCode.get(str(int(code)), 'Idle')
+
     @classmethod 
     def get_claim_status_code(cls, code):
-        return cls.get_config().claimStatusCode.get(code, 'Valuated')
+        return cls.get_config().claimStatusCode.get(str(int(code)), 'Valuated')
+
     @classmethod
     def get_claim_program(cls):
         return cls.get_config().claimProgram
+
+    @classmethod
+    def get_funding_program(cls):
+        return cls.get_config().fundingProgram
+
+    @classmethod
+    def get_population_dataset(cls):
+        return cls.get_config().populationDataset
+
     @classmethod
     def get_location(cls):
         return cls.get_config().location
+
     @classmethod
     def get_json_out_path(cls):
         return cls.get_config().jsonOutPath
 
-    
     @classmethod
     def get_option_set_uid(cls, name):
         return cls.get_config().optionSet.get(name)
+
+    @classmethod
+    def get_scheduled_integration(cls, resource):
+        return cls.get_config().scheduled_integration[resource]
 
     # @classmethod
     # def get_gender_code(cls, code):
@@ -74,15 +96,15 @@ class GeneralConfiguration(BaseConfiguration):
 
     @classmethod
     def get_boolean_code(cls, code):
-        return cls.get_config().booleanCodes.get(int(code), 'No')
+        return cls.get_config().booleanCodes.get(str(int(code)), 'No')
 
     @classmethod
     def get_marital_status_code(cls, code):
-        return cls.get_config().maritalStatusCodes.get(code, 'Single')
+        return cls.get_config().maritalStatusCodes.get(str(code), 'Single')
 
     @classmethod
     def get_visit_type_code(cls, code):
-        return cls.get_config().visitTypeCodes.get(code, 'Other')
+        return cls.get_config().visitTypeCodes.get(str(code), 'Other')
 
 
     # @classmethod
