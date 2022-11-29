@@ -76,14 +76,10 @@ This module will push data in two programs
 - harmonising Service and Items attributes and Data elements
 - add perms and security if the view triggering the job is kept
 - harmonising usage of insuranceID, InsureeNumber, InsureeID in DHIS2
-- connection error management and DHIS2 answers parsing/logging (loggin only what matters and not including the 99% succesful)
 - add orgUnit in programs
 - safely remove all personal data (firstname. lastname, ...) because those data should't be shared with a BI systems
-- push population to data set
 - pull population from dataset
-- use optionGroup in indicator iso option when the options are defined in IMIS (but for gender)
-- add DE family in population dataset
-
+- update readme with new policy program
 
 
  
