@@ -53,7 +53,7 @@ class ADXTestCase(TestCase):
                     ADXMappingDataValueDefinition(
                         data_element="NB_INSUREES",
                         dataset_from_orgunit_func=lambda hf: hf.insurees,
-                        aggregation_function=lambda insuress_qs: str(insuress_qs.count()),
+                        aggregation_func=lambda insuress_qs: str(insuress_qs.count()),
                         categories=[AGE_CATEGORY_DEFINITION, SEX_CATEGORY_DEFINITION]
                     )
                 ]
@@ -72,7 +72,7 @@ class ADXTestCase(TestCase):
                     ADXMappingDataValueDefinition(
                         data_element="NB_INSUREES",
                         dataset_from_orgunit_func=lambda hf: hf.insurees,
-                        aggregation_function=lambda insuress_qs: str(insuress_qs.count()),
+                        aggregation_func=lambda insuress_qs: str(insuress_qs.count()),
                         categories=[]
                     )
                 ]

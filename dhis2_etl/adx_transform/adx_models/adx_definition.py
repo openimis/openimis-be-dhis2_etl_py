@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Callable, Collection, Type
+from typing import Callable, Collection, List, Type
 from uuid import UUID
 
 from django.db.models import Model, QuerySet
@@ -23,10 +23,11 @@ class ADXMappingCategoryDefinition:
 @dataclass
 class ADXMappingDataValueDefinition:
     data_element: str
-    aggregation_function: Callable[[QuerySet], str]
+    aggregation_func: Callable[[QuerySet], str]
     dataset_from_orgunit_func: Callable[[Model], QuerySet]
     period_filter_func: Callable[[Period], QuerySet]
     categories: List[ADXMappingCategoryDefinition]
+
 
 
 @dataclass

@@ -13,6 +13,8 @@ ADXMappingCubeDefinition(
                 ADXMappingDataValueDefinition(
                     data_element=str, # Name of calculated value 
                     period_filter_func =  function # function expection an queryset to filter and a period as input and should return a queryset
+                    dataset_from_orgunit_func=function # Function extracting collection from group orgunit object
+                    aggregation_func=function # Function transofrming filtered queryset to dataset value 
                     categories=[
                         ADXMappingCategoryDefinition(
                             category_name=str,
