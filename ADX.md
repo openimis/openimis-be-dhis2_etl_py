@@ -8,7 +8,7 @@ ADXMappingCubeDefinition(
     groups=[
         ADXMappingGroupDefinition(
             comment=str, # Generic comment 
-            dataset=Model, # Django model, used as base for data value calcultions
+            to_org_unit_code_func= lambda l: build_dhis2_id(l.uuid),
             data_values=[
                 ADXMappingDataValueDefinition(
                     data_element=str, # Name of calculated value 
@@ -19,7 +19,7 @@ ADXMappingCubeDefinition(
                             category_options=[
                                 ADXCategoryOptionDefinition(
                                     code=code,
-                                    filter=function # Function Filtering output of `related_from_dataset_func`
+                                    filter=function # Function Filtering output of `dataset_from_orgunit_func`
                                 )
     ])])])])
 ```
@@ -37,7 +37,7 @@ from dhis2_etl.adx_transform.adx_models.adx_definition import ADXMappingGroupDef
 definition = ADXMappingGroupDefinition(...)
 builder = ADXBuilder(definition)
 period_type = "2019-01-01/P2Y"  # In format accepted by definition.period_type
-org_units = HealthFaciltity.objects.filter(validity_to__isnull=True).values_list("uuid", flat=True)  # All HF
+org_units = HealthFaciltity.objects.filter(validity_to__isnull=True)  # All HF
 builder.create_adx_cube(period_type, org_units)  # Returns ADXMapping object
 ```
 

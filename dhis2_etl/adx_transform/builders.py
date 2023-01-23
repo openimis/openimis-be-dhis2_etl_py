@@ -16,7 +16,7 @@ class ADXDataValueBuilder:
         self.categories = adx_mapping_definition.categories
         self.period_filter_func = adx_mapping_definition.period_filter_func
         self.data_element = adx_mapping_definition.data_element
-        self.related_from_dataset_func = adx_mapping_definition.related_from_dataset_func
+        self.dataset_from_orgunit_func = adx_mapping_definition.dataset_from_orgunit_func
 
     def create_adx_data_value(self, organization_unit: Model, period: Period) -> List[ADXDataValue]:
         data_values = []
@@ -80,16 +80,16 @@ class ADXGroupBuilder:
         self.adx_mapping_definition = adx_mapping_definition
         self.data_value_mapper = data_value_mapper
 
-    def create_adx_group(self, period: Period, org_unit: UUID):
+    def create_adx_group(self, period: Period, org_unit_obj: Model):
         return ADXMappingGroup(
-            org_unit=build_dhis2_id(org_unit),
+            org_unit=self.adx_mapping_definition.to_org_unit_code_func(org_unit_obj),
             period=period.representation,
             data_set=self.adx_mapping_definition.dataset_repr,
-            data_values=self._build_group_data_values(period, org_unit),
+            data_values=self._build_group_data_values(period, org_unit_obj),
             comment=self.adx_mapping_definition.comment
         )
 
-    def _build_group_data_values(self, period: Period, org_unit: UUID):
+    def _build_group_data_values(self, period: Period, org_unit_obj: object):
         data_values = []
         for data_value in self.adx_mapping_definition.data_values:
             org_unit_obj = self.adx_mapping_definition.dataset.objects.get(uuid=org_unit)
@@ -104,14 +104,14 @@ class ADXBuilder:
         self.adx_mapping_definition = adx_mapping_definition
         self.group_mapper = group_mapper
 
-    def create_adx_cube(self, period: str, org_units: Collection[UUID]) -> ADXMapping:
+    def create_adx_cube(self, period: str, org_units: Collection[Model]) -> ADXMapping:
         period = self._period_str_to_obj(period)
         return ADXMapping(
             name=self.adx_mapping_definition.name,
             groups=self._build_adx_groups(period, org_units)
         )
 
-    def _build_adx_groups(self, period: Period, org_units: Collection[UUID]):
+    def _build_adx_groups(self, period: Period, org_units: Collection[Model]):
         groups = []
         for group_definition in self.adx_mapping_definition.groups:
             group_mapper = self.group_mapper(group_definition)

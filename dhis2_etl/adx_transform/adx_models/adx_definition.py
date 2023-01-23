@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from typing import List, Callable, Collection, Type
 from uuid import UUID
 
+from django.db.models import Model, QuerySet
+
 from dhis2_etl.adx_transform.adx_models.adx_data import Period
 from dhis2_etl.adx_transform.adx_models.adx_time_period import PeriodType
 
@@ -22,7 +24,7 @@ class ADXMappingCategoryDefinition:
 class ADXMappingDataValueDefinition:
     data_element: str
     aggregation_function: Callable[[QuerySet], str]
-    related_from_dataset_func: Callable[[Model], QuerySet]
+    dataset_from_orgunit_func: Callable[[Model], QuerySet]
     period_filter_func: Callable[[Period], QuerySet]
     categories: List[ADXMappingCategoryDefinition]
 

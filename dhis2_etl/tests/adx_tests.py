@@ -48,11 +48,11 @@ class ADXTestCase(TestCase):
         groups=[
             ADXMappingGroupDefinition(
                 comment="Test Comment",
-                dataset=HealthFacility,
+                to_org_unit_code_func= lambda l: build_dhis2_id(l.uuid),
                 data_values=[
                     ADXMappingDataValueDefinition(
                         data_element="NB_INSUREES",
-                        related_from_dataset_func=lambda hf: hf.insurees,
+                        dataset_from_orgunit_func=lambda hf: hf.insurees,
                         aggregation_function=lambda insuress_qs: str(insuress_qs.count()),
                         categories=[AGE_CATEGORY_DEFINITION, SEX_CATEGORY_DEFINITION]
                     )
@@ -67,11 +67,11 @@ class ADXTestCase(TestCase):
         groups=[
             ADXMappingGroupDefinition(
                 comment="Test Comment",
-                dataset=HealthFacility,
+                to_org_unit_code_func= lambda l: build_dhis2_id(l.uuid),
                 data_values=[
                     ADXMappingDataValueDefinition(
                         data_element="NB_INSUREES",
-                        related_from_dataset_func=lambda hf: hf.insurees,
+                        dataset_from_orgunit_func=lambda hf: hf.insurees,
                         aggregation_function=lambda insuress_qs: str(insuress_qs.count()),
                         categories=[]
                     )
@@ -114,7 +114,7 @@ class ADXTestCase(TestCase):
 
     def _create_test_adx(self, test_period=VALID_TEST_PERIOD, test_definition=TEST_ADX_DEFINITION):
         builder = ADXBuilder(test_definition)
-        org_units = [self._TEST_HF.uuid]
+        org_units = [self._TEST_HF]
         return builder.create_adx_cube(test_period, org_units)
 
     @classmethod
