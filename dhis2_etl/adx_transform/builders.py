@@ -14,7 +14,7 @@ from dhis2_etl.utils import build_dhis2_id
 class ADXDataValueBuilder:
     def __init__(self, adx_mapping_definition: ADXMappingDataValueDefinition):
         self.categories = adx_mapping_definition.categories
-        self.aggregation_func = adx_mapping_definition.aggregation_function
+        self.period_filter_func = adx_mapping_definition.period_filter_func
         self.data_element = adx_mapping_definition.data_element
         self.related_from_dataset_func = adx_mapping_definition.related_from_dataset_func
 
@@ -62,7 +62,10 @@ class ADXDataValueBuilder:
         return filters
 
     def _get_filtered_queryset(self, organization_unit, period):
-        qs = self.related_from_dataset_func(organization_unit)
+        qs = self.dataset_from_orgunit_func(organization_unit)
+        if self.period_filter_func is not None:
+            qs = self.period_filter_func(qs, period)
+        else:
         qs = self._filter_period(qs, period)
         return qs
 
