@@ -1,7 +1,7 @@
 import itertools
 
 from django.db.models import Q, Model, F
-from typing import Collection, List, Type
+from typing import Callable, Collection, List, Type
 from uuid import UUID
 
 from dhis2_etl.adx_transform.adx_models.adx_data import Period, ADXDataValue, ADXDataValueAggregation, ADXMappingGroup, \
@@ -67,12 +67,12 @@ class ADXDataValueBuilder:
         if self.period_filter_func is not None:
             qs = self.period_filter_func(qs, period)
         else:
-            qs = self._filter_period(qs, period)
+            qs = _filter_period(qs, period)
         return qs
 
-    def _filter_period(self, qs, period):
-        return qs.filter(validity_from__gte=period.from_date, validity_from__lte=period.to_date)\
-            .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))
+def _filter_period( qs, period):
+    return qs.filter(validity_from__gte=period.from_date, validity_from__lte=period.to_date)\
+        .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))
 
 
 class ADXGroupBuilder:
@@ -81,9 +81,9 @@ class ADXGroupBuilder:
         self.adx_mapping_definition = adx_mapping_definition
         self.data_value_mapper = data_value_mapper
 
-    def create_adx_group(self, period: Period, org_unit_obj: Model):
+    def create_adx_group(self, period: Period, org_unit_obj: Model, org_unit: str):
         return ADXMappingGroup(
-            org_unit=self.adx_mapping_definition.to_org_unit_code_func(org_unit_obj),
+            org_unit=org_unit, 
             period=period.representation,
             data_set=self.adx_mapping_definition.dataset_repr,
             data_values=self._build_group_data_values(period, org_unit_obj),
@@ -100,7 +100,9 @@ class ADXGroupBuilder:
 
 class ADXBuilder:
     def __init__(self, adx_mapping_definition: ADXMappingCubeDefinition,
+                 to_org_unit_code_func: Callable[[Model]],
                  group_mapper: Type[ADXGroupBuilder] = ADXGroupBuilder):
+        self.to_org_unit_code_func = to_org_unit_code_func
         self.adx_mapping_definition = adx_mapping_definition
         self.group_mapper = group_mapper
 
@@ -115,8 +117,9 @@ class ADXBuilder:
         groups = []
         for group_definition in self.adx_mapping_definition.groups:
             group_mapper = self.group_mapper(group_definition)
-            for org_unit in org_units:
-                groups.append(group_mapper.create_adx_group(period, org_unit))
+            for org_unit_obj in org_units:
+                org_unit = self.to_org_unit_code_func(org_unit_obj)
+                groups.append(group_mapper.create_adx_group(period, org_unit_obj,org_unit))
         return groups
 
     def _period_str_to_obj(self, period: str):
