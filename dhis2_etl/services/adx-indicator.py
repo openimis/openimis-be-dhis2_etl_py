@@ -350,7 +350,7 @@ def last_day_of_last_month(any_day):
 
 #Nombre d’adhérents par district, par municipalité, par sexe, par âge 
 def post_enrollment_cube(period):
-    org_units =  list(Location.all().filter(validity_to__isnull = True).filter(type = 'V'))
+    org_units =  list(Location.all().filter(validity_to__isnull = True).filter(type = 'M'))
     builder = ADXBuilder(get_enrollment_cube(period))
     insuree_data =  builder.create_adx_cube(period, org_units)
     return api.post(
