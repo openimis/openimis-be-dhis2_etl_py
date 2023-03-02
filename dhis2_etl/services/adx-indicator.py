@@ -104,7 +104,7 @@ def get_number_insuree_group(period):
                     ADXMappingDataValueDefinition(
                         data_element="NB_INSUREES",
                         #period_filter_func = _filter_period,
-                        dataset_from_orgunit_func=lambda l: l.insuree_set.filter(validity_to__isnull=True),
+                        dataset_from_orgunit_func=lambda l: l.children.insuree_set.filter(validity_to__isnull=True),
                         aggregation_func=lambda insuress_qs: str(insuress_qs.count()),
                         categories=[
                             get_age_range_from_boundaries_categories(AGE_BOUNDARIES,period),
@@ -121,7 +121,7 @@ def get_number_family_group(period):
                     ADXMappingDataValueDefinition(
                         data_element="NB_FAMILY",
                         #period_filter_func = _filter_period,
-                        dataset_from_orgunit_func=lambda l: l.insuree_set.filter(head=True).filter(validity_to__isnull=True),
+                        dataset_from_orgunit_func=lambda l: l.children.insuree_set.filter(head=True).filter(validity_to__isnull=True),
                         aggregation_func=lambda family_qs: str(family_qs.count()),
                         categories=[
                             get_age_range_from_boundaries_categories(AGE_BOUNDARIES,period),
