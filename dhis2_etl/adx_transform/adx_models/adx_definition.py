@@ -25,7 +25,7 @@ class ADXMappingDataValueDefinition:
     data_element: str
     aggregation_func: Callable[[QuerySet], str]
     dataset_from_orgunit_func: Callable[[Model], QuerySet]
-    period_filter_func: Callable[[Period], QuerySet]
+    period_filter_func: Callable[[QuerySet, Period], QuerySet]
     categories: List[ADXMappingCategoryDefinition]
 
 
@@ -35,6 +35,7 @@ class ADXMappingGroupDefinition:
     comment: str
     dataset: Type[Model]  # HF Etc.
     data_values: List[ADXMappingDataValueDefinition]
+    to_org_unit_code_func: Callable[[Model], str]
 
     @property
     def dataset_repr(self) -> str:

@@ -1,2 +1,2 @@
-from .adx_tests import ADXTestCase
+from .adx_tests import ADXTests
 from .daily_sync_tests import DailySyncTests

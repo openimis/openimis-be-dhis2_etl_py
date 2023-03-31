@@ -1,4 +1,4 @@
-import datetime
+import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -9,6 +9,8 @@ from dhis2_etl.scheduled_tasks.utils import sync_product_if_changed, sync_option
 from dhis2_etl.services.claimServices import syncClaim
 from dhis2_etl.services.fundingServices import sync_funding
 from dhis2_etl.services.insureeServices import syncPolicy
+
+logger = logging.getLogger(__name__)
 
 SYNC_FUNCTIONS = [
     SyncFunction("claim", syncClaim, GeneralConfiguration.get_scheduled_integration('claims')),
