@@ -1,7 +1,7 @@
 from django.db.models import Q, F
 from django.db.models.functions import Coalesce
 
-from claim.models import ClaimItem
+from claim.models import ClaimItem, ClaimService
 from contribution.models import Premium
 from dhis2_etl.adx_transform.adx_models.adx_definition import ADXMappingDataValueDefinition
 from dhis2_etl.services.adx.categories import get_age_range_from_boundaries_categories, get_sex_categories, \
@@ -70,11 +70,29 @@ def get_hf_claim_number_dv(period):
     )
 
 
+def get_hf_benefit_number(period):
+    ADXMappingDataValueDefinition(
+        data_element="NB_BENEFIT",
+        period_filter_func=_claim_details_period_filter,
+        dataset_from_orgunit_func=lambda hf: ClaimItem.objects.filter(
+            claim__health_facility=hf, validity_to__isnull=True, claim__date_processed__isnull=False),
+        aggregation_func=lambda qs: str(qs.aggregate(sum=Coalesce('qty_approved', 'qty_provided'))),
+        categories=[
+            get_policy_product_categories(period),
+            get_claim_details_status_categories(),
+            get_claim_type_categories(prefix='claim__'),
+            get_sex_categories(prefix='claim__insuree'),
+            get_age_range_from_boundaries_categories(period, prefix='claim__insuree'),
+            get_main_icd_categories(period)
+        ]
+    )
+
+
 def get_hf_claim_benefits_valuated_dv(period):
     return ADXMappingDataValueDefinition(
         data_element="NB_BENEFIT",
         period_filter_func=_claim_details_period_filter,
-        dataset_from_orgunit_func=lambda hf: ClaimItem.objects.filter(
+        dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, validity_to__isnull=True, claim__date_processed__isnull=False),
         aggregation_func=lambda qs: get_qs_sum(qs.annotate(qty=Coalesce('qty_approved', 'qty_provided')), 'qty'),
         categories=[
@@ -92,7 +110,7 @@ def get_hf_claim_benefits_asked_dv(period):
     return ADXMappingDataValueDefinition(
         data_element="SUM_ASKED_BENEFIT",
         period_filter_func=_claim_details_period_filter,
-        dataset_from_orgunit_func=lambda hf: ClaimItem.objects.filter(
+        dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, validity_to__isnull=True, claim__date_processed__isnull=False),
         aggregation_func=lambda qs: get_qs_sum(qs.annotate(full_price=F('price_asked') * F('qty_provided')),
                                                'full_price'),
