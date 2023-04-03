@@ -148,8 +148,8 @@ class DailySyncTests(TestCase):
     def _create_test_insuree(cls, chfid: str, sex: str, dob: str, validity: str) -> List[Insuree]:
         return create_test_insuree(
             True,
-            {'chf_id': chfid,
-             'gender': Gender.objects.get(code=sex),
-             'dob': dob,
-             'validity_from': validity}
+            custom_props={'chf_id': chfid,
+                          'gender': Gender.objects.get(code=sex),
+                          'dob': dob,
+                          'validity_from': validity}
         )
