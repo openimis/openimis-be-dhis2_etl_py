@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 from typing import Any
 
-from django.db.models import QuerySet, Sum, Model, Q, Value, F
+from django.db.models import QuerySet, Sum, Model, Q, F, Exists, OuterRef
 
+from contribution.models import Premium
 from dhis2_etl.adx_transform.adx_models.adx_data import Period
 from dhis2_etl.utils import build_dhis2_id
 
@@ -37,5 +38,38 @@ def filter_period(qs: QuerySet, period: Period) -> QuerySet:
         .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))
 
 
+def get_contribution_period_filter(qs, p):
+    return qs.filter(pay_date__range=[p.from_date, p.to_date])
+
+
+def get_claim_period_filter(qs, period):
+    return qs.filter((Q(date_to__isnull=True) & Q(date_from__range=[period.from_date, period.to_date])) | (
+            Q(date_to__isnull=False) & Q(date_to__range=[period.from_date, period.to_date])))
+
+
+def get_claim_details_period_filter(qs, period):
+    return qs.filter(
+        (Q(claim__date_to__isnull=True) & Q(claim__date_from__range=[period.from_date, period.to_date])) | (
+                Q(claim__date_to__isnull=False) & Q(claim__date_to__range=[period.from_date, period.to_date])))
+
+
 def get_org_unit_code(model: Model) -> str:
     return build_dhis2_id(model.uuid)
+
+
+def get_fully_paid():
+    return Q(policy_value_sum__lte=Sum('family__policies__premiums__amount'))
+
+
+def get_partially_paid():
+    return Q(policy_value_sum__gt=Sum('family__policies__premiums__amount'))
+
+
+def not_paid():
+    return Exists(Premium.objects.filter(validity_to__isnull=True).filter(policy=OuterRef('family__policies')))
+
+
+def valid_policy(period):
+    return (Q(family__policies__effective_date__lte=period.to_date)
+            & Q(family__policies__expiry_date__lt=period.to_date)) \
+        & Q(family__policies__validity_to__isnull=True)
