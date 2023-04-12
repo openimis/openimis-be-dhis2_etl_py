@@ -1,8 +1,10 @@
 from dataclasses import dataclass
-from typing import List, Callable, Collection, Type
+from typing import Callable, Collection, List, Type
 from uuid import UUID
 
-from django.db.models import QuerySet, Model
+from django.db.models import Model, QuerySet
+
+from dhis2_etl.adx_transform.adx_models.adx_data import Period
 from dhis2_etl.adx_transform.adx_models.adx_time_period import PeriodType
 
 
@@ -21,10 +23,11 @@ class ADXMappingCategoryDefinition:
 @dataclass
 class ADXMappingDataValueDefinition:
     data_element: str
-    aggregation_function: Callable[[QuerySet], str]
-    related_from_dataset_func: Callable[[Model], QuerySet]
-    aggregation_function: Callable[[QuerySet], str]
+    aggregation_func: Callable[[QuerySet], str]
+    dataset_from_orgunit_func: Callable[[Model], QuerySet]
+    period_filter_func: Callable[[QuerySet, Period], QuerySet]
     categories: List[ADXMappingCategoryDefinition]
+
 
 
 @dataclass
@@ -32,6 +35,7 @@ class ADXMappingGroupDefinition:
     comment: str
     dataset: Type[Model]  # HF Etc.
     data_values: List[ADXMappingDataValueDefinition]
+    to_org_unit_code_func: Callable[[Model], str]
 
     @property
     def dataset_repr(self) -> str:
