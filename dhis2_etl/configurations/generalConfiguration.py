@@ -8,6 +8,7 @@ class GeneralConfiguration(BaseConfiguration):
     def build_configuration(cls, cfg):
         config = cls.get_config()
         config.dhis2 = cfg['dhis2']
+        config.adx = cfg['adx']
         config.salt = cfg['salt']
         config.insureeProgram = cfg['insureeProgram']
         config.claimProgram = cfg['claimProgram']
@@ -32,6 +33,10 @@ class GeneralConfiguration(BaseConfiguration):
     @classmethod
     def get_dhis2(cls):
         return cls.get_config().dhis2
+
+    @classmethod
+    def get_adx(cls):
+        return cls.get_config().adx
 
     @classmethod
     def get_insuree_program(cls):
