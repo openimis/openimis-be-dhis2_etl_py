@@ -25,8 +25,9 @@ def get_location_filter(location: Model, fk: str = 'location') -> dict[str, Mode
     }
 
 
-def get_last_day_of_last_month(any_day: datetime) -> datetime:
-    return any_day - timedelta(days=any_day.day)
+def get_first_day_of_last_month() -> datetime:
+    now = datetime.now()
+    return (now - timedelta(days=now.day)).replace(day=1)
 
 
 def filter_with_prefix(qs: QuerySet, key: str, value: Any, prefix: str = '') -> QuerySet:

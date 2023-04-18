@@ -50,7 +50,7 @@ class ADXClient:
         return self._get_config(key, config=GeneralConfiguration.get_adx(), **kwargs)
 
     @staticmethod
-    def _get_config(key: str, config=GeneralConfiguration.get_adx(), **kwargs) -> Any:
+    def _get_config(key: str, config: Dict, **kwargs) -> Any:
         return kwargs.get(key) if kwargs and key in kwargs else config[key]
 
     def _get_post_headers(self) -> Dict[str, str]:
