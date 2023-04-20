@@ -31,7 +31,7 @@ def schedule_daily_sync():
 
 
 def adx_monthly_sync():
-    with ADXClient(host='http://localhost:8080') as adx_client:
+    with ADXClient() as adx_client:
         service = ADXService.last_month()
         adx_client.post_cube(service.build_claim_cube())
         adx_client.post_cube(service.build_enrolment_cube())
