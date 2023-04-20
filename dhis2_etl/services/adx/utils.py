@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Dict
 
 from django.db.models import QuerySet, Sum, Model, Q, F, Exists, OuterRef
 
@@ -16,7 +16,7 @@ def get_qs_sum(qs: QuerySet, field: str) -> str:
     return str(qs.aggregate(Sum(field))[f'{field}__sum'] or 0)
 
 
-def get_location_filter(location: Model, fk: str = 'location') -> dict[str, Model]:
+def get_location_filter(location: Model, fk: str = 'location') -> Dict[str, Model]:
     return {
         f'{fk}': location,
         f'{fk}__parent': location,
@@ -25,8 +25,9 @@ def get_location_filter(location: Model, fk: str = 'location') -> dict[str, Mode
     }
 
 
-def get_last_day_of_last_month(any_day: datetime) -> datetime:
-    return any_day - timedelta(days=any_day.day)
+def get_first_day_of_last_month() -> datetime:
+    now = datetime.now()
+    return (now - timedelta(days=now.day)).replace(day=1)
 
 
 def filter_with_prefix(qs: QuerySet, key: str, value: Any, prefix: str = '') -> QuerySet:
