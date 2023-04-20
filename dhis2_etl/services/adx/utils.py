@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Dict
 
 from django.db.models import QuerySet, Sum, Model, Q, F, Exists, OuterRef
 
@@ -16,7 +16,7 @@ def get_qs_sum(qs: QuerySet, field: str) -> str:
     return str(qs.aggregate(Sum(field))[f'{field}__sum'] or 0)
 
 
-def get_location_filter(location: Model, fk: str = 'location') -> dict[str, Model]:
+def get_location_filter(location: Model, fk: str = 'location') -> Dict[str, Model]:
     return {
         f'{fk}': location,
         f'{fk}__parent': location,
