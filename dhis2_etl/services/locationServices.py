@@ -31,7 +31,6 @@ def syncRegion(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(type='R')\
-        .select_related('parent')\
         .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
     res.append(post('metadata',None, LocationConverter.to_org_unit_group_obj, group_name='Region', id = 'UMRPiQP7N4v' )) 

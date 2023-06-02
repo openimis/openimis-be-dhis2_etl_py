@@ -22,7 +22,7 @@ DEFAULT_CFG = {
         "org_unit_id_scheme": "code",
     },
     "salt":"LeSalt",
-    "jsonOutPath":'C:/temp',
+    "jsonOutPath":'/temp',
     "scheduled_integration": {
         "claims":  False,
         "policies": False,
