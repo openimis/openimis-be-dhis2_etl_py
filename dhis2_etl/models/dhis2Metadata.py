@@ -13,13 +13,9 @@ from .dhis2Type import uid, dateStr, datetimeStr, DHIS2Ref, DeltaDHIS2Ref, str50
 
 
 
-class OrganisationUnit(BaseModel):
+class OrganisationUnit(MetadataSn):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
-    id: Optional[uid]
-    code: str50
-    name: str230 # max 230
-    shortName: str50 # max 50
     description: Optional[str] # TBC
     openingDate: dateStr
     closedDate: Optional[dateStr]
@@ -36,24 +32,17 @@ class OrganisationUnit(BaseModel):
 
 
 
-class OrganisationUnitGroup(BaseModel):
+class OrganisationUnitGroup(MetadataSn):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
-    id: Optional[uid]
-    code: Optional[str]
-    name: str230
-    shortName: Optional[str]
     description: Optional[str]
     organisationUnits:Union[List[DHIS2Ref],DeltaDHIS2Ref] = []
     # color
     # symbol
 
-class OrganisationUnitGroupSet(BaseModel):
+class OrganisationUnitGroupSet(Metadata):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
-    id: Optional[uid]
-    code: Optional[str50]
-    name: Optional[str230]
     description: Optional[str] # TBC
     organisationUnitGroups:Union[List[DHIS2Ref],DeltaDHIS2Ref] = []
     # datadimention
@@ -71,10 +60,7 @@ class OrganisationUnitBundle(BaseModel):
 
 # OptionSet and options
 
-class OptionSet(BaseModel):
-    id: Optional[uid]
-    name: str230
-    code: Optional[str50]
+class OptionSet(Metadata):
     valueType: ValueType
     options: List[DHIS2Ref]
 
@@ -112,3 +98,32 @@ class OptionSetBundle(BaseModel):
 
 class OptionBundle(BaseModel):
     options: List[Option]
+
+class Metadata(BaseModel):
+    name: str230
+    id: Optional[uid]
+    code: Optional[str50]
+
+class MetadataSn(Metadata):
+    shortName: Optional[str50]
+
+
+class Category(MetadataSn):
+    pass
+    
+class CategoryBundle(BaseModel):
+    categories: List[Category]
+ 
+class CategoryCombo(MetadataSn):
+    pass
+ 
+class CategoryComboBundle(BaseModel):
+    categoryCombos: List[Category]
+
+ 
+class CategoryOption(MetadataSn):
+    pass
+ 
+ class CategoryOptionBundle(BaseModel):
+    categoryOptions: List[Category]
+
