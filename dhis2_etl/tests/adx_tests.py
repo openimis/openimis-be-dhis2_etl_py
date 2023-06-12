@@ -3,21 +3,21 @@ from dataclasses import asdict
 from typing import List
 from xml.etree import ElementTree
 
-from django.test import TestCase
-
-from location.models import HealthFacility, Location
-
-from dhis2_etl.adx_transform.formatters import XMLFormatter
-from dhis2_etl.adx_transform.builders import ADXBuilder
-from dhis2_etl.adx_transform.adx_models.adx_definition import ADXMappingDataValueDefinition, \
-    ADXMappingCategoryDefinition, ADXCategoryOptionDefinition, ADXMappingCubeDefinition, ADXMappingGroupDefinition
+from dhis2_etl.builders.adx import ADXBuilder
+from dhis2_etl.serializers.adx import XMLFormatter
+from dhis2_etl.models.adx.definition import (ADXCategoryOptionDefinition,
+                                             ADXMappingCategoryDefinition,
+                                             ADXMappingCubeDefinition,
+                                             ADXMappingDataValueDefinition,
+                                             ADXMappingGroupDefinition)
+from dhis2_etl.models.adx.time_period import (ISOFormatPeriodType,
+                                              PeriodParsingException)
 from dhis2_etl.utils import build_dhis2_id
-from insuree.models import Insuree
-
-from insuree.models import Gender
+from django.test import TestCase
+from insuree.models import Gender, Insuree
 from insuree.test_helpers import create_test_insuree
+from location.models import HealthFacility, Location
 from location.test_helpers import create_test_health_facility
-from dhis2_etl.adx_transform.adx_models.adx_time_period import ISOFormatPeriodType, PeriodParsingException
 
 
 class ADXTests(TestCase):
@@ -44,12 +44,12 @@ class ADXTests(TestCase):
     )
 
     TEST_ADX_DEFINITION = ADXMappingCubeDefinition(
-        name='TEST_HF_ADX_DEFINITION',
         period_type=ISOFormatPeriodType(),
         groups=[
             ADXMappingGroupDefinition(
                 comment="Test Comment",
-                dataset=HealthFacility,
+                data_set='TEST_HF_ADX_DEFINITION',
+                org_unit_type=HealthFacility,
                 to_org_unit_code_func=lambda hf: build_dhis2_id(hf.uuid),
                 data_values=[
                     ADXMappingDataValueDefinition(
@@ -66,12 +66,12 @@ class ADXTests(TestCase):
     )
 
     TEST_ADX_DEFINITION_NO_CAT = ADXMappingCubeDefinition(
-        name='TEST_HF_ADX_DEFINITION',
         period_type=ISOFormatPeriodType(),
         groups=[
             ADXMappingGroupDefinition(
                 comment="Test Comment",
-                dataset=HealthFacility,
+                data_set='TEST_HF_ADX_DEFINITION',
+                org_unit_type=HealthFacility,
                 to_org_unit_code_func=lambda hf: build_dhis2_id(hf.uuid),
                 data_values=[
                     ADXMappingDataValueDefinition(
@@ -143,7 +143,7 @@ class ADXTests(TestCase):
             'groups': [{
                 'org_unit': org_unit,
                 'period': '2019-01-01/P2Y',
-                'data_set': "HEALTHFACILITY",
+                'data_set': "TEST_HF_ADX_DEFINITION",
                 'comment': 'Test Comment',
                 'data_values': [{
                     'data_element': 'NB_INSUREES',
@@ -193,7 +193,7 @@ class ADXTests(TestCase):
             'groups': [{
                 'org_unit': org_unit,
                 'period': '2019-01-01/P2Y',
-                'data_set': "HEALTHFACILITY",
+                'data_set': "TEST_HF_ADX_DEFINITION",
                 'comment': 'Test Comment',
                 'data_values': [{
                     'data_element': 'NB_INSUREES',
@@ -202,7 +202,7 @@ class ADXTests(TestCase):
                 }]
             }]
         }
-        cls.EXPECTED_XML_DUMP = F'''<adx><group org_unit="{org_unit}" period="2019-01-01/P2Y" data_set="HEALTHFACILITY" comment="Test Comment"><dataValue data_element="NB_INSUREES" value="1" ageGroup="&lt;=50yo" sex="M" /><dataValue data_element="NB_INSUREES" value="2" ageGroup="&lt;=50yo" sex="F" /><dataValue data_element="NB_INSUREES" value="0" ageGroup="&gt;50yo" sex="M" /><dataValue data_element="NB_INSUREES" value="0" ageGroup="&gt;50yo" sex="F" /></group></adx>'''
+        cls.EXPECTED_XML_DUMP = F'''<adx><group orgUnit="{org_unit}" period="2019-01-01/P2Y" dataSet="TEST_HF_ADX_DEFINITION" comment="Test Comment"><dataValue dataElement="NB_INSUREES" value="1" ageGroup="&lt;=50yo" sex="M" /><dataValue dataElement="NB_INSUREES" value="2" ageGroup="&lt;=50yo" sex="F" /><dataValue dataElement="NB_INSUREES" value="0" ageGroup="&gt;50yo" sex="M" /><dataValue dataElement="NB_INSUREES" value="0" ageGroup="&gt;50yo" sex="F" /></group></adx>'''
 
     @classmethod
     def _create_test_insuree(cls, chfid: str, sex: str, dob: str, validity: str) -> List[Insuree]:

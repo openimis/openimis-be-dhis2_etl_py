@@ -1,12 +1,15 @@
 import itertools
-
-from django.db.models import Q, Model, F
 from typing import Collection, List, Type
 
-from dhis2_etl.adx_transform.adx_models.adx_data import Period, ADXDataValue, ADXDataValueAggregation, ADXMappingGroup, \
-    ADXMapping
-from dhis2_etl.adx_transform.adx_models.adx_definition import ADXMappingDataValueDefinition, ADXMappingGroupDefinition, \
-    ADXMappingCubeDefinition
+from dhis2_etl.models.adx.data import (ADXDataValue, ADXDataValueAggregation,
+                                       ADXMapping, ADXMappingGroup, Period)
+from dhis2_etl.models.adx.definition import (ADXMappingCubeDefinition,
+                                             ADXMappingDataValueDefinition,
+                                             ADXMappingGroupDefinition)
+from django.db.models import F, Model, Q , When
+
+from datetime import date
+from dhis2_etl.utils import toDateStr
 
 
 class ADXDataValueBuilder:
@@ -64,8 +67,9 @@ class ADXDataValueBuilder:
         qs = self.dataset_from_orgunit_func(organization_unit)
         if self.period_filter_func is not None:
             qs = self.period_filter_func(qs, period)
-        else:
-            qs = _filter_period(qs, period)
+        # this does not make sens for ADX as the sum could be across all data
+        #else:
+        #    qs = _filter_period(qs, period)
         return qs
 
 
@@ -75,16 +79,18 @@ def _filter_period(qs, period):
 
 
 class ADXGroupBuilder:
-    def __init__(self, adx_mapping_definition: ADXMappingGroupDefinition,
+    def __init__(self, 
+                 adx_mapping_definition: ADXMappingGroupDefinition,
                  data_value_mapper: Type[ADXDataValueBuilder] = ADXDataValueBuilder):
         self.adx_mapping_definition = adx_mapping_definition
         self.data_value_mapper = data_value_mapper
 
-    def create_adx_group(self, period: Period, org_unit_obj: Model, org_unit: str):
+    def create_adx_group(self,  period: Period, org_unit_obj: Model, org_unit: str):
         return ADXMappingGroup(
+            complete_date = toDateStr(date.today()),
             org_unit=org_unit,
             period=period.representation,
-            data_set=self.adx_mapping_definition.dataset_repr,
+            data_set=self.adx_mapping_definition.data_set,
             data_values=self._build_group_data_values(period, org_unit_obj),
             comment=self.adx_mapping_definition.comment
         )
@@ -106,7 +112,6 @@ class ADXBuilder:
     def create_adx_cube(self, period: str, org_units: Collection[Model]) -> ADXMapping:
         period = self._period_str_to_obj(period)
         return ADXMapping(
-            name=self.adx_mapping_definition.name,
             groups=self._build_adx_groups(period, org_units)
         )
 
@@ -121,3 +126,8 @@ class ADXBuilder:
 
     def _period_str_to_obj(self, period: str):
         return self.adx_mapping_definition.period_type.build_period(period)
+
+
+
+        
+

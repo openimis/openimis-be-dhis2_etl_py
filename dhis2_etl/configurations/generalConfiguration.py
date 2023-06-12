@@ -1,5 +1,6 @@
-from . import BaseConfiguration
 import json
+
+from . import BaseConfiguration
 
 
 class GeneralConfiguration(BaseConfiguration):

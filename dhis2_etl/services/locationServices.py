@@ -1,20 +1,23 @@
 
 # Service to push openIMIS location and HF to DHIS2
 # Copyright Patrick Delcoix <patrick@pmpd.eu>
-from ..models.dhis2Metadata import *
-#import time
-from django.http import  JsonResponse
-from ..converters.LocationConverter import LocationConverter
-from location.models import Location, HealthFacility
-#from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Q, Prefetch, F
-# FIXME manage permissions
-from ..utils import *
-
 # import the logging library
 import logging
+
+#import time
+from dhis2_etl.builders.dhis2.LocationConverter import LocationConverter
+from dhis2_etl.models.dhis2.metadata import *
+#from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import F, Q
+from location.models import HealthFacility, Location
+
+# FIXME manage permissions
+from dhis2_etl.utils import *
+from dhis2_etl.strategy.dhis2_client import *
+
+
 # Get an instance of a logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('openIMIS')
 
 postMethod = postPaginated
 # postMethod = postPaginatedThreaded
@@ -38,10 +41,12 @@ def syncRegion(startDate,stopDate):
     return res
 
 def syncDistrict(startDate,stopDate):
-    locations = Location.objects.filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))\
+    locations = Location.objects.filter(Q(validity_to__isnull=True) | Q(legacy_id=F('id')))\
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(type='D')\
+        .filter(parent__type='R')\
+        .filter(Q(parent__validity_to__isnull=True) | Q(parent__legacy_id=F('id')))\
         .select_related('parent')\
         .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
@@ -54,6 +59,10 @@ def syncWard(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(type='W')\
+        .filter(parent__type='D')\
+        .filter(Q(parent__validity_to__isnull=True) | Q(parent__legacy_id=F('id')))\
+        .filter(parent__parent__type='R')\
+        .filter(Q(parent__parent__validity_to__isnull=True) | Q(parent__parent__legacy_id=F('id')))\
         .select_related('parent')\
         .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
@@ -66,6 +75,12 @@ def syncVillage(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(type='V')\
+        .filter(parent__type='W')\
+        .filter(Q(parent__validity_to__isnull=True) | Q(parent__legacy_id=F('id')))\
+        .filter(parent__type='D')\
+        .filter(Q(parent__parent__validity_to__isnull=True) | Q(parent__parent__legacy_id=F('id')))\
+        .filter(parent__parent__type='R')\
+        .filter(Q(parent__parent__parent__validity_to__isnull=True) | Q(parent__parent__parent__legacy_id=F('id')))\
         .select_related('parent')\
         .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
@@ -78,6 +93,10 @@ def syncHospital(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(level='H')\
+        .filter(location__type='D')\
+        .filter(Q(location__validity_to__isnull=True) | Q(location__legacy_id=F('id')))\
+        .filter(location__parent__type='R')\
+        .filter(Q(location__parent__validity_to__isnull=True) | Q(location__parent__legacy_id=F('id')))\
         .select_related('location')\
         .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
@@ -90,6 +109,10 @@ def syncDispensary(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(level='D')\
+        .filter(location__type='D')\
+        .filter(Q(location__validity_to__isnull=True) | Q(location__legacy_id=F('id')))\
+        .filter(location__parent__type='R')\
+        .filter(Q(location__parent__validity_to__isnull=True) | Q(location__parent__legacy_id=F('id')))\
         .select_related('location')\
         .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
@@ -102,6 +125,10 @@ def syncHealthCenter(startDate,stopDate):
         .filter(validity_from__lte=stopDate)\
         .filter(validity_from__gte=startDate)\
         .filter(level='C')\
+        .filter(location__type='D')\
+        .filter(Q(location__validity_to__isnull=True) | Q(location__legacy_id=F('id')))\
+        .filter(location__parent__type='R')\
+        .filter(Q(location__parent__validity_to__isnull=True) | Q(location__parent__legacy_id=F('id')))\
         .select_related('location')\
         .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
@@ -117,6 +144,12 @@ def syncPopulation(atDate):
         .filter(validity_from__lte=atDate)\
         .filter(Q(validity_to__gte=atDate)|Q(validity_to__isnull=True))\
         .filter(type='V')\
+        .filter(parent__type='W')\
+        .filter(Q(parent__validity_to__isnull=True) | Q(parent__legacy_id=F('id')))\
+        .filter(parent__type='D')\
+        .filter(Q(parent__parent__validity_to__isnull=True) | Q(parent__parent__legacy_id=F('id')))\
+        .filter(parent__parent__type='R')\
+        .filter(Q(parent__parent__parent__validity_to__isnull=True) | Q(parent__parent__parent__legacy_id=F('id')))\
         .filter(Q(male_population__gt=0)|Q(female_population__gt=0)|Q(other_population__gt=0)|Q(families__gt=0))\
         .order_by('validity_from')
         # .select_related

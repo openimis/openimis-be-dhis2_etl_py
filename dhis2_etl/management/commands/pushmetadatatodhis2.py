@@ -1,16 +1,25 @@
-from django.core.management.base import BaseCommand
-from django.shortcuts import render, redirect
-from .services.claimServices import *
-from .services.fundingServices import *
-from .services.insureeServices import *
-from .services.locationServices import *
-from .services.optionSetServices import *
 # import the logging library
-import logging
 import re
-# Get an instance of a logger
-logger = logging.getLogger(__name__)
+
+
+
 # Create your views here.
+
+from django.core.management.base import BaseCommand
+from django.shortcuts import redirect, render
+from dhis2_etl.management.utiils import set_logger
+from dhis2_etl.scheduled_tasks import adx_monthly_sync
+
+from dhis2_etl.services.claimServices import *
+from dhis2_etl.services.fundingServices import *
+from dhis2_etl.services.insureeServices import *
+from dhis2_etl.services.locationServices import *
+from dhis2_etl.services.optionSetServices import *
+from dhis2_etl.strategy.adx_client import ADXClient
+logger = set_logger()
+
+    
+
 
 class Command(BaseCommand):
     help = "This command will generate the metadate and data update for dhis2 and push it."
@@ -42,101 +51,104 @@ class Command(BaseCommand):
             "service",
             "population",
             "funding",
-            "adx-categories",
-            "adx-data"
             ] )
 
 
     def handle(self, *args, **options):
-        verbose = options["verbose"]
-        start_date = options["start_date"]
-        stop_date = options["stop_date"]
         
+        verbose = options["verbose"]
+        start_date = options["start_date"][0]
+        stop_date = options["stop_date"][0]
+        scope = options["scope"][0]
         if scope is None:
             scope = "all"
-        if regex.match(start_date) and regex.match(start_date) :
-            logger.debug("Start sync Dhis2")
-            self.sync_dhis2(start_date, stop_date, scope)
-            logger.debug("sync Dhis2 done")
-        else:
-            logger.debug("Please specify start_date and stop_date using yyyy-mm-dd format")
+        #if verbose:
+        #    logger = set_logger(True)
+        logger.info("Start sync Dhis2 %s ", __package__ )
+        self.sync_dhis2(start_date, stop_date, scope)
+        logger.info("sync Dhis2 done")
 
 
-    def sync_dhis2(start_date, stop_date, scope, verbose):
-            logger.debug("Received task")
+
+    def sync_dhis2(self, start_date, stop_date, scope):
+            logger.info("Received task")
             responses = []
             ## TEI and Program enrollment and event
             #########################################
             ## TODO policy only for renewalm insureePolicy for new
             if scope == "all" or scope == "insuree":
-                logger.debug("start Insuree sync")
-                insureeResponse = syncInsuree(start_date,stop_date)
+                logger.info("start Insuree sync")
+                syncInsuree(start_date,stop_date)
             if scope == "all" or scope == "policy":
-                logger.debug("start Policy sync")
-                policyResponse = syncPolicy(start_date,stop_date)
+                logger.info("start Policy sync")
+                syncPolicy(start_date,stop_date)
             if scope == "all" or scope == "claim":
-                logger.debug("start Claim sync")
-                claimResponse = syncClaim(start_date,stop_date)
+                logger.info("start Claim sync")
+                syncClaim(start_date,stop_date)
             # OTHER program sync
             ####################
             # manual enrollment to policy program
             if scope == 'enroll':
-                logger.debug("start Insuree enroll")
+                logger.info("start Insuree enroll")
                 insureeResponse = enrollInsuree(start_date,stop_date)
                 #responses.insert(insureeResponse)
             # syncInsuree and Policiy event
             if  scope == "insureepolicies":
-                logger.debug("start Insuree & policy sync")
-                insureePolicyResponse = syncInsureePolicy(start_date,stop_date)
+                logger.info("start Insuree & policy sync")
+                syncInsureePolicy(start_date,stop_date)
 
             if  scope == "insureepoliciesclaims":
-                logger.debug("start Insuree & policy & claim sync")
-                insureePolicyclaimResponse = syncInsureePolicyClaim(start_date,stop_date)
+                logger.info("start Insuree & policy & claim sync")
+                syncInsureePolicyClaim(start_date,stop_date)
             # ORGUNIT 
             #########
             if scope == 'createRoot':
                 sync = createRootOrgUnit()
 
             if  scope == "orgunit":
-                logger.debug("start orgUnit sync")
-                syncRegionResponse = syncRegion(start_date,stop_date)
-                syncDistrictResponse = syncDistrict(start_date,stop_date)
-                syncWardResponse = syncWard(start_date,stop_date)
-                syncVillageResponse = syncVillage(start_date,stop_date)
-                syncHospitalResponse = syncHospital(start_date,stop_date)
-                syncDispensaryResponse = syncDispensary(start_date,stop_date)
-                syncHealthCenterResponse = syncHealthCenter(start_date,stop_date)
+                logger.info("start orgUnit sync")
+                syncRegion(start_date,stop_date)
+                syncDistrict(start_date,stop_date)
+                syncWard(start_date,stop_date)
+                syncVillage(start_date,stop_date)
+                syncHospital(start_date,stop_date)
+                syncDispensary(start_date,stop_date)
+                syncHealthCenter(start_date,stop_date)
+                with ADXClient() as adx_client:
+                    adx_client.updateOrgUnitAndCatComboOption()
 
             # Optionset
             ###########
             if  scope == "optionset" :
-                    logger.debug("start OptionSets sync")
+                    logger.info("start OptionSets sync")
             if  scope == "optionset" or scope == "product":
-                syncProductResponse = syncProduct(start_date,stop_date)
+                syncProduct(start_date,stop_date)
             if  scope == "optionset" or scope == "gender":
-                syncGenderResponse = syncGender(start_date,stop_date)
+                syncGender(start_date,stop_date)
             if  scope == "optionset" or scope == "profession":
-                syncProfessionResponse = syncProfession(start_date,stop_date)
+                syncProfession(start_date,stop_date)
             if  scope == "optionset" or scope == "education":
-                syncEducationResponse = syncEducation(start_date,stop_date)
+                syncEducation(start_date,stop_date)
             if  scope == "optionset" or scope == "grouptype":
-                syncGroupTypeResponse = syncGroupType(start_date,stop_date)
+                syncGroupType(start_date,stop_date)
             if  scope == "optionset" or scope == "diagnosis":
-                syncDiagnosisResponse = syncDiagnosis(start_date,stop_date)
+                syncDiagnosis(start_date,stop_date)
             if  scope == "optionset" or scope == "item":
-                syncItemResponse =  syncItem(start_date,stop_date)
+                syncItem(start_date,stop_date)
             if  scope == "optionset" or scope == "service":
-                syncServiceResponse =  syncService(start_date,stop_date)
+                syncService(start_date,stop_date)
 
 
             # Dataset
             if  scope == "population":
-                syncPopulationResponse =  syncPopulation(start_date)
+                syncPopulation(start_date)
 
             # funding
             if  scope == "funding":
-                syncPopulationResponse =  sync_funding(start_date,stop_date)
-            logger.debug("Finishing task")
+                sync_funding(start_date,stop_date)
+            logger.info("Finishing task")
 
+            if scope == 'adx-data':
+                adx_monthly_sync()
 
 

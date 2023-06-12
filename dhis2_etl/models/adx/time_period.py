@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
-import isodate as isodate
 import dateutil
-
-from dhis2_etl.adx_transform.adx_models.adx_data import Period
+import isodate as isodate
+from dhis2_etl.models.adx.data import Period
 
 
 class PeriodType(ABC):

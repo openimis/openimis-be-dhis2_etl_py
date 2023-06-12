@@ -1,9 +1,9 @@
 # Copyright Patrick Delcoix <patrick@pmpd.eu>
 # dhis2 types
-from pydantic import constr
-from pydantic import  BaseModel
 from typing import List, Optional
-from .dhis2Enum import ValueType
+
+from pydantic import BaseModel, constr
+
 #normal uid
 uid = constr(regex="^[a-zA-Z][a-zA-Z0-9]{10}$")
 # for Dataelement with Categories

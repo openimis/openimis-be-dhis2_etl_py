@@ -3,7 +3,7 @@ from django.db.models.functions import Coalesce
 
 from claim.models import ClaimItem, ClaimService
 from contribution.models import Premium
-from dhis2_etl.adx_transform.adx_models.adx_definition import ADXMappingDataValueDefinition
+from dhis2_etl.models.adx.definition import ADXMappingDataValueDefinition
 from dhis2_etl.services.adx.categories import get_age_range_from_boundaries_categories, get_sex_categories, \
     get_payment_state_categories, get_payment_status_categories, get_policy_product_categories, \
     get_claim_status_categories, get_claim_type_categories, get_claim_product_categories, \
@@ -16,9 +16,9 @@ from insuree.models import Insuree
 def get_location_insuree_number_dv(period):
     return ADXMappingDataValueDefinition(
         data_element="NB_INSUREES",
-        period_filter_func=filter_period,
+        period_filter_func=None,
         dataset_from_orgunit_func=lambda l: Insuree.objects.filter(
-            validity_to__isnull=True, **get_location_filter(l, 'family__location')),
+            validity_to__isnull=True,  family__location__parent=l),
         aggregation_func=get_qs_count,
         categories=[
             get_age_range_from_boundaries_categories(period),
@@ -30,9 +30,9 @@ def get_location_insuree_number_dv(period):
 def get_location_family_number_dv(period):
     return ADXMappingDataValueDefinition(
         data_element="NB_FAMILY",
-        period_filter_func=filter_period,
+        period_filter_func=None,
         dataset_from_orgunit_func=lambda l: Insuree.objects.filter(
-            head=True, validity_to__isnull=True, **get_location_filter(l, 'family__location')),
+            head=True, validity_to__isnull=True,  family__location__parent=l),
         aggregation_func=get_qs_count,
         categories=[
             get_age_range_from_boundaries_categories(period),
@@ -48,7 +48,7 @@ def get_location_contribution_sum_dv(period):
         data_element="SUM_CONTRIBUTIONS",
         period_filter_func=get_contribution_period_filter,
         dataset_from_orgunit_func=lambda l: Premium.objects.filter(validity_to__isnull=True).filter(
-            policy__family__location=l),
+            policy__family__location__parent=l),
         aggregation_func=lambda qs: get_qs_sum(qs, 'amount'),
         categories=[get_policy_product_categories(period)]
     )

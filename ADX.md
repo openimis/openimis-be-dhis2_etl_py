@@ -1,6 +1,6 @@
 # **ADX Formatting** 
 ### ADX Data definition 
-ADX Data definition can be defined using `dhis2_etl.adx_transform.adx_models.ADXMappingCubeDefinition`. 
+ADX Data definition can be defined using `dhis2_etl.models.adx.ADXMappingCubeDefinition`. 
 ```python 
 ADXMappingCubeDefinition(
     name=str, # Name of ADX Mapping Definition 
@@ -28,13 +28,13 @@ ADXMappingCubeDefinition(
 #### Example definition: [HF Number of insurees](dhis2_etl/tests/adx_tests.py)
 
 ### ADX Data Storage 
-`dhis2_etl.adx_transform.adx_mapper.ADXBuilder` is used for creating ADX Data collection
+`dhis2_etl.converters.adx.ADXBuilder` is used for creating ADX Data collection
 based on data definition. 
 Example:
 
 ```python
-from dhis2_etl.adx_transform.builders import ADXBuilder
-from dhis2_etl.adx_transform.adx_models.adx_definition import ADXMappingGroupDefinition
+from dhis2_etl.converters.adx.builders import ADXBuilder
+from dhis2_etl.models.adx.definition import ADXMappingGroupDefinition
 
 definition = ADXMappingGroupDefinition(...)
 builder = ADXBuilder(definition)
@@ -48,8 +48,8 @@ ADX Formatters allow transforming ADXMapping objects to diffrent formats.
 At the moment only XML Format is implemented.
 
 ```python
-from dhis2_etl.adx_transform.formatters import XMLFormatter
-from dhis2_etl.adx_transform.adx_models.adx_data import ADXMapping
+from dhis2_etl.converters.adx.formatters import XMLFormatter
+from dhis2_etl.models.adx.data import ADXMapping
 
 adx_format = ADXMapping(...)
 xml_formatter = XMLFormatter()

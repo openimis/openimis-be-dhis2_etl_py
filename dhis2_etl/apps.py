@@ -1,16 +1,16 @@
-from django.apps import AppConfig
-
 import logging
+
+from django.apps import AppConfig
 
 from .configurations import ModuleConfiguration
 
 MODULE_NAME = "dhis2_etl"
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('openIMIS')
 
 DEFAULT_CFG = {
     "dhis2" : {
-        "host":"https://play.dhis2.org/2.35",
+        "host":"https://play.dhis2.org/2.39/",
         "username":"admin",
         "password":"district"
     },
@@ -19,8 +19,9 @@ DEFAULT_CFG = {
         "content_type": "application/adx+xml",
         # https://docs.dhis2.org/en/develop/using-the-api/dhis-core-version-master/data.html#webapi_data_values_import_parameters
         "data_element_id_scheme": "code",
-        "org_unit_id_scheme": "code",
+        "org_unit_id_scheme": "uid",
     },
+    "default":{"category": "GLevLNI9wkl", "categoryCombo":"bjDvmb4bfuf", "categoryOption":"xYerKDKCefk" },
     "salt":"LeSalt",
     "jsonOutPath":'/temp',
     "scheduled_integration": {

@@ -1,147 +1,16 @@
-from django.core.paginator import Paginator
-from dhis2 import Api
-from .models.dhis2Enum import ImportStrategy, MergeMode
-from .configurations import GeneralConfiguration
-from dict2obj import Dict2Obj
 import datetime
-import requests
-import re
-from concurrent.futures.thread import ThreadPoolExecutor
-import json
 import hashlib
-
 # import the logging library
 import logging
+import re
+
+
+
 
 # Get an instance of a logger
-logger = logging.getLogger(__name__)
-# Get DHIS2 credentials from the config
-dhis2 = Dict2Obj(GeneralConfiguration.get_dhis2())
-# create the DHIS2 API object
-api = Api(dhis2.host, dhis2.username, dhis2.password)
-# define the page size
-page_size = int(GeneralConfiguration.get_default_page_size())
-
-path = GeneralConfiguration.get_json_out_path()
+logger = logging.getLogger('openIMIS')
 
 
-def printPaginated(ressource, queryset, convertor, **kwargs):
-    local_page_size = kwargs.get('page_size', page_size)
-    p = Paginator(queryset, local_page_size)
-    pages = p.num_pages
-    curPage = 1
-    timestamp = datetime.datetime.now().strftime("%d%m%Y%H%M%S.%f")
-    while curPage <= pages:
-        f = open(path + '\out_' + timestamp + '_' + ressource + '-' + str(curPage) + ".json", "w+")
-        page = p.page(curPage)
-        Obj = page.object_list
-        objConv = convertor(Obj, **kwargs)
-        f.write(json.dumps(objConv.dict(exclude_none=True, exclude_defaults=True)))
-        f.close()
-        curPage += 1
-
-
-def postPaginatedThreaded(ressource, queryset, convertor, **kwargs):
-    local_page_size = kwargs.get('page_size', page_size)
-    p = Paginator(queryset, local_page_size)
-    pages = p.num_pages
-    curPage = 1
-    futures = []
-    with  ThreadPoolExecutor(max_workers=6) as executor:
-        while curPage <= pages:
-            page = p.page(curPage)
-            futures.append(executor.submit(postPage, ressource=ressource, page=page, convertor=convertor, **kwargs))
-            curPage += 1
-    responses = []
-    for future in futures:
-        res = future.result()
-        if res is not None:
-            responses.append(res)
-    return responses
-
-
-def postPaginated(ressource, queryset, convertor, **kwargs):
-    local_page_size = kwargs.get('page_size', page_size)
-    p = Paginator(queryset, local_page_size)
-    pages = p.num_pages
-    curPage = 1
-    responses = []
-    while curPage <= pages:
-        page = p.page(curPage)
-        postPage(ressource, page, convertor, **kwargs)
-        # responses.append(postPage(ressource,page,convertor))
-        curPage += 1
-    return responses
-
-
-def post(ressource, objs, convertor, **kwargs):
-    # just to retrive the value of the queryset to avoid calling big count .... FIXME a better way must exist ...
-
-    objConv = convertor(objs, **kwargs)
-
-    # Send the Insuree page per page, page size defined by config get_default_page_size
-    jsonPayload = objConv.dict(exclude_none=True, exclude_defaults=True)
-    try:
-        response = api.post(
-            ressource,
-            json=jsonPayload,
-            params={'mergeMode': MergeMode.merge}) #,'importStrategy':'CREATE_AND_UPDATE'}) #, "async":"false", "preheatCache":"true"})
-        logger.info(response)
-        # fix me to avoid too much ram
-        return None
-    except requests.exceptions.RequestException as e:
-        if e.code == 409:
-            response = {'status_code': e.code, 'url': e.url, 'text': e.description}
-            logger.debug(e)
-            return response
-            pass
-        else:
-            logger.error(e)
-
-
-def postPage(ressource, page, convertor, **kwargs):
-    # just to retrive the value of the queryset to avoid calling big count .... FIXME a better way must exist ...
-    obj = page.object_list
-    objConv = convertor(obj, **kwargs)
-
-    # Send the Insuree page per page, page size defined by config get_default_page_size
-    jsonPayload = objConv.dict(exclude_none=True, exclude_defaults=True)
-    try:
-        response = api.post(
-            ressource,
-            json=jsonPayload,
-            params={'mergeMode': MergeMode.merge,'strategy':ImportStrategy.createUpdate}) #, "async":"false", "preheatCache":"true"})
-        logger.info(response)
-        # fix me to avoid too much ram
-        return None
-    except requests.exceptions.RequestException as e:
-        if e.code == 409:
-            response = {'status_code': e.code, 'url': e.url, 'text': e.description}
-            logger.debug(e)
-            return response
-            pass
-        else:
-            logger.error(e)
-
-def postRaw(ressource,objConv, **kwargs):   
-    # Send the Insuree page per page, page size defined by config get_default_page_size
-    jsonPayload = objConv.dict(exclude_none=True, exclude_defaults=True)
-    try:
-        response = api.post(
-            ressource,
-            json=jsonPayload,
-            params={'mergeMode': MergeMode.merge,'strategy':ImportStrategy.createUpdate}) #, "async":"false", "preheatCache":"true"})
-        logger.info(response)
-        # fix me to avoid too much ram
-        return None
-    except requests.exceptions.RequestException as e:
-        if e.code == 409:
-            response = {'status_code': e.code, 'url' : e.url, 'text' : e.description}
-            logger.debug(e)
-            return response
-            pass
-        else:
-            logger.error(e)
 
 def toDatetimeStr(dateIn):
     if dateIn is None:
@@ -150,7 +19,7 @@ def toDatetimeStr(dateIn):
         return (dateIn.isoformat() + ".000")[:23]
     elif isinstance(dateIn, datetime.date):
         return (dateIn.isoformat() + "T00:00:00.000")[:23]
-    elif isinstance(dateIn, String):
+    elif isinstance(dateIn, str):
         regex = re.compile("^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3,6})?$")
         if regex.match(dateIn):
             return (dateIn + ".000")[:23]
@@ -168,7 +37,7 @@ def toDateStr(dateIn):
         return None
     elif isinstance(dateIn, datetime.datetime) or isinstance(dateIn, datetime.date):
         return dateIn.isoformat()[:10]
-    elif isinstance(dateIn, String):
+    elif isinstance(dateIn, str):
         regex = re.compile("^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3,6})?)?$")
         if regex.match(dateIn):
             return dateIn[:10]

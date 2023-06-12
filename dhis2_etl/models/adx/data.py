@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import List, Callable, Union
-
+from typing import Callable, List, Union
+from dhis2_etl.models.dhis2.type import dateStr
 
 @dataclass
 class DHISCode:
@@ -31,6 +31,7 @@ class ADXDataValue:
 
 @dataclass
 class ADXMappingGroup:
+    complete_date: dateStr
     org_unit: str
     period: str
     data_set: str
@@ -40,5 +41,4 @@ class ADXMappingGroup:
 
 @dataclass
 class ADXMapping:
-    name: str
     groups: List[ADXMappingGroup]

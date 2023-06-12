@@ -1,14 +1,13 @@
 # DHIS2 dataset
 # Copyright Patrick Delcoix <patrick@pmpd.eu>
 
-from typing import Dict, List, Optional, Union, Tuple
-from enum import Enum, IntEnum
-from datetime import datetime, date
-from uuid import uuid4
-from pydantic import constr, BaseModel, ValidationError, validator, Field, AnyUrl, EmailStr
+from typing import List, Optional
+
 from dhis2.utils import *
-from .dhis2Enum import FeatureType, ValueType
-from .dhis2Type import uid, uidList, dateStr, datetimeStr, DHIS2Ref, DeltaDHIS2Ref, str50, str150, str230, str130, str255, period
+from pydantic import BaseModel
+
+from .type import DHIS2Ref, dateStr, datetimeStr, period, uid
+
 
 class DataElementValue(BaseModel):
     dataElement: uid
