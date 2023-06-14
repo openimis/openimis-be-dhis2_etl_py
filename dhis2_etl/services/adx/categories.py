@@ -145,9 +145,7 @@ def get_claim_details_status_categories(prefix='') -> ADXMappingCategoryDefiniti
 
 def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
     slices = []
-    diagnosis = Diagnosis.objects.filter(validity_to__isnull=True) \
-        .filter(validity_from__gte=period.from_date) \
-        .filter(validity_from__lte=period.to_date)
+    diagnosis = Diagnosis.objects.filter(validity_to__isnull=True)
     for diagnose in diagnosis:
         slices.append(ADXCategoryOptionDefinition(
             code=clean_code(str(diagnose.code)),
@@ -161,13 +159,11 @@ def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
 
 def get_policy_product_categories(period) -> ADXMappingCategoryDefinition:
     slices = []
-    products = Product.objects.filter(validity_to__isnull=True) \
-        .filter(validity_from__gte=period.from_date) \
-        .filter(validity_from__lte=period.to_date)
+    products = Product.objects.filter(validity_to__isnull=True)
     for product in products:
         slices.append(ADXCategoryOptionDefinition(
             code=clean_code(str(product.code)),
-            name=str(product.name),
+            name=f"{product.code}-{product.name}",
             filter=Q(policy__product=product)))
     return ADXMappingCategoryDefinition(
         category_name="product",
@@ -177,13 +173,12 @@ def get_policy_product_categories(period) -> ADXMappingCategoryDefinition:
 
 def get_claim_product_categories(period: Period) -> ADXMappingCategoryDefinition:
     slices = []
-    products = Product.objects.filter(validity_to__isnull=True)\
-        .filter(validity_from__gte=period.from_date) \
-        .filter(validity_from__lte=period.to_date)
+    products = Product.objects.filter(validity_to__isnull=True)
     for product in products:
+        name = f"{product.code}-{product.name}"
         slices.append(ADXCategoryOptionDefinition(
             code=clean_code(str(product.code)),
-            name=str(product.name),
+            name=name,
             filter=Q(Q(items__policy__product=product) | Q(services__policy__product=product))))
     return ADXMappingCategoryDefinition(
         category_name="product",
