@@ -1,16 +1,104 @@
 import itertools
+import logging
 from typing import Collection, List, Type
-
+from datetime import datetime
 from dhis2_etl.models.adx.data import (ADXDataValue, ADXDataValueAggregation,
                                        ADXMapping, ADXMappingGroup, Period)
 from dhis2_etl.models.adx.definition import (ADXMappingCubeDefinition,
                                              ADXMappingDataValueDefinition,
                                              ADXMappingGroupDefinition)
-from django.db.models import F, Model, Q , When
+from django.db.models import F, Model, Q , When, Case, Value, Subquery,QuerySet,Window
+
+from numpy import unique
+from dhis2_etl.utils import  clean_code
+
+logger = logging.getLogger('openIMIS')
 
 from datetime import date
 from dhis2_etl.utils import toDateStr
+def get_annotation_case(key, category_options):
+    whens = [When(co.filter, then=Value(f"{co.code}")) for co in category_options]
+    return {
+        key:   get_case(category_options)
+    }
+    
+def get_case(category_options):
+    whens = [When(co.filter, then=Value(f"{co.code}")) for co in category_options]
+    return Case(
+                *whens
+           )
+    
+def get_annotation_window(key, categories, agg_fct):
+    return {
+        key:  Window(
+            expression= agg_fct,
+            partition_by = [get_case( c.category_options)  for c in categories]
+           )
+    }
+    
+def get_annotation_aggregate(key, fct):
+    return {
+        key:  fct
+    }
+    
+def get_sql_name(name):
+    return f"cat_{name}"
 
+def revert_sql_name(sql_name):
+    return sql_name[4:]
+
+
+DJANGO_LOOP_UP = [
+   'contains',
+   'icontains',
+   'date',
+   'day',
+   'endswith',
+   'iendswith',
+   'exact',
+   'iexact',
+   'in',
+   'isnull',
+   'gt',
+   'gte',
+   'hour',
+   'lt',
+   'lte',
+   'minute',
+   'month',
+   'quarter',
+   'range',
+   'regex',
+   'iregex',
+   'second',
+   'startswith',
+   'istartswith',
+   'time',
+   'week',
+   'week_day',
+   'iso_week_day',
+   'year',
+   'iso_year',
+
+]
+
+def get_field_from_Q(filter):
+    fields = []
+    for c in filter.children:
+        if isinstance(c,Q):
+            sub =  get_field_from_Q(c)
+            if len(sub)>0:
+                fields+=sub
+        elif isinstance(c,tuple) and isinstance(c[0], str):
+                k_arr = c[0].split('__')
+                fields.append('__'.join(k_arr[:-1]) if k_arr[-1] in DJANGO_LOOP_UP else c[0])
+                
+        else:
+            logger.warning('not suported %s', c.__class__)
+        
+            
+    return fields
+         
 
 class ADXDataValueBuilder:
     def __init__(self, adx_mapping_definition: ADXMappingDataValueDefinition):
@@ -22,19 +110,58 @@ class ADXDataValueBuilder:
 
     def create_adx_data_value(self, organization_unit: Model, period: Period) -> List[ADXDataValue]:
         data_values = []
+        fields_impacted = []
+        annotation = []
         queryset = self._get_filtered_queryset(organization_unit, period)
-        if category_groups := self.__category_groups:
-            for group_definition, group_filtering in category_groups:
-                qs = self._filter_queryset_by_category(queryset.all(), group_filtering)
-                data_values.append(self._create_data_value_for_group_filtering(qs, group_definition))
+        if len(self.categories)>0:
+            # get list of fields in the cat 
+            
+            
+            for c in self.categories:
+                for o in c.category_options:
+                    sub = get_field_from_Q(o.filter)
+                    if len(sub)>0:
+                        fields_impacted+=sub
+                annotation.append(get_annotation_case( get_sql_name(c.category_name) ,c.category_options))
+                
+                # annotate with a case
+            #queryset = queryset.annotate(**get_annotation_aggregate('adx_value' ,self.aggregation_func)).values('adx_value',*[get_sql_name(c.category_name) for c in self.categories])
+            queryset = queryset.values('id',*unique(fields_impacted))
+            for a in annotation:
+                queryset = queryset.annotate(**a)
+            queryset = queryset.annotate(**get_annotation_window('adx_value' ,self.categories,self.aggregation_func)).values('adx_value',*[get_sql_name(c.category_name) for c in self.categories]).distinct() # *[get_sql_name(c.category_name) for c in self.categories]
+
+            for item in queryset:
+                aggregations =  []
+                out_of_cat = False
+                for k,v in item.items():
+                    
+                    if v is None:
+                        out_of_cat = True
+                        aggregations.append(ADXDataValueAggregation(clean_code(revert_sql_name(k)), v))
+                    elif k == '':
+                        logger.warning('cannot parse desagregation')
+                    elif k != 'adx_value':
+                        aggregations.append(ADXDataValueAggregation(clean_code(revert_sql_name(k)), v))
+                        
+                if not out_of_cat:
+                    data_values.append(ADXDataValue(
+                        data_element=self.data_element,
+                        value=str(item['adx_value']),
+                        aggregations=aggregations
+                    ))
+                else:
+                    logger.debug('value %s is out of category definition %s', str(item['adx_value']), " ".join([f"{a.label_name}: {a.label_value}"  for a in aggregations]) )
+ 
+            #data_values.append(self._create_data_value_for_group_filtering(qs, group_definition))
         else:
             # Create single combined view if no categories available
             data_values.append(self._create_data_value_for_group_filtering(queryset.all(), []))
         return data_values
 
     def _filter_queryset_by_category(self, queryset, group_filtering):
-        for filter_func in group_filtering:
-            queryset = filter_func(queryset)
+        for q_filter in group_filtering:
+            queryset = queryset.filter(q_filter)
         return queryset
 
     def _create_data_value_for_group_filtering(self, queryset, group_definition):

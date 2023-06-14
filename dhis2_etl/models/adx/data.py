@@ -42,3 +42,8 @@ class ADXMappingGroup:
 @dataclass
 class ADXMapping:
     groups: List[ADXMappingGroup]
+    exported: datetime
+    
+    def __init__(self,groups: List[ADXMappingGroup] ):
+        self.groups = groups
+        self.exported = datetime.now() 

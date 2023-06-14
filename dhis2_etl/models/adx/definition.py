@@ -4,14 +4,14 @@ from uuid import UUID
 
 from dhis2_etl.models.adx.data import Period
 from dhis2_etl.models.adx.time_period import PeriodType
-from django.db.models import Model, QuerySet
+from django.db.models import Model, QuerySet, Q
 from pydantic import  BaseModel
 
 @dataclass
 class ADXCategoryOptionDefinition:
     code: str
     name: str
-    filter: Callable[[QuerySet], QuerySet]  # Filtering function takes queryset instance as argument and returns another queryset
+    filter: Q  # Filtering function takes queryset instance as argument and returns another queryset
 
 
 @dataclass
@@ -24,7 +24,7 @@ class ADXMappingCategoryDefinition:
 class ADXMappingDataValueDefinition:
     data_element: str
     aggregation_func: Callable[[QuerySet], str]
-    dataset_from_orgunit_func: Callable[[Model], QuerySet]
+    dataset_from_orgunit_func: Callable
     period_filter_func: Callable[[QuerySet, Period], QuerySet]
     categories: List[ADXMappingCategoryDefinition]
 

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict
 
-from django.db.models import QuerySet, Sum, Model, Q, F, Exists, OuterRef
+from django.db.models import QuerySet, Sum, Model, Q, F, Exists, OuterRef,Value
 
 from contribution.models import Premium
 from dhis2_etl.models.adx.data import Period
@@ -39,6 +39,9 @@ def filter_with_prefix(qs: QuerySet, key: str, value: Any, prefix: str = '') -> 
     return qs.filter(**{f'{prefix}{key}': value})
 
 
+def q_with_prefix(key: str, value: Any, prefix: str = '') -> Q:
+    return Q(**{f'{prefix}{key}': value})
+
 def filter_period(qs: QuerySet, period: Period) -> QuerySet:
     return qs.filter(validity_from__gte=period.from_date, validity_from__lte=period.to_date) \
         .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))
@@ -72,7 +75,7 @@ def get_partially_paid():
 
 
 def not_paid():
-    return Exists(Premium.objects.filter(validity_to__isnull=True).filter(policy=OuterRef('family__policies')))
+    return Q(family__policies__premiums__amount__isnull=True)
 
 
 def valid_policy(period):

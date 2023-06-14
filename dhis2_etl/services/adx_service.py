@@ -1,6 +1,6 @@
 import logging
 from typing import List
-
+from django.db.models import Q, F
 from dhis2_etl.builders.adx import ADXBuilder
 from dhis2_etl.models.adx.data import ADXMapping
 from dhis2_etl.models.adx.definition import ADXMappingCubeDefinition
@@ -33,12 +33,18 @@ class ADXService:
         self.period = period
 
     def build_enrolment_cube(self) -> ADXMapping:
-        org_units = list(Location.objects.all().filter(validity_to__isnull=True).filter(type='W'))
+        org_units = list(Location.objects.all().filter(validity_to__isnull=True).filter(type='W').filter(parent__type='D')\
+        .filter(Q(parent__validity_to__isnull=True) | Q(parent__legacy_id=F('id')))\
+        .filter(parent__parent__type='R')\
+        .filter(Q(parent__parent__validity_to__isnull=True) | Q(parent__parent__legacy_id=F('id'))))
         logger.debug('create enrolment cube for %i location', len(org_units))
         return self._build_cube(get_enrollment_cube(self.period), org_units)
 
     def build_claim_cube(self) -> ADXMapping:
-        org_units = list(HealthFacility.objects.all().filter(validity_to__isnull=True))
+        org_units = list(HealthFacility.objects.all().filter(validity_to__isnull=True).filter(location__type='D')\
+        .filter(Q(location__validity_to__isnull=True) | Q(location__legacy_id=F('id')))\
+        .filter(location__parent__type='R')\
+        .filter(Q(location__parent__validity_to__isnull=True) | Q(location__parent__legacy_id=F('id'))))
         logger.debug('create claim cube for %i location', len(org_units))
         return self._build_cube(get_claim_cube(self.period), org_units)
 

@@ -19,7 +19,7 @@ DEFAULT_CFG = {
         "content_type": "application/adx+xml",
         # https://docs.dhis2.org/en/develop/using-the-api/dhis-core-version-master/data.html#webapi_data_values_import_parameters
         "data_element_id_scheme": "code",
-        "org_unit_id_scheme": "uid",
+        "org_unit_id_scheme": "code",
     },
     "default":{"category": "GLevLNI9wkl", "categoryCombo":"bjDvmb4bfuf", "categoryOption":"xYerKDKCefk" },
     "salt":"LeSalt",

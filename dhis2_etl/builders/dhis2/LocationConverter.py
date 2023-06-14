@@ -6,7 +6,7 @@ from dhis2.utils import *
 from dhis2_etl.configurations import GeneralConfiguration
 from dhis2_etl.models.dhis2.dataset import *
 from dhis2_etl.models.dhis2.metadata import *
-from dhis2_etl.utils import build_dhis2_id, toDateStr
+from dhis2_etl.utils import build_dhis2_id, toDateStr, clean_code
 
 from . import BaseDHIS2Converter
 
@@ -28,7 +28,7 @@ class LocationConverter(BaseDHIS2Converter):
     @classmethod
     def getRootOrgUnit(cls):
         return MetadataBundle(organisationUnits = [OrganisationUnit( name = locationConfig['rootOrgUnitCode'] + ' - '+locationConfig['rootOrgUnitName'],\
-            shortName = locationConfig['rootOrgUnitName'], code = locationConfig['rootOrgUnitCode'],\
+            shortName = locationConfig['rootOrgUnitName'], code = clean_code(locationConfig['rootOrgUnitCode']),\
             openingDate = '2000-01-01', id = locationConfig['rootOrgUnit'])])
 
 
@@ -61,7 +61,7 @@ class LocationConverter(BaseDHIS2Converter):
             closedDate = toDateStr(location.validity_to)
         attributes = [] # TO DO ? not attributes found on DHIS2
         orgId = build_dhis2_id(location.uuid)
-        return OrganisationUnit( name = location.code + ' - ' + location.name, shortName = location.code, code = location.uuid,\
+        return OrganisationUnit( name = location.code + ' - ' + location.name, shortName = location.code, code = clean_code(location.uuid),\
                 openingDate = '2000-01-01', id = build_dhis2_id(location.uuid), closedDate = closedDate,\
                     parent = DHIS2Ref(id = parentId), attributes = attributes)
 

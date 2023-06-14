@@ -74,3 +74,8 @@ def build_dhis2_id(uuid, salt=""):
         dhis2_id += DHIS2IDCharDict[char]
         tmp_uuid = tmp_uuid[2:]
     return dhis2_id[0:11]
+
+
+def clean_code(code):
+  
+    return (re.sub(r"[^a-zA-Z0-9\*]", "_",code )).upper()

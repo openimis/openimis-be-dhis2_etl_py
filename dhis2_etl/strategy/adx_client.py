@@ -61,8 +61,7 @@ class ADXClient:
         return {
             'dataElementIdScheme': self.data_element_id_scheme,
             'orgUnitIdScheme': self.org_unit_id_scheme,
-            'categoryOptionIdScheme':self.data_element_id_scheme,
-            'mergeMode': MergeMode.merge
+            'categoryOptionComboIdScheme':'uid'
         }
 
     def _post(self, payload: bytes,) -> requests.Response:
