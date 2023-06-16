@@ -3,11 +3,11 @@
 ADX Data definition can be defined using `dhis2_etl.models.adx.ADXMappingCubeDefinition`. 
 ```python 
 ADXMappingCubeDefinition(
-    name=str, # Name of ADX Mapping Definition 
     period_type=ISOFormatPeriodType(), # Format of handled period type, at the moment only ISO Format is supported 
     groups=[
         ADXMappingGroupDefinition(
             comment=str, # Generic comment 
+            name=str, # Name of ADX Mapping Definition 
             to_org_unit_code_func= lambda l: build_dhis2_id(l.uuid),
             data_values=[
                 ADXMappingDataValueDefinition(
@@ -21,7 +21,8 @@ ADXMappingCubeDefinition(
                             category_options=[
                                 ADXCategoryOptionDefinition(
                                     code=code,
-                                    filter=function # Function Filtering output of `dataset_from_orgunit_func`
+                                    name=name,
+                                    filter=function # Django Q filter to gather the data of that stratifier `dataset_from_orgunit_func`
                                 )
     ])])])])
 ```
