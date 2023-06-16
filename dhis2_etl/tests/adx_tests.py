@@ -29,10 +29,10 @@ class ADXTests(TestCase):
             ADXCategoryOptionDefinition(
                 code="<=50yo",
                 name="<=50yo",
-                filter= Q(dob__gte=ADXTests._50_YEARS_AGO)),
+                filter= Q(dob__gte=_50_YEARS_AGO)),
             ADXCategoryOptionDefinition(
                 code=">50yo",name=">50yo",
-                filter=Q(dob__lt=ADXTests._50_YEARS_AGO))
+                filter=Q(dob__lt=_50_YEARS_AGO))
         ]
     )
     SEX_CATEGORY_DEFINITION = ADXMappingCategoryDefinition(
