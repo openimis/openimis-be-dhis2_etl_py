@@ -27,9 +27,10 @@ class ADXTests(TestCase):
         category_options=[
             ADXCategoryOptionDefinition(
                 code="<=50yo",
+                name="<=50yo",
                 filter=lambda insuree_qs: insuree_qs.filter(dob__gte=ADXTests._50_YEARS_AGO)),
             ADXCategoryOptionDefinition(
-                code=">50yo",
+                code=">50yo",name=">50yo",
                 filter=lambda insuree_qs: insuree_qs.filter(dob__lt=ADXTests._50_YEARS_AGO))
         ]
     )
@@ -37,9 +38,9 @@ class ADXTests(TestCase):
         category_name="sex",
         category_options=[
             ADXCategoryOptionDefinition(
-                code="M", filter=lambda insuree_qs: insuree_qs.filter(gender__code='M')),
+                code="M",name="M", filter=lambda insuree_qs: insuree_qs.filter(gender__code='M')),
             ADXCategoryOptionDefinition(
-                code="F", filter=lambda insuree_qs: insuree_qs.filter(gender__code='F'))
+                code="F",name="F", filter=lambda insuree_qs: insuree_qs.filter(gender__code='F'))
         ]
     )
 
