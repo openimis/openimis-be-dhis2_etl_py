@@ -14,7 +14,7 @@ from dhis2_etl.models.adx.time_period import (ISOFormatPeriodType,
                                               PeriodParsingException)
 from dhis2_etl.utils import build_dhis2_id
 from django.test import TestCase
-from django.db.models import Q
+from django.db.models import Q, Count
 from insuree.models import Gender, Insuree
 from insuree.test_helpers import create_test_insuree
 from location.models import HealthFacility, Location
@@ -57,7 +57,7 @@ class ADXTests(TestCase):
                     ADXMappingDataValueDefinition(
                         data_element="NB_INSUREES",
                         dataset_from_orgunit_func=lambda hf: hf.insurees,
-                        aggregation_func=lambda insurees_qs: str(insurees_qs.count()),
+                        aggregation_func=Count('id'),
                         period_filter_func=lambda qs, period: qs.filter(validity_from__gte=period.from_date,
                                                                         validity_from__lte=period.to_date),
                         categories=[AGE_CATEGORY_DEFINITION, SEX_CATEGORY_DEFINITION]
@@ -79,7 +79,7 @@ class ADXTests(TestCase):
                     ADXMappingDataValueDefinition(
                         data_element="NB_INSUREES",
                         dataset_from_orgunit_func=lambda hf: hf.insurees,
-                        aggregation_func=lambda insuress_qs: str(insuress_qs.count()),
+                        aggregation_func=Count('id'),
                         period_filter_func=lambda qs, period: qs.filter(validity_from__gte=period.from_date,
                                                                         validity_from__lte=period.to_date),
                         categories=[]
