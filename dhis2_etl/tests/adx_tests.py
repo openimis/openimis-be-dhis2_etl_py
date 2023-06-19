@@ -142,7 +142,9 @@ class ADXTests(TestCase):
         org_unit = build_dhis2_id(cls._TEST_HF.uuid)
         cls.EXPECTED_ADX_DICT = {
             'name': 'TEST_HF_ADX_DEFINITION',
+            'exported':datetime.now(),
             'groups': [{
+                'complete_date':datetime.strptime(datetime.now(), '%Y-%m-%d'),
                 'org_unit': org_unit,
                 'period': '2019-01-01/P2Y',
                 'data_set': "TEST_HF_ADX_DEFINITION",
@@ -192,7 +194,9 @@ class ADXTests(TestCase):
 
         cls.EXPECTED_ADX_DICT_NO_CATEGORY = {
             'name': 'TEST_HF_ADX_DEFINITION',
+            'exported':datetime.now(),  
             'groups': [{
+                'complete_date':datetime.strptime(daatetime.now(), '%Y-%m-%d'),
                 'org_unit': org_unit,
                 'period': '2019-01-01/P2Y',
                 'data_set': "TEST_HF_ADX_DEFINITION",
