@@ -128,6 +128,7 @@ class ADXTests(TestCase):
 
     @classmethod
     def _create_test_organization_unit(cls):
+        dateTest = datetime.datetime.now() 
         # First valid district
         district = Location.objects.filter(type='D', validity_to__isnull=True).first()
         cls._TEST_HF = create_test_health_facility('HFT', district.id)
@@ -142,9 +143,9 @@ class ADXTests(TestCase):
         org_unit = build_dhis2_id(cls._TEST_HF.uuid)
         cls.EXPECTED_ADX_DICT = {
             'name': 'TEST_HF_ADX_DEFINITION',
-            'exported':datetime.now(),
+            'exported': dateTest,
             'groups': [{
-                'complete_date':datetime.strptime(datetime.now(), '%Y-%m-%d'),
+                'complete_date':datetime.strptime(dateTest, '%Y-%m-%d'),
                 'org_unit': org_unit,
                 'period': '2019-01-01/P2Y',
                 'data_set': "TEST_HF_ADX_DEFINITION",
@@ -194,9 +195,9 @@ class ADXTests(TestCase):
 
         cls.EXPECTED_ADX_DICT_NO_CATEGORY = {
             'name': 'TEST_HF_ADX_DEFINITION',
-            'exported':datetime.now(),  
+            'exported':dateTest,  
             'groups': [{
-                'complete_date':datetime.strptime(daatetime.now(), '%Y-%m-%d'),
+                'complete_date':datetime.strptime(dateTest, '%Y-%m-%d'),
                 'org_unit': org_unit,
                 'period': '2019-01-01/P2Y',
                 'data_set': "TEST_HF_ADX_DEFINITION",
