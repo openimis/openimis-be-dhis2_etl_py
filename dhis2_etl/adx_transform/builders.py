@@ -2,21 +2,20 @@ import itertools
 
 from django.db.models import Q, Model, F
 from typing import Collection, List, Type
-from uuid import UUID
 
 from dhis2_etl.adx_transform.adx_models.adx_data import Period, ADXDataValue, ADXDataValueAggregation, ADXMappingGroup, \
     ADXMapping
 from dhis2_etl.adx_transform.adx_models.adx_definition import ADXMappingDataValueDefinition, ADXMappingGroupDefinition, \
     ADXMappingCubeDefinition
-from dhis2_etl.utils import build_dhis2_id
 
 
 class ADXDataValueBuilder:
     def __init__(self, adx_mapping_definition: ADXMappingDataValueDefinition):
         self.categories = adx_mapping_definition.categories
-        self.aggregation_func = adx_mapping_definition.aggregation_function
+        self.aggregation_func = adx_mapping_definition.aggregation_func
+        self.period_filter_func = adx_mapping_definition.period_filter_func
         self.data_element = adx_mapping_definition.data_element
-        self.related_from_dataset_func = adx_mapping_definition.related_from_dataset_func
+        self.dataset_from_orgunit_func = adx_mapping_definition.dataset_from_orgunit_func
 
     def create_adx_data_value(self, organization_unit: Model, period: Period) -> List[ADXDataValue]:
         data_values = []
@@ -62,13 +61,17 @@ class ADXDataValueBuilder:
         return filters
 
     def _get_filtered_queryset(self, organization_unit, period):
-        qs = self.related_from_dataset_func(organization_unit)
-        qs = self._filter_period(qs, period)
+        qs = self.dataset_from_orgunit_func(organization_unit)
+        if self.period_filter_func is not None:
+            qs = self.period_filter_func(qs, period)
+        else:
+            qs = _filter_period(qs, period)
         return qs
 
-    def _filter_period(self, qs, period):
-        return qs.filter(validity_from__gte=period.from_date, validity_from__lte=period.to_date)\
-            .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))
+
+def _filter_period(qs, period):
+    return qs.filter(validity_from__gte=period.from_date, validity_from__lte=period.to_date) \
+        .filter(Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F('id')))
 
 
 class ADXGroupBuilder:
@@ -77,19 +80,18 @@ class ADXGroupBuilder:
         self.adx_mapping_definition = adx_mapping_definition
         self.data_value_mapper = data_value_mapper
 
-    def create_adx_group(self, period: Period, org_unit: UUID):
+    def create_adx_group(self, period: Period, org_unit_obj: Model, org_unit: str):
         return ADXMappingGroup(
-            org_unit=build_dhis2_id(org_unit),
+            org_unit=org_unit,
             period=period.representation,
             data_set=self.adx_mapping_definition.dataset_repr,
-            data_values=self._build_group_data_values(period, org_unit),
+            data_values=self._build_group_data_values(period, org_unit_obj),
             comment=self.adx_mapping_definition.comment
         )
 
-    def _build_group_data_values(self, period: Period, org_unit: UUID):
+    def _build_group_data_values(self, period: Period, org_unit_obj: object):
         data_values = []
         for data_value in self.adx_mapping_definition.data_values:
-            org_unit_obj = self.adx_mapping_definition.dataset.objects.get(uuid=org_unit)
             values = self.data_value_mapper(data_value).create_adx_data_value(org_unit_obj, period)
             data_values.extend(values)
         return data_values
@@ -101,19 +103,20 @@ class ADXBuilder:
         self.adx_mapping_definition = adx_mapping_definition
         self.group_mapper = group_mapper
 
-    def create_adx_cube(self, period: str, org_units: Collection[UUID]) -> ADXMapping:
+    def create_adx_cube(self, period: str, org_units: Collection[Model]) -> ADXMapping:
         period = self._period_str_to_obj(period)
         return ADXMapping(
             name=self.adx_mapping_definition.name,
             groups=self._build_adx_groups(period, org_units)
         )
 
-    def _build_adx_groups(self, period: Period, org_units: Collection[UUID]):
+    def _build_adx_groups(self, period: Period, org_units: Collection[Model]):
         groups = []
         for group_definition in self.adx_mapping_definition.groups:
             group_mapper = self.group_mapper(group_definition)
-            for org_unit in org_units:
-                groups.append(group_mapper.create_adx_group(period, org_unit))
+            for org_unit_obj in org_units:
+                org_unit = group_definition.to_org_unit_code_func(org_unit_obj)
+                groups.append(group_mapper.create_adx_group(period, org_unit_obj, org_unit))
         return groups
 
     def _period_str_to_obj(self, period: str):

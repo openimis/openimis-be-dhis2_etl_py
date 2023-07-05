@@ -76,14 +76,10 @@ This module will push data in two programs
 - harmonising Service and Items attributes and Data elements
 - add perms and security if the view triggering the job is kept
 - harmonising usage of insuranceID, InsureeNumber, InsureeID in DHIS2
-- connection error management and DHIS2 answers parsing/logging (loggin only what matters and not including the 99% succesful)
 - add orgUnit in programs
 - safely remove all personal data (firstname. lastname, ...) because those data should't be shared with a BI systems
-- push population to data set
 - pull population from dataset
-- use optionGroup in indicator iso option when the options are defined in IMIS (but for gender)
-- add DE family in population dataset
-
+- update readme with new policy program
 
 
  
@@ -455,61 +451,4 @@ This user role allows the user to enter data for the respective facility, genera
 
 User roles will be created and assigned to a user belonging to Health Insurance Board/National Insurance Agency in the country to allow them to access data for their specific thematic areas such as Beneficiary Enrollments/Coverage, Claims etc. and evaluate across the country/region/district depending upon their administrative authority. They can access reports, perform data analysis and use dashboards.
 
-
-# **ADX Formatting** 
-### ADX Data definition 
-ADX Data definition can be defined using `dhis2_etl.adx_transform.adx_models.ADXMappingCubeDefinition`. 
-```python 
-ADXMappingCubeDefinition(
-    name=str, # Name of ADX Mapping Definition 
-    period_type=ISOFormatPeriodType(), # Format of handled period type, at the moment only ISO Format is supported 
-    groups=[
-        ADXMappingGroupDefinition(
-            comment=str, # Generic comment 
-            dataset=Model, # Django model, used as base for data value calcultions
-            data_values=[
-                ADXMappingDataValueDefinition(
-                    data_element=str, # Name of calculated value 
-                    related_from_dataset_func=function # Function extracting collection from group dataset object
-                    aggregation_function=function # Function transofrming filtered queryset to dataset value 
-                    categories=[
-                        ADXMappingCategoryDefinition(
-                            category_name=str,
-                            category_options=[
-                                ADXCategoryOptionDefinition(
-                                    code=code,
-                                    filter=function # Function Filtering output of `related_from_dataset_func`
-                                )
-    ])])])])
-```
-#### Example definition: [HF Number of insurees](dhis2_etl/tests/adx_tests.py)
-
-### ADX Data Storage 
-`dhis2_etl.adx_transform.adx_mapper.ADXBuilder` is used for creating ADX Data collection
-based on data definition. 
-Example:
-
-```python
-from dhis2_etl.adx_transform.builders import ADXBuilder
-from dhis2_etl.adx_transform.adx_models.adx_definition import ADXMappingGroupDefinition
-
-definition = ADXMappingGroupDefinition(...)
-builder = ADXBuilder(definition)
-period_type = "2019-01-01/P2Y"  # In format accepted by definition.period_type
-org_units = HealthFaciltity.objects.filter(validity_to__isnull=True).values_list("uuid", flat=True)  # All HF
-builder.create_adx_cube(period_type, org_units)  # Returns ADXMapping object
-```
-
-### ADX Formatters
-ADX Formatters allow transforming ADXMapping objects to diffrent formats. 
-At the moment only XML Format is implemented.
-
-```python
-from dhis2_etl.adx_transform.formatters import XMLFormatter
-from dhis2_etl.adx_transform.adx_models.adx_data import ADXMapping
-
-adx_format = ADXMapping(...)
-xml_formatter = XMLFormatter()
-xml_format = xml_formatter.format_adx(adx_format)
-```
 

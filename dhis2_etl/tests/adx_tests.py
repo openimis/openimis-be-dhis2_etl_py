@@ -4,6 +4,7 @@ from typing import List
 from xml.etree import ElementTree
 
 from django.test import TestCase
+
 from location.models import HealthFacility, Location
 
 from dhis2_etl.adx_transform.formatters import XMLFormatter
@@ -19,17 +20,17 @@ from location.test_helpers import create_test_health_facility
 from dhis2_etl.adx_transform.adx_models.adx_time_period import ISOFormatPeriodType, PeriodParsingException
 
 
-class ADXTestCase(TestCase):
-    _50_YEARS_AGO = datetime.datetime(2022, 7, 1)-datetime.timedelta(days=365*50)
+class ADXTests(TestCase):
+    _50_YEARS_AGO = datetime.datetime(2022, 7, 1) - datetime.timedelta(days=365 * 50)
     AGE_CATEGORY_DEFINITION = ADXMappingCategoryDefinition(
         category_name="ageGroup",
         category_options=[
             ADXCategoryOptionDefinition(
                 code="<=50yo",
-                filter=lambda insuree_qs: insuree_qs.filter(dob__gte=ADXTestCase._50_YEARS_AGO)),
+                filter=lambda insuree_qs: insuree_qs.filter(dob__gte=ADXTests._50_YEARS_AGO)),
             ADXCategoryOptionDefinition(
                 code=">50yo",
-                filter=lambda insuree_qs: insuree_qs.filter(dob__lt=ADXTestCase._50_YEARS_AGO))
+                filter=lambda insuree_qs: insuree_qs.filter(dob__lt=ADXTests._50_YEARS_AGO))
         ]
     )
     SEX_CATEGORY_DEFINITION = ADXMappingCategoryDefinition(
@@ -49,11 +50,14 @@ class ADXTestCase(TestCase):
             ADXMappingGroupDefinition(
                 comment="Test Comment",
                 dataset=HealthFacility,
+                to_org_unit_code_func=lambda hf: build_dhis2_id(hf.uuid),
                 data_values=[
                     ADXMappingDataValueDefinition(
                         data_element="NB_INSUREES",
-                        related_from_dataset_func=lambda hf: hf.insurees,
-                        aggregation_function=lambda insuress_qs: str(insuress_qs.count()),
+                        dataset_from_orgunit_func=lambda hf: hf.insurees,
+                        aggregation_func=lambda insurees_qs: str(insurees_qs.count()),
+                        period_filter_func=lambda qs, period: qs.filter(validity_from__gte=period.from_date,
+                                                                        validity_from__lte=period.to_date),
                         categories=[AGE_CATEGORY_DEFINITION, SEX_CATEGORY_DEFINITION]
                     )
                 ]
@@ -68,11 +72,14 @@ class ADXTestCase(TestCase):
             ADXMappingGroupDefinition(
                 comment="Test Comment",
                 dataset=HealthFacility,
+                to_org_unit_code_func=lambda hf: build_dhis2_id(hf.uuid),
                 data_values=[
                     ADXMappingDataValueDefinition(
                         data_element="NB_INSUREES",
-                        related_from_dataset_func=lambda hf: hf.insurees,
-                        aggregation_function=lambda insuress_qs: str(insuress_qs.count()),
+                        dataset_from_orgunit_func=lambda hf: hf.insurees,
+                        aggregation_func=lambda insuress_qs: str(insuress_qs.count()),
+                        period_filter_func=lambda qs, period: qs.filter(validity_from__gte=period.from_date,
+                                                                        validity_from__lte=period.to_date),
                         categories=[]
                     )
                 ]
@@ -114,7 +121,7 @@ class ADXTestCase(TestCase):
 
     def _create_test_adx(self, test_period=VALID_TEST_PERIOD, test_definition=TEST_ADX_DEFINITION):
         builder = ADXBuilder(test_definition)
-        org_units = [self._TEST_HF.uuid]
+        org_units = [self._TEST_HF]
         return builder.create_adx_cube(test_period, org_units)
 
     @classmethod
@@ -201,9 +208,9 @@ class ADXTestCase(TestCase):
     def _create_test_insuree(cls, chfid: str, sex: str, dob: str, validity: str) -> List[Insuree]:
         return create_test_insuree(
             True,
-            {'chf_id': chfid,
-             'gender': Gender.objects.get(code=sex),
-             'dob': dob,
-             'health_facility': cls._TEST_HF,
-             'validity_from': validity}
+            custom_props={'chf_id': chfid,
+                          'gender': Gender.objects.get(code=sex),
+                          'dob': dob,
+                          'health_facility': cls._TEST_HF,
+                          'validity_from': validity}
         )
