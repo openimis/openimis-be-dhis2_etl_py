@@ -145,7 +145,7 @@ class ADXTests(TestCase):
             'name': 'TEST_HF_ADX_DEFINITION',
             'exported': dateTest,
             'groups': [{
-                'complete_date':datetime.strptime(dateTest, '%Y-%m-%d'),
+                'complete_date':datetime.datetime.strptime(dateTest, '%Y-%m-%d'),
                 'org_unit': org_unit,
                 'period': '2019-01-01/P2Y',
                 'data_set': "TEST_HF_ADX_DEFINITION",
@@ -197,7 +197,7 @@ class ADXTests(TestCase):
             'name': 'TEST_HF_ADX_DEFINITION',
             'exported':dateTest,  
             'groups': [{
-                'complete_date':datetime.strptime(dateTest, '%Y-%m-%d'),
+                'complete_date':datetime.datetime.strptime(dateTest, '%Y-%m-%d'),
                 'org_unit': org_unit,
                 'period': '2019-01-01/P2Y',
                 'data_set': "TEST_HF_ADX_DEFINITION",
