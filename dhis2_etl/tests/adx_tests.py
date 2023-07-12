@@ -174,7 +174,7 @@ class ADXTests(TestCase):
                     }]
                 }, {
                     'data_element': 'NB_INSUREES',
-                    'value': '0',
+                    'value': '1',
                     'aggregations': [{
                         'label_name': 'AGEGROUP',
                         'label_value': '>50yo'
@@ -184,7 +184,7 @@ class ADXTests(TestCase):
                     }]
                 }, {
                     'data_element': 'NB_INSUREES',
-                    'value': '0',
+                    'value': '1',
                     'aggregations': [{
                         'label_name': 'AGEGROUP',
                         'label_value': '>50yo'
@@ -206,7 +206,7 @@ class ADXTests(TestCase):
                 'comment': 'Test Comment',
                 'data_values': [{
                     'data_element': 'NB_INSUREES',
-                    'value': '3',
+                    'value': '5',
                     'aggregations': []
                 }]
             }]
