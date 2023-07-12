@@ -156,40 +156,40 @@ class ADXTests(TestCase):
                     'data_element': 'NB_INSUREES',
                     'value': '1',
                     'aggregations': [{
-                        'label_name': 'ageGroup',
+                        'label_name': 'AGEGROUP',
                         'label_value': '<=50yo'
                     }, {
-                        'label_name': 'sex',
+                        'label_name': 'SEX',
                         'label_value': 'M'
                     }]
                 }, {
                     'data_element': 'NB_INSUREES',
                     'value': '2',
                     'aggregations': [{
-                        'label_name': 'ageGroup',
+                        'label_name': 'AGEGROUP',
                         'label_value': '<=50yo'
                     }, {
-                        'label_name': 'sex',
+                        'label_name': 'SEX',
                         'label_value': 'F'
                     }]
                 }, {
                     'data_element': 'NB_INSUREES',
                     'value': '0',
                     'aggregations': [{
-                        'label_name': 'ageGroup',
+                        'label_name': 'AGEGROUP',
                         'label_value': '>50yo'
                     }, {
-                        'label_name': 'sex',
+                        'label_name': 'SEX',
                         'label_value': 'M'
                     }]
                 }, {
                     'data_element': 'NB_INSUREES',
                     'value': '0',
                     'aggregations': [{
-                        'label_name': 'ageGroup',
+                        'label_name': 'AGEGROUP',
                         'label_value': '>50yo'
                     }, {
-                        'label_name': 'sex',
+                        'label_name': 'SEX',
                         'label_value': 'F'
                     }]
                 }]
