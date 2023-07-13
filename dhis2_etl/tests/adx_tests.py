@@ -100,10 +100,13 @@ class ADXTests(TestCase):
 
     def is_same_aggregation(self, dv_g, dv_e):
         is_same = True
+        # true if not cat
+        if not 'aggregations' in dv_g and not 'aggregations' in dv_e:
+            return True
         for ag_g in dv_g['aggregations']:
             found = False
             for ag_e in dv_e['aggregations']:
-                if ag_g.tostring() == ag_e.tostring():
+                if dumps(ag_g) == dumps(ag_e):
                     found = True
             if not found:
                 return False
