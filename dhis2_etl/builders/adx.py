@@ -156,7 +156,10 @@ class ADXDataValueBuilder:
             #data_values.append(self._create_data_value_for_group_filtering(qs, group_definition))
         else:
             # Create single combined view if no categories available
-            data_values.append(queryset.aggregate(value=self.aggregation_func))
+            data_values.append(ADXDataValue(
+                        data_element=self.data_element,
+                        value=str(queryset.aggregate(value=self.aggregation_func)),
+                        aggregations=aggregations)
         return data_values
 
     def _filter_queryset_by_category(self, queryset, group_filtering):
