@@ -151,7 +151,7 @@ class ADXTests(TestCase):
         xml_format = xml_formatter.format_adx(adx_format)
         expected = ElementTree.fromstring(self.EXPECTED_XML_DUMP)
         remove_namespace(expected)
-        self.assertEqual(expected, ElementTree.tostring(xml_format))
+        self.assertEqual(expected.tostring(xml_format), ElementTree.tostring(xml_format))
 
     def _create_test_adx(self, test_period=VALID_TEST_PERIOD, test_definition=TEST_ADX_DEFINITION):
         builder = ADXBuilder(test_definition)
