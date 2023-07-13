@@ -158,7 +158,7 @@ class ADXDataValueBuilder:
             # Create single combined view if no categories available
             data_values.append(ADXDataValue(
                         data_element=self.data_element,
-                        value=str(queryset.aggregate(self.aggregation_func)),
+                        value=str(queryset.aggregate(value=self.aggregation_func)['value']),
                         aggregations=[]))
         return data_values
 
