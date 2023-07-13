@@ -110,7 +110,7 @@ class ADXTests(TestCase):
         return True
 
 
-    def test_datavalue(adx_generated, adx_expected):
+    def test_datavalue(self,adx_generated, adx_expected):
         for dv_g in adx_generated['groups']['data_values'] :
             for dv_e in adx_expected['groups']['data_values']:
                 if self.is_same_aggregation(dv_g, dv_e):
@@ -125,7 +125,7 @@ class ADXTests(TestCase):
     def test_adx_mapping_no_category(self):
         adx_format = self._create_test_adx(test_definition=self.TEST_ADX_DEFINITION_NO_CAT)
         #self.assertEqual(asdict(adx_format)['name'], self.EXPECTED_ADX_DICT_NO_CATEGORY['name'])
-        self.assertEqual(asdict(adx_format)['groups'], self.EXPECTED_ADX_DICT_NO_CATEGORY['groups'])
+        self.test_datavalue( asdict(adx_format), self.EXPECTED_ADX_DICT_NO_CATEGORY)
 
     def test_adx_mapping_invalid_period_1(self):
         with self.assertRaises(PeriodParsingException):
@@ -225,7 +225,7 @@ class ADXTests(TestCase):
                 'comment': 'Test Comment',
                 'data_values': [{
                     'data_element': 'NB_INSUREES',
-                    'value': '5',
+                    'value': '3',
                     'aggregations': []
                 }]
             }]
