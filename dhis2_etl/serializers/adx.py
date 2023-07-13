@@ -15,17 +15,18 @@ class AbstractADXFormatter(ABC, Generic[_T]):
     def adx_from_format(self, adx: _T) -> ADXMapping:
         raise NotImplemented(F"Creating adx object from format `{_T}` not supported.")
 
+def remove_namespace(doc, namespace):
+    """Remove namespace in the passed document in place."""
+    ns = u'{%s}' % namespace
+    nsl = len(ns)
+    if doc.tag.startswith(ns):
+        doc.tag = doc.tag[nsl:]
+    for elem in doc.getiterator():
+        if elem.tag.startswith(ns):
+            elem.tag = elem.tag[nsl:]
 
 class XMLFormatter(AbstractADXFormatter[ElementTree.Element]):
-    def remove_namespace(self, doc, namespace):
-        """Remove namespace in the passed document in place."""
-        ns = u'{%s}' % namespace
-        nsl = len(ns)
-        if doc.tag.startswith(ns):
-            doc.tag = doc.tag[nsl:]
-        for elem in doc.getiterator():
-            if elem.tag.startswith(ns):
-                elem.tag = elem.tag[nsl:]
+
     
     def format_adx(self, adx: ADXMapping) -> ElementTree.Element:
 
@@ -36,7 +37,7 @@ class XMLFormatter(AbstractADXFormatter[ElementTree.Element]):
         
         self._build_xml_groups(adx, xml_root)
         if len(list(xml_root))>0:
-            self.remove_namespace(xml_root, u'http://earth.google.com/kml/2.0')
+            remove_namespace(xml_root, u'http://earth.google.com/kml/2.0')
             return xml_root
 
     def _build_xml_groups(self, adx: ADXMapping, root: ElementTree.Element):

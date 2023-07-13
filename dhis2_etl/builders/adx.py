@@ -159,7 +159,7 @@ class ADXDataValueBuilder:
             data_values.append(ADXDataValue(
                         data_element=self.data_element,
                         value=str(queryset.aggregate(value=self.aggregation_func)),
-                        aggregations=aggregations))
+                        aggregations=[]))
         return data_values
 
     def _filter_queryset_by_category(self, queryset, group_filtering):

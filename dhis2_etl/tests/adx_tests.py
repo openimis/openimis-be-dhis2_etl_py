@@ -4,7 +4,7 @@ from typing import List
 from xml.etree import ElementTree
 
 from dhis2_etl.builders.adx import ADXBuilder
-from dhis2_etl.serializers.adx import XMLFormatter
+from dhis2_etl.serializers.adx import XMLFormatter, remove_namespace
 from dhis2_etl.models.adx.definition import (ADXCategoryOptionDefinition,
                                              ADXMappingCategoryDefinition,
                                              ADXMappingCubeDefinition,
@@ -149,7 +149,7 @@ class ADXTests(TestCase):
         adx_format = self._create_test_adx()
         xml_formatter = XMLFormatter()
         xml_format = xml_formatter.format_adx(adx_format)
-        expected = xml_format.remove_namespace(ElementTree.fromstring(self.EXPECTED_XML_DUMP))
+        expected = remove_namespace(ElementTree.fromstring(self.EXPECTED_XML_DUMP))
 
         self.assertEqual(EXPECTED_XML_DUMP, ElementTree.tostring(xml_format))
 
