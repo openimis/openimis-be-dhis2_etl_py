@@ -101,8 +101,12 @@ class ADXTests(TestCase):
     def is_same_aggregation(self, dv_g, dv_e):
         is_same = True
         # true if not cat
-        if not 'aggregations' in dv_g and not 'aggregations' in dv_e:
-            return True
+        if not 'aggregations' in dv_g:
+            if not 'aggregations' in dv_e:
+                return True
+            else:
+                return False
+        
         for ag_g in dv_g['aggregations']:
             found = False
             #if no agg on expected not the same as generated
@@ -222,7 +226,6 @@ class ADXTests(TestCase):
                 'data_values': [{
                     'data_element': 'NB_INSUREES',
                     'value': '3',
-                    'aggregations': []
                 }]
             }]
         }

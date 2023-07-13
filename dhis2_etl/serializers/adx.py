@@ -21,6 +21,8 @@ class XMLFormatter(AbstractADXFormatter[ElementTree.Element]):
         """Remove namespace in the passed document in place."""
         ns = u'{%s}' % namespace
         nsl = len(ns)
+        if doc.tag.startswith(ns):
+            doc.tag = doc.tag[nsl:]
         for elem in doc.getiterator():
             if elem.tag.startswith(ns):
                 elem.tag = elem.tag[nsl:]
