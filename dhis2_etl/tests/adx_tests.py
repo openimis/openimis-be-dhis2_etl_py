@@ -225,6 +225,7 @@ class ADXTests(TestCase):
                 'data_set': "TEST_HF_ADX_DEFINITION",
                 'comment': 'Test Comment',
                 'data_values': [{
+                    'aggregations': [],
                     'data_element': 'NB_INSUREES',
                     'value': '3',
                 }]

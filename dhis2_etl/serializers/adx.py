@@ -15,7 +15,7 @@ class AbstractADXFormatter(ABC, Generic[_T]):
     def adx_from_format(self, adx: _T) -> ADXMapping:
         raise NotImplemented(F"Creating adx object from format `{_T}` not supported.")
 
-def remove_namespace(doc, namespace):
+def remove_namespace(doc, namespace='ns0'):
     """Remove namespace in the passed document in place."""
     ns = u'{%s}' % namespace
     nsl = len(ns)
@@ -37,7 +37,7 @@ class XMLFormatter(AbstractADXFormatter[ElementTree.Element]):
         
         self._build_xml_groups(adx, xml_root)
         if len(list(xml_root))>0:
-            remove_namespace(xml_root, u'http://earth.google.com/kml/2.0')
+            remove_namespace(xml_root)
             return xml_root
 
     def _build_xml_groups(self, adx: ADXMapping, root: ElementTree.Element):
