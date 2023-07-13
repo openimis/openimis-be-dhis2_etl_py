@@ -17,15 +17,24 @@ class AbstractADXFormatter(ABC, Generic[_T]):
 
 
 class XMLFormatter(AbstractADXFormatter[ElementTree.Element]):
+    def remove_namespace(self, doc, namespace):
+        """Remove namespace in the passed document in place."""
+        ns = u'{%s}' % namespace
+        nsl = len(ns)
+        for elem in doc.getiterator():
+            if elem.tag.startswith(ns):
+                elem.tag = elem.tag[nsl:]
+    
     def format_adx(self, adx: ADXMapping) -> ElementTree.Element:
 
         xml_root = ElementTree.Element('adx', {'xmlns':"urn:ihe:qrph:adx:2015", 
                                                'xmlns:xsi':"http://www.w3.org/2001/XMLSchema-instance",
                                                'xsi:schemaLocation':"urn:ihe:qrph:adx:2015 ../schema/adx_loose.xsd"})
         # remove ns0
-        remove_namespace(xml_root, u'http://earth.google.com/kml/2.0')
+        
         self._build_xml_groups(adx, xml_root)
         if len(list(xml_root))>0:
+            self.remove_namespace(xml_root, u'http://earth.google.com/kml/2.0')
             return xml_root
 
     def _build_xml_groups(self, adx: ADXMapping, root: ElementTree.Element):

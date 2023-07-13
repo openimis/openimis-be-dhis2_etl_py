@@ -98,7 +98,7 @@ class ADXTests(TestCase):
         super().setUpClass()
         cls._create_test_organization_unit()
 
-    def is_same_aggregation(dv_g, dv_e):
+    def is_same_aggregation(self, dv_g, dv_e):
         is_same = True
         for ag_g in dv_g['aggregations']:
             found = False
