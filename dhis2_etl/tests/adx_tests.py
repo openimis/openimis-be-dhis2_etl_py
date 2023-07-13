@@ -105,8 +105,11 @@ class ADXTests(TestCase):
             return True
         for ag_g in dv_g['aggregations']:
             found = False
+            #if no agg on expected not the same as generated
+            if not 'aggregations' in dv_e:
+                return False
             for ag_e in dv_e['aggregations']:
-                if dumps(ag_g) == dumps(ag_e):
+                if str(ag_g) == str(ag_e):
                     found = True
             if not found:
                 return False
