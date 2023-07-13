@@ -1,17 +1,18 @@
-from insuree.models import Insuree, Gender, Education, Profession, Family
-from location.models import Location
-from product.models import Product
-from ..models.dhis2Program import *
-from . import BaseDHIS2Converter
-from ..configurations import GeneralConfiguration
-from dhis2.utils import *
-import hashlib 
-from ..utils import toDateStr, toDatetimeStr, build_dhis2_id
-from .ClaimConverter import ClaimConverter
+import hashlib
 # import the logging library
 import logging
+
+from dhis2.utils import *
+
+from dhis2_etl.configurations import GeneralConfiguration
+from dhis2_etl.models.dhis2.program import *
+from dhis2_etl.utils import build_dhis2_id, toDateStr
+
+from . import BaseDHIS2Converter
+from .ClaimConverter import ClaimConverter
+
 # Get an instance of a logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('openIMIS')
 # Create your views here.
 insureeProgram = GeneralConfiguration.get_insuree_program()
 salt = GeneralConfiguration.get_salt()

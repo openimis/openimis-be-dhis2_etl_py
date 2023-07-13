@@ -1,6 +1,7 @@
+from django.conf import settings
+
 from . import BaseConfiguration
 from .generalConfiguration import GeneralConfiguration
-from django.conf import settings
 
 
 class ModuleConfiguration(BaseConfiguration):

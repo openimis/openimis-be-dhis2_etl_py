@@ -1,29 +1,30 @@
 # Service to push openIMIS claim to DHIS2
 # Copyright Patrick Delcoix <patrick@pmpd.eu>
-from ..models.dhis2Program import *
-#import time
-from django.http import  JsonResponse
-
-from ..converters.ClaimConverter import ClaimConverter, CLAIM_VALUATED, CLAIM_REJECTED
+# import the logging library
+import logging
 
 from claim.models import Claim, ClaimItem, ClaimService
+from django.db.models import Prefetch, Q
+#import time
+from django.http import JsonResponse
 
 #from policy.models import Policy
 #from django.core.serializers.json import DjangoJSONEncoder
 
-
-from django.db.models import Q, Prefetch
+from dhis2_etl.builders.dhis2.ClaimConverter import (CLAIM_REJECTED,
+                                                     CLAIM_VALUATED,
+                                                     ClaimConverter)
+from dhis2_etl.models.dhis2.program import *
+from dhis2_etl.strategy.dhis2_client import *
 # FIXME manage permissions
-from ..utils import *
+from dhis2_etl.utils import *
 
-# import the logging library
-import logging
 # Get an instance of a logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('openIMIS')
 
-# postMethod = postPaginated
+postMethod = postPaginated
 # postMethod = postPaginatedThreaded
-postMethod = printPaginated
+# postMethod = printPaginated
 
 def syncClaim(startDate,stopDate):
     # get only the last version of valudated or rejected claims (to sending multiple time the same claim)

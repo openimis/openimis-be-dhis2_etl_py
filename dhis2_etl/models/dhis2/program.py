@@ -1,16 +1,14 @@
 # DHIS2 program
 # Copyright Patrick Delcoix <patrick@pmpd.eu>
 # # FROM https://github.com/dhis2/dhis2-python/blob/main/dhis2_core/src/dhis2/e2b/models/e2b.py
-from typing import Dict, List, Optional, Union, Tuple
-from datetime import datetime, date
-from uuid import uuid4
-from pydantic import  BaseModel, ValidationError, validator, Field, AnyUrl, EmailStr
+from typing import Dict, List, Optional, Union
+
 from dhis2.utils import *
-from .dhis2Enum import *
-from .dhis2Type import *
+from pydantic import BaseModel
 
+from .enum import *
+from .type import *
 
-   
 
 class EventDataValue(BaseModel):
     created: Optional[datetimeStr]

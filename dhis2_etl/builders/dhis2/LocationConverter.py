@@ -1,28 +1,34 @@
-from insuree.models import Insuree, Gender, Education, Profession, Family
-from location.models import Location
-from product.models import Product
-from ..models.dhis2Metadata import *
-from ..models.dhis2Dataset import *
-from . import BaseDHIS2Converter
-from ..configurations import GeneralConfiguration
-from dhis2.utils import *
-import hashlib 
-from ..utils import toDateStr, toDatetimeStr,build_dhis2_id
-import re
-import datetime
 # import the logging library
 import logging
+
+from dhis2.utils import *
+
+from dhis2_etl.configurations import GeneralConfiguration
+from dhis2_etl.models.dhis2.dataset import *
+from dhis2_etl.models.dhis2.metadata import *
+from dhis2_etl.utils import build_dhis2_id, toDateStr, clean_code
+
+from . import BaseDHIS2Converter
+
 # Get an instance of a logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('openIMIS')
 # Create your views here.
 locationConfig = GeneralConfiguration.get_location()
 populationDataset = GeneralConfiguration.get_population_dataset()
 
+orgUnitLevels = [
+    'R',
+   'D',
+   'W',
+    'V',
+    
+]
+
 class LocationConverter(BaseDHIS2Converter):
     @classmethod
     def getRootOrgUnit(cls):
-        return OrganisationUnitBundle(organisationUnits = [OrganisationUnit( name = locationConfig['rootOrgUnitCode'] + ' - '+locationConfig['rootOrgUnitName'],\
-            shortName = locationConfig['rootOrgUnitName'], code = locationConfig['rootOrgUnitCode'],\
+        return MetadataBundle(organisationUnits = [OrganisationUnit( name = locationConfig['rootOrgUnitCode'] + ' - '+locationConfig['rootOrgUnitName'],\
+            shortName = locationConfig['rootOrgUnitName'], code = clean_code(locationConfig['rootOrgUnitCode']),\
             openingDate = '2000-01-01', id = locationConfig['rootOrgUnit'])])
 
 
@@ -33,12 +39,18 @@ class LocationConverter(BaseDHIS2Converter):
         for location in objs:
             #if not re.match(exclPaternName, location.name):
             organisationUnits.append(cls.to_org_unit_obj(location))
-        return OrganisationUnitBundle(organisationUnits = organisationUnits)
+        return MetadataBundle(organisationUnits = organisationUnits)
  
     @classmethod
     def to_org_unit_obj(cls, location,  **kwargs):
         if hasattr(location,'parent') and location.parent != None: # for imis location
+            level =  orgUnitLevels.index(location.type)
+            parentLevel = orgUnitLevels.index(location.parent.type)
+            if level  != parentLevel +1 :
+                logger.error('location hiearchy issue for %s-%s',location.code, location.name )
+                return None          
             parentId = build_dhis2_id(location.parent.uuid)
+            
         elif hasattr(location,'location') and location.location != None: # for HF
             parentId = build_dhis2_id(location.location.uuid)
         else:
@@ -48,10 +60,10 @@ class LocationConverter(BaseDHIS2Converter):
         else:
             closedDate = toDateStr(location.validity_to)
         attributes = [] # TO DO ? not attributes found on DHIS2
-
-        return OrganisationUnit( name = location.code + ' - ' + location.name, shortName = location.code, code = location.uuid,\
-            openingDate = '2000-01-01', id = build_dhis2_id(location.uuid), closedDate = closedDate,\
-                parent = DHIS2Ref(id = parentId), attributes = attributes)
+        orgId = build_dhis2_id(location.uuid)
+        return OrganisationUnit( name = location.code + ' - ' + location.name, shortName = location.code, code = clean_code(location.uuid),\
+                openingDate = '2000-01-01', id = build_dhis2_id(location.uuid), closedDate = closedDate,\
+                    parent = DHIS2Ref(id = parentId), attributes = attributes)
 
 
     @classmethod
@@ -63,9 +75,9 @@ class LocationConverter(BaseDHIS2Converter):
             for location in locations:
                 #if not re.match(exclPaternName, location.name):
                 organisationUnits.append(DHIS2Ref(id = build_dhis2_id(location.uuid) ))
-            return OrganisationUnitGroupBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, id=id, organisationUnits = organisationUnits)])#  DeltaDHIS2Ref( additions = organisationUnits ))])
+            return MetadataBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, id=id, organisationUnits = organisationUnits)])#  DeltaDHIS2Ref( additions = organisationUnits ))])
         else:
-            return OrganisationUnitGroupBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, id=id)])
+            return MetadataBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, id=id)])
     
     @classmethod
     def to_population_datasets(cls, villages, data_set_period, **kwargs):

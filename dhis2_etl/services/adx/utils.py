@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict
 
-from django.db.models import QuerySet, Sum, Model, Q, F, Exists, OuterRef
+from django.db.models import QuerySet, Sum, Model, Q, F, Exists, OuterRef,Value
 
 from contribution.models import Premium
-from dhis2_etl.adx_transform.adx_models.adx_data import Period
+from dhis2_etl.models.adx.data import Period
 from dhis2_etl.utils import build_dhis2_id
 
 
@@ -25,14 +25,22 @@ def get_location_filter(location: Model, fk: str = 'location') -> Dict[str, Mode
     }
 
 
-def get_first_day_of_last_month() -> datetime:
-    now = datetime.now()
-    return (now - timedelta(days=now.day)).replace(day=1)
 
+
+def get_first_day_of_last_month(date = None) -> datetime:
+    if date is None: 
+        date = datetime.now()
+    elif isinstance(date,str):
+        date = datetime.strptime(date, '%Y-%m-%d')
+    if isinstance(date,datetime):
+        return (date - timedelta(days=date.day)).replace(day=1)
 
 def filter_with_prefix(qs: QuerySet, key: str, value: Any, prefix: str = '') -> QuerySet:
     return qs.filter(**{f'{prefix}{key}': value})
 
+
+def q_with_prefix(key: str, value: Any, prefix: str = '') -> Q:
+    return Q(**{f'{prefix}{key}': value})
 
 def filter_period(qs: QuerySet, period: Period) -> QuerySet:
     return qs.filter(validity_from__gte=period.from_date, validity_from__lte=period.to_date) \
@@ -67,7 +75,7 @@ def get_partially_paid():
 
 
 def not_paid():
-    return Exists(Premium.objects.filter(validity_to__isnull=True).filter(policy=OuterRef('family__policies')))
+    return Q(family__policies__premiums__amount__isnull=True)
 
 
 def valid_policy(period):

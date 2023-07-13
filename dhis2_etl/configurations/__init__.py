@@ -1,6 +1,7 @@
 
 import sys
 
+
 class BaseConfiguration(object):  # pragma: no cover
 
     @classmethod

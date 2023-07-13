@@ -1,18 +1,21 @@
 # Copyrights Patrick Delcroix <patrick@pmpd.eu>
 # Generic Converter to optionSet
-from ..models.dhis2Metadata import OptionInteger, OptionSet, OptionSetBundle, Option, OptionBundle
-from ..models.dhis2Type import DHIS2Ref
-from ..models.dhis2Enum import ValueType
-from . import BaseDHIS2Converter
-from ..configurations import GeneralConfiguration
-from dhis2.utils import *
-import hashlib 
-from ..utils import toDateStr, toDatetimeStr, build_dhis2_id
-
 # import the logging library
 import logging
+
+from dhis2.utils import *
+
+from dhis2_etl.configurations import GeneralConfiguration
+from dhis2_etl.models.dhis2.enum import ValueType
+from dhis2_etl.models.dhis2.metadata import (Option, OptionSet,
+                                             MetadataBundle)
+from dhis2_etl.models.dhis2.type import DHIS2Ref
+from dhis2_etl.utils import build_dhis2_id
+
+from . import BaseDHIS2Converter
+
 # Get an instance of a logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('openIMIS')
 # Create your views here.
 # salt = GeneralConfiguration.get_salt()
 
@@ -21,7 +24,7 @@ class OptionSetConverter(BaseDHIS2Converter):
 
     @classmethod
     def to_optionsets_bundled(cls, objs, optiontSetName = "",  code = 'id', valueType = ValueType.text, **kwargs):
-        return OptionSetBundle(\
+        return MetadataBundle(\
             optionSets = [cls.to_optionsets_obj(objs = objs, optiontSetName = optiontSetName\
                 , code = code, valueType = valueType)])
 
@@ -59,5 +62,5 @@ class OptionSetConverter(BaseDHIS2Converter):
         for option in objs:
             options.append(cls.to_option_obj(option  = option,\
                 optiontSetName = optiontSetName, att1 = att1, att2 = att2, code = code))
-        return OptionBundle( options = options)
+        return MetadataBundle( options = options)
 

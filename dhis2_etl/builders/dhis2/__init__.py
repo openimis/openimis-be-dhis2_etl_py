@@ -1,5 +1,6 @@
-from abc import ABC
 import re
+from abc import ABC
+
 
 class BaseDHIS2Converter(ABC):
 

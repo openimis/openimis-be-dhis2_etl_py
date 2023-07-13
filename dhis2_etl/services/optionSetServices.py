@@ -2,25 +2,25 @@
 # Copyright Patrick Delcoix <patrick@pmpd.eu>
 
 
-from ..models.dhis2Program import *
-#import time
-from django.http import  JsonResponse
-from ..converters.OptionSetConverter import OptionSetConverter
-from insuree.models import Gender, Profession, FamilyType, Education
-from product.models import Product
+# import the logging library
+import logging
+
+from insuree.models import Education, FamilyType, Gender, Profession
 from medical.models import Diagnosis, Item, Service
+from product.models import Product
+
 #from policy.models import Policy
 #from django.core.serializers.json import DjangoJSONEncoder
 
-
-from django.db.models import Q, Prefetch
+#import time
+from dhis2_etl.builders.dhis2.OptionSetConverter import OptionSetConverter
+from dhis2_etl.models.dhis2.program import *
+from dhis2_etl.strategy.dhis2_client import *
 # FIXME manage permissions
-from ..utils import *
+from dhis2_etl.utils import *
 
-# import the logging library
-import logging
 # Get an instance of a logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('openIMIS')
 
 postMethod = post
 # postMethod = postPaginated

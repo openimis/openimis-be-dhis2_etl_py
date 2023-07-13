@@ -140,26 +140,26 @@ class FileRessourceDomain(str, Enum):
     pushAnalysis = "PUSH_ANALYSIS" 
     userAvatar = "USER_AVATAR"
 
-class DateUnitType(str, Enum):
-    biMonthly = "BI_MONTHLY"
-    biWeekly = "BI_WEEKLY"
-    daily = "DAILY"
-    financialApril = "FINANCIAL_APRIL"
-    financialJuly = "FINANCIAL_JULY"
-    financialNovember = "FINANCIAL_NOVEMBER"
-    financialOctober = "FINANCIAL_OCTOBER"
-    monthly = "MONTHLY"
-    quarterly = "QUARTERLY" 
-    sixMonthly = "SIX_MONTHLY" 
-    sixMonthlyApril = "SIX_MONTHLY_APRIL" 
-    sixMonthlyNovember = "SIX_MONTHLY_NOVEMBER" 
-    weekly = "WEEKLY"
-    weeklySaturday = "WEEKLY_SATURDAY"
-    weeklySunday = "WEEKLY_SUNDAY"
-    weeklyThursday = "WEEKLY_THURSDAY"
-    weeklyWednesday = "WEEKLY_WEDNESDAY"
-    yearly = "YEARLY"
 
+class PeriodType(str, Enum):
+    bimonthly = "BiMonthly"
+    biweekly = "BiWeekly"
+    daily = "Daily"
+    financialapril = "FinancialApril"
+    financialjuly = "FinancialJuly"
+    financialnovember = "FinancialNovember"
+    financialoctober = "FinancialOctober"
+    monthly = "Monthly"
+    quarterly = "Quarterly"
+    sixmonthly = "SixMonthly"
+    sixmonthlyapril = "SixMonthlyApril"
+    sixmonthlynovember = "SixMonthlyNovember"
+    weekly = "Weekly"
+    weeklysaturday = "WeeklySaturday"
+    weeklysunday = "WeeklySunday"
+    weeklythursday = "WeeklyThursday"
+    weeklywednesday = "WeeklyWednesday"
+    yearly = "Yearly"
 
 
 class PreheatIdentifier(str, Enum):
@@ -184,16 +184,20 @@ class DomainType(str, Enum):
     aggregate = "AGGREGATE"
     tracker = "TRACKER"
 
-class AgregationType(str, Enum):
-    sum = "SUM"
-    average = "AVERAGE"
-    averageOrgUnit = "AVERAGE_SUM_ORG_UNIT"
-    count = "COUNT"
-    standardDeviation = "STDDEV"
-    variance = "VARIANCE"
-    min = "MIN"
-    max = "MAX"
-    none = "NONE"
+class AggregationType(str, Enum):
+    average='AVERAGE' 
+    average_sum_org_unit='AVERAGE_SUM_ORG_UNIT' 
+    count='COUNT' 
+    custom='CUSTOM' 
+    default='DEFAULT' 
+    last='LAST' 
+    last_average_org_unit='LAST_AVERAGE_ORG_UNIT' 
+    max='MAX' 
+    min='MIN' 
+    none='NONE' 
+    stddev='STDDEV' 
+    sum='SUM' 
+    variance='VARIANCE'
 
 class ImportStrategy(str, Enum):
     create = "CREATE"
@@ -205,3 +209,8 @@ class ImportStrategy(str, Enum):
     sync = "SYNC"
     update = "UPDATE"
     updates = "UPDATES"
+
+class DataDimensionType(str, Enum):
+    attribute= "ATTRIBUTE" 
+    disagregation = "DISAGGREGATION"
+

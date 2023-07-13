@@ -1,9 +1,8 @@
 from unittest.mock import MagicMock, patch
 
+from dhis2_etl.models.adx.data import ADXMapping
+from dhis2_etl.strategy.adx_client import ADXClient
 from django.test import TestCase
-
-from dhis2_etl.adx_client import ADXClient
-from dhis2_etl.adx_transform.adx_models.adx_data import ADXMapping
 
 
 class ADXClientTests(TestCase):

@@ -1,15 +1,9 @@
-from claim.models import Claim, ClaimItem, ClaimService
-from medical.models import Diagnosis, Item, Service
-from insuree.models import Insuree, InsureePolicy
-from policy.models import Policy
-from product.models import ProductItem, ProductService
-from .. import models
-from . import BaseDHIS2Converter
-from ..configurations import GeneralConfiguration
 from dhis2.utils import *
-import hashlib 
-from ..models.dhis2Program import *
-from ..utils import toDateStr, toDatetimeStr, build_dhis2_id
+from dhis2_etl.configurations import GeneralConfiguration
+from dhis2_etl.models.dhis2.program import *
+from dhis2_etl.utils import build_dhis2_id, toDateStr
+
+from . import BaseDHIS2Converter
 
 claimProgram =  GeneralConfiguration.get_claim_program()
 salt = GeneralConfiguration.get_salt()

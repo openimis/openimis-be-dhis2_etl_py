@@ -1,17 +1,17 @@
 from dataclasses import dataclass
-from typing import Callable, Collection, List, Type
+from typing import Callable, Collection, List, Type, Optional
 from uuid import UUID
 
-from django.db.models import Model, QuerySet
-
-from dhis2_etl.adx_transform.adx_models.adx_data import Period
-from dhis2_etl.adx_transform.adx_models.adx_time_period import PeriodType
-
+from dhis2_etl.models.adx.data import Period
+from dhis2_etl.models.adx.time_period import PeriodType
+from django.db.models import Model, QuerySet, Q
+from pydantic import  BaseModel
 
 @dataclass
 class ADXCategoryOptionDefinition:
     code: str
-    filter: Callable[[QuerySet], QuerySet]  # Filtering function takes queryset instance as argument and returns another queryset
+    name: str
+    filter: Q  # Filtering function takes queryset instance as argument and returns another queryset
 
 
 @dataclass
@@ -24,7 +24,7 @@ class ADXMappingCategoryDefinition:
 class ADXMappingDataValueDefinition:
     data_element: str
     aggregation_func: Callable[[QuerySet], str]
-    dataset_from_orgunit_func: Callable[[Model], QuerySet]
+    dataset_from_orgunit_func: Callable
     period_filter_func: Callable[[QuerySet, Period], QuerySet]
     categories: List[ADXMappingCategoryDefinition]
 
@@ -33,18 +33,18 @@ class ADXMappingDataValueDefinition:
 @dataclass
 class ADXMappingGroupDefinition:
     comment: str
-    dataset: Type[Model]  # HF Etc.
+    data_set: str
+    org_unit_type: Type[Model]  # HF Etc.
     data_values: List[ADXMappingDataValueDefinition]
     to_org_unit_code_func: Callable[[Model], str]
 
     @property
     def dataset_repr(self) -> str:
-        return str(self.dataset.__name__).upper()
+        return str(self.data_set.__name__).upper()
 
 
 @dataclass
 class ADXMappingCubeDefinition:
-    name: str
     period_type: PeriodType  # Currently handled in ISO Format
     groups: List[ADXMappingGroupDefinition]
     org_units: Collection[UUID] = None  # UUIDs of objects stored in Model, can be queryset result or list
