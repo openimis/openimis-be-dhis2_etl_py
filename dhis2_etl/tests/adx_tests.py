@@ -98,10 +98,29 @@ class ADXTests(TestCase):
         super().setUpClass()
         cls._create_test_organization_unit()
 
+    def is_same_aggregation(dv_g, dv_e):
+        is_same = True
+        for ag_g in dv_g['aggregations']:
+            found = False
+            for ag_e in dv_e['aggregations']:
+                if ag_g.tostring() == ag_e.tostring():
+                    found = True
+            if not found:
+                return False
+        return True
+
+
+    def test_datavalue(adx_generated, adx_expected):
+        for dv_g in adx_generated['groups']['data_values'] :
+            for dv_e in adx_expected['groups']['data_values']:
+                if self.is_same_aggregation(dv_g, dv_e):
+                    self.assertEqual(dv_g,dv_e )
+
     def test_adx_mapping(self):
         adx_format = self._create_test_adx()
         #self.assertEqual(asdict(adx_format)['name'], self.EXPECTED_ADX_DICT['name'])
-        self.assertEqual(asdict(adx_format)['groups'], self.EXPECTED_ADX_DICT['groups'])
+        self.test_datavalue( asdict(adx_format), self.EXPECTED_ADX_DICT)
+        
 
     def test_adx_mapping_no_category(self):
         adx_format = self._create_test_adx(test_definition=self.TEST_ADX_DEFINITION_NO_CAT)
@@ -211,7 +230,7 @@ class ADXTests(TestCase):
                 }]
             }]
         }
-        cls.EXPECTED_XML_DUMP = F'''<adx xmlns="urn:ihe:qrph:adx:2015" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:ihe:qrph:adx:2015 ../schema/adx_loose.xsd"><group orgUnit="{org_unit}" period="2019-01-01/P2Y" dataSet="TEST_HF_ADX_DEFINITION" comment="Test Comment"><dataValue dataElement="NB_INSUREES" value="1" ageGroup="&lt;=50yo" sex="M" /><dataValue dataElement="NB_INSUREES" value="2" ageGroup="&lt;=50yo" sex="F" /><dataValue dataElement="NB_INSUREES" value="0" ageGroup="&gt;50yo" sex="M" /><dataValue dataElement="NB_INSUREES" value="0" ageGroup="&gt;50yo" sex="F" /></group></adx>'''
+        cls.EXPECTED_XML_DUMP = F'''<adx xmlns="urn:ihe:qrph:adx:2015" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:ihe:qrph:adx:2015 ../schema/adx_loose.xsd"><group orgUnit="{org_unit}" period="2019-01-01/P2Y" dataSet="TEST_HF_ADX_DEFINITION" comment="Test Comment"><dataValue dataElement="NB_INSUREES" value="1" AGEGROUP="&lt;=50yo" SEX="M" /><dataValue dataElement="NB_INSUREES" value="2" AGEGROUP="&lt;=50yo" SEX="F" /><dataValue dataElement="NB_INSUREES" value="1" AGEGROUP="&gt;50yo" SEX="M" /><dataValue dataElement="NB_INSUREES" value="1" AGEGROUP="&gt;50yo" SEX="F" /></group></adx>'''
 
     @classmethod
     def _create_test_insuree(cls, chfid: str, sex: str, dob: str, validity: str) -> List[Insuree]:

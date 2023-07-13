@@ -18,6 +18,10 @@ class AbstractADXFormatter(ABC, Generic[_T]):
 
 class XMLFormatter(AbstractADXFormatter[ElementTree.Element]):
     def format_adx(self, adx: ADXMapping) -> ElementTree.Element:
+        # remove ns0
+        ElementTree.register_namespace('', "http://www.topografix.com/GPX/1/1")
+        ElementTree.register_namespace('', "http://www.topografix.com/GPX/1/0")
+
         xml_root = ElementTree.Element('adx', {'xmlns':"urn:ihe:qrph:adx:2015", 
                                                'xmlns:xsi':"http://www.w3.org/2001/XMLSchema-instance",
                                                'xsi:schemaLocation':"urn:ihe:qrph:adx:2015 ../schema/adx_loose.xsd"})
