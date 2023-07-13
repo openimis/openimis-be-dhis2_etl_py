@@ -110,22 +110,22 @@ class ADXTests(TestCase):
         return True
 
 
-    def test_datavalue(self,adx_generated, adx_expected):
-        for dv_g in adx_generated['groups']['data_values'] :
-            for dv_e in adx_expected['groups']['data_values']:
+    def _test_datavalue(self,adx_generated, adx_expected):
+        for dv_g in adx_generated['groups'][0]['data_values'] :
+            for dv_e in adx_expected['groups'][0]['data_values']:
                 if self.is_same_aggregation(dv_g, dv_e):
                     self.assertEqual(dv_g,dv_e )
 
     def test_adx_mapping(self):
         adx_format = self._create_test_adx()
         #self.assertEqual(asdict(adx_format)['name'], self.EXPECTED_ADX_DICT['name'])
-        self.test_datavalue( asdict(adx_format), self.EXPECTED_ADX_DICT)
+        self._test_datavalue( asdict(adx_format), self.EXPECTED_ADX_DICT)
         
 
     def test_adx_mapping_no_category(self):
         adx_format = self._create_test_adx(test_definition=self.TEST_ADX_DEFINITION_NO_CAT)
         #self.assertEqual(asdict(adx_format)['name'], self.EXPECTED_ADX_DICT_NO_CATEGORY['name'])
-        self.test_datavalue( asdict(adx_format), self.EXPECTED_ADX_DICT_NO_CATEGORY)
+        self._test_datavalue( asdict(adx_format), self.EXPECTED_ADX_DICT_NO_CATEGORY)
 
     def test_adx_mapping_invalid_period_1(self):
         with self.assertRaises(PeriodParsingException):
@@ -158,7 +158,7 @@ class ADXTests(TestCase):
             cls._create_test_insuree('chft2', 'M', '2000-01-01', '2020-01-01'),
             cls._create_test_insuree('chft3', 'F', '2000-01-01', '2020-02-01'),
             cls._create_test_insuree('chft4', 'F', '2000-01-01', '2020-02-01'),
-            cls._create_test_insuree('chft5', 'F', '1950-01-01', '2022-01-01'),
+            cls._create_test_insuree('chft5', 'F', '1950-01-01', '2022-01-01'), # should not be in the tests
         ]
 
         org_unit = build_dhis2_id(cls._TEST_HF.uuid)
@@ -200,16 +200,6 @@ class ADXTests(TestCase):
                     }, {
                         'label_name': 'SEX',
                         'label_value': 'M'
-                    }]
-                }, {
-                    'data_element': 'NB_INSUREES',
-                    'value': '1',
-                    'aggregations': [{
-                        'label_name': 'AGEGROUP',
-                        'label_value': '>50yo'
-                    }, {
-                        'label_name': 'SEX',
-                        'label_value': 'F'
                     }]
                 }]
             }]}
