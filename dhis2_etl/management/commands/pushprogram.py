@@ -35,6 +35,7 @@ class Command(BaseCommand):
         parser.add_argument("stop_date", nargs=1, type=lambda s: datetime.datetime.strptime(s, '%Y-%m-%d'))
         parser.add_argument("scope", nargs=1, choices=[
             'all',
+            'insuree',
             'enroll',
             'insureepolicies',
             'insureepoliciesclaims',
@@ -65,7 +66,7 @@ class Command(BaseCommand):
             ## TEI and Program enrollment and event
             #########################################
             ## Deprecated
-            if  scope == "insuree":
+            if  scope == "insuree" or scope == "all":
                 logger.info("start Insuree sync")
                 syncInsuree(start_date,stop_date)
             if  scope == "policy":
