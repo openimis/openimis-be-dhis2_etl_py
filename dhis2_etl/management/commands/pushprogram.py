@@ -38,17 +38,6 @@ class Command(BaseCommand):
             'enroll',
             'insureepolicies',
             'insureepoliciesclaims',
-            'createRoot', 
-            'orgunit', 
-            'optionset',
-            'product',
-            "gender",
-            "profession",
-            "education",
-            "grouptype",
-            "diagnosis",
-            "item",
-            "service",
             "population",
             "funding",
             ] )
@@ -75,69 +64,31 @@ class Command(BaseCommand):
             responses = []
             ## TEI and Program enrollment and event
             #########################################
-            ## TODO policy only for renewalm insureePolicy for new
-            if scope == "all" or scope == "insuree":
+            ## Deprecated
+            if  scope == "insuree":
                 logger.info("start Insuree sync")
                 syncInsuree(start_date,stop_date)
-            if scope == "all" or scope == "policy":
+            if  scope == "policy":
                 logger.info("start Policy sync")
                 syncPolicy(start_date,stop_date)
-            if scope == "all" or scope == "claim":
+            if scope == "claim":
                 logger.info("start Claim sync")
                 syncClaim(start_date,stop_date)
             # OTHER program sync
             ####################
             # manual enrollment to policy program
-            if scope == 'enroll':
+            if scope == 'enroll' or scope == "all":
                 logger.info("start Insuree enroll")
                 insureeResponse = enrollInsuree(start_date,stop_date)
                 #responses.insert(insureeResponse)
             # syncInsuree and Policiy event
-            if  scope == "insureepolicies":
+            if  scope == "insureepolicies" or scope == "all":
                 logger.info("start Insuree & policy sync")
                 syncInsureePolicy(start_date,stop_date)
 
-            if  scope == "insureepoliciesclaims":
+            if  scope == "insureepoliciesclaims" or scope == "all":
                 logger.info("start Insuree & policy & claim sync")
                 syncInsureePolicyClaim(start_date,stop_date)
-            # ORGUNIT 
-            #########
-            if scope == 'createRoot':
-                sync = createRootOrgUnit()
-
-            if  scope == "orgunit":
-                logger.info("start orgUnit sync")
-                syncRegion(start_date,stop_date)
-                syncDistrict(start_date,stop_date)
-                syncWard(start_date,stop_date)
-                syncVillage(start_date,stop_date)
-                syncHospital(start_date,stop_date)
-                syncDispensary(start_date,stop_date)
-                syncHealthCenter(start_date,stop_date)
-                with ADXClient() as adx_client:
-                    adx_client.updateOrgUnitAndCatComboOption()
-
-            # Optionset
-            ###########
-            if  scope == "optionset" :
-                    logger.info("start OptionSets sync")
-            if  scope == "optionset" or scope == "product":
-                syncProduct(start_date,stop_date)
-            if  scope == "optionset" or scope == "gender":
-                syncGender(start_date,stop_date)
-            if  scope == "optionset" or scope == "profession":
-                syncProfession(start_date,stop_date)
-            if  scope == "optionset" or scope == "education":
-                syncEducation(start_date,stop_date)
-            if  scope == "optionset" or scope == "grouptype":
-                syncGroupType(start_date,stop_date)
-            if  scope == "optionset" or scope == "diagnosis":
-                syncDiagnosis(start_date,stop_date)
-            if  scope == "optionset" or scope == "item":
-                syncItem(start_date,stop_date)
-            if  scope == "optionset" or scope == "service":
-                syncService(start_date,stop_date)
-
 
             # Dataset
             if  scope == "population":
@@ -147,8 +98,5 @@ class Command(BaseCommand):
             if  scope == "funding":
                 sync_funding(start_date,stop_date)
             logger.info("Finishing task")
-
-            if scope == 'adx-data':
-                adx_monthly_sync()
 
 
