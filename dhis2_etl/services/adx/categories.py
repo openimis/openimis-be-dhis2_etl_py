@@ -27,7 +27,7 @@ def get_age_range_from_boundaries_categories(period, prefix='') -> ADXMappingCat
             name= str(last_age_boundaries) + "-" + str(age_boundary - 1),
             filter= build_age_q( 
                     [
-                        (period.to_date - relativedelta(years=age_boundary) + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
+                        (period.to_date - relativedelta(years=age_boundary)).strftime("%Y-%m-%d"),
                         (period.to_date - relativedelta(years=last_age_boundaries)).strftime("%Y-%m-%d"),
                     ] 
                     , prefix)))
