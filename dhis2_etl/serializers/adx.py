@@ -21,7 +21,8 @@ def remove_namespace(doc, namespace='ns0'):
     nsl = len(ns)
     if doc.tag.startswith(ns):
         doc.tag = doc.tag[nsl:]
-    for elem in doc.getiterator():
+    # Due to api change. getiterator version should be removed after some time
+    for elem in doc.iter() if hasattr(doc, 'iter') else doc.getiterator():
         if elem.tag.startswith(ns):
             elem.tag = elem.tag[nsl:]
 
