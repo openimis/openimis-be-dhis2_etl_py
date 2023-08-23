@@ -22,7 +22,8 @@ setup(
         'django',
         'django-db-signals',
         'dhis2.py',
-        'pydantic[email,typing_extensions,dotenv]',
+        'email-validator'
+        'pydantic',
         'dict2obj',
         'isodate==0.6.1',
         'python-dateutil==2.8.2'
