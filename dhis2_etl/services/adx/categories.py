@@ -102,7 +102,7 @@ def get_payment_state_categories() -> ADXMappingCategoryDefinition:
 
 def get_claim_status_categories(prefix='') -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
-        category_name="item_status",
+        category_name="claim_status",
         category_options=[
             ADXCategoryOptionDefinition(
                 name = "Approved", code="APPROVED", filter=q_with_prefix( 'status', Claim.STATUS_VALUATED, prefix)),
@@ -118,7 +118,7 @@ def get_claim_status_categories(prefix='') -> ADXMappingCategoryDefinition:
 
 def get_claim_type_categories(prefix='') -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
-        category_name="item_type",
+        category_name="claim_type",
         category_options=[
             ADXCategoryOptionDefinition(
                 name = "Emergency",code="EMERGENCY", filter=q_with_prefix( 'visit_type', 'E', prefix)),
@@ -170,7 +170,7 @@ def get_policy_product_categories(period) -> ADXMappingCategoryDefinition:
         category_options=slices
     )
 
-
+#has the same name as it should be the same list in DHIS2
 def get_claim_product_categories(period: Period) -> ADXMappingCategoryDefinition:
     slices = []
     products = Product.objects.filter(validity_to__isnull=True)
