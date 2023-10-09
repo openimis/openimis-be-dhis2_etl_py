@@ -2,7 +2,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Sum, Q
 
-from claim.models import Claim
+from claim.models import Claim, ClaimDetail
 from dhis2_etl.models.adx.data import Period
 from dhis2_etl.models.adx.definition import ADXCategoryOptionDefinition, ADXMappingCategoryDefinition
 from dhis2_etl.services.adx.utils import filter_with_prefix, q_with_prefix, valid_policy, get_fully_paid, get_partially_paid, not_paid
@@ -25,12 +25,10 @@ def get_age_range_from_boundaries_categories(period, prefix='') -> ADXMappingCat
         slices.append(ADXCategoryOptionDefinition(
             code=str(last_age_boundaries) + "_" + str(age_boundary - 1),
             name= str(last_age_boundaries) + "-" + str(age_boundary - 1),
-            filter= build_age_q( 
-                    [
-                        (period.to_date - relativedelta(years=age_boundary) + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
-                        (period.to_date - relativedelta(years=last_age_boundaries)).strftime("%Y-%m-%d"),
-                    ] 
-                    , prefix)))
+            filter= Q(**{f'{prefix}dob__gt': (period.to_date - relativedelta(years=age_boundary)).strftime("%Y-%m-%d"),
+                         f'{prefix}dob__lte': (period.to_date - relativedelta(years=last_age_boundaries)).strftime("%Y-%m-%d"),
+                         })
+        ))
         last_age_boundaries = age_boundary
     end_date = period.to_date - relativedelta(years=last_age_boundaries)
     slices.append(ADXCategoryOptionDefinition(
@@ -52,7 +50,9 @@ def get_sex_categories(prefix='') -> ADXMappingCategoryDefinition:
             ADXCategoryOptionDefinition(
                 code="M", name= "Male", filter= q_with_prefix( 'gender__code', 'M', prefix)),
             ADXCategoryOptionDefinition(
-                code="F", name= "Female", filter=q_with_prefix( 'gender__code', 'F', prefix))
+                code="F", name= "Female", filter=q_with_prefix( 'gender__code', 'F', prefix)),
+            ADXCategoryOptionDefinition(
+                code="O", name= "Other", is_default = True)
         ]
     )
 
@@ -69,7 +69,7 @@ def get_payment_status_categories(period) -> ADXMappingCategoryDefinition:
             ADXCategoryOptionDefinition(
                 code="NOT_PAID",
                 name= "Not paid",
-                filter=Q(valid_policy(period) & not_paid())),
+                filter=Q(valid_policy(period) & ~get_fully_paid() & ~get_partially_paid())),
             ADXCategoryOptionDefinition(
                 code="PARTIALY_PAID",
                 name= "Partialy paid",
@@ -77,7 +77,7 @@ def get_payment_status_categories(period) -> ADXMappingCategoryDefinition:
             ADXCategoryOptionDefinition(
                 code="NO_POLICY",
                 name= "No policy",
-                filter=Q(family__policies__isnull=True)),
+                is_default = True),
         ]
     )
 
@@ -109,9 +109,11 @@ def get_claim_status_categories(prefix='') -> ADXMappingCategoryDefinition:
             ADXCategoryOptionDefinition(
                 name = "Rejected",code="REJECTED", filter=q_with_prefix( 'status', Claim.STATUS_REJECTED, prefix)),
             ADXCategoryOptionDefinition(
-                name = "checked",code="CHECKED", filter=q_with_prefix( 'status', Claim.STATUS_CHECKED, prefix)),
+                name = "Checked",code="CHECKED", filter=q_with_prefix( 'status', Claim.STATUS_CHECKED, prefix)),
             ADXCategoryOptionDefinition(
                 name = "Processed",code="PROCESSED", filter=q_with_prefix( 'status', Claim.STATUS_PROCESSED, prefix)),
+            ADXCategoryOptionDefinition(
+                name = "Entered",code="ENTERED", filter=q_with_prefix( 'status', Claim.STATUS_ENTERED, prefix)),
         ]
     )
 
@@ -125,21 +127,21 @@ def get_claim_type_categories(prefix='') -> ADXMappingCategoryDefinition:
             ADXCategoryOptionDefinition(
                 name = "Referrals",code="REFERRALS", filter=q_with_prefix( 'visit_type', 'R', prefix)),
             ADXCategoryOptionDefinition(
-                name = "Other",code="OTHER", filter=q_with_prefix( 'visit_type', 'O', prefix)),
+                name = "Other",code="OTHER", is_default = True),
         ]
     )
 
 
 def get_claim_details_status_categories(prefix='') -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
-        category_name="claim_status",
+        category_name="claim_detail_status",
         category_options=[
             ADXCategoryOptionDefinition(
-               name = "Approved", code="APPROVED", filter=q_with_prefix( 'status', Claim.STATUS_VALUATED, prefix)),
+               name = "Approved", code="APPROVED", filter=q_with_prefix( 'status', ClaimDetail.STATUS_PASSED, prefix)),
             ADXCategoryOptionDefinition(
-                name = "Rejected",code="REJECTED", filter=q_with_prefix( 'status', Claim.STATUS_VALUATED, prefix)),
+                name = "Rejected",code="REJECTED", filter=q_with_prefix( 'status', ClaimDetail.STATUS_REJECTED, prefix)),
              ADXCategoryOptionDefinition(
-                name = "not assessed",code="NOT_ASSESSED", filter=q_with_prefix( 'status__isnull', True, prefix)),
+                name = "not assessed",code="NOT_ASSESSED", is_default = True),
         ]
     )
 
