@@ -57,7 +57,7 @@ class OrganisationUnitGroup(MetadataSn):
     # color
     # symbol
 
-class OrganisationUnitGroupSet(Metadata):
+class OrganisationUnitGroupSet(MetadataSn):
     created: Optional[datetimeStr]
     lastUpdated: Optional[datetimeStr]
     description: Optional[str] # TBC

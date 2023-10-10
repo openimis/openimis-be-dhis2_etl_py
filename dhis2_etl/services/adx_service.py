@@ -50,5 +50,5 @@ class ADXService:
         return self._build_cube(get_claim_cube(self.period), org_units)
 
     def _build_cube(self, mapping_cube: ADXMappingCubeDefinition, org_units: List) -> ADXMapping:
-        return [ADXBuilder(mapping_cube).create_adx_cube(self.period, org_units[i:i+self.PAGE_SIZE]) for i in range(0, len(mylist), self.PAGE_SIZE)]
+        return [ADXBuilder(mapping_cube).create_adx_cube(self.period, org_units[i:i+self.PAGE_SIZE]) for i in range(0, len(org_units), self.PAGE_SIZE)]
 
