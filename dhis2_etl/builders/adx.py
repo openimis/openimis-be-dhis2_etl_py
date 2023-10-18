@@ -17,13 +17,13 @@ logger = logging.getLogger('openIMIS')
 from datetime import date
 from dhis2_etl.utils import toDateStr
 def get_annotation_case(key, category_options):
-    whens = [When(co.filter, then=Value(f"{co.code}")) for co in category_options]
+    #whens = [When(co.filter, then=Value(f"{co.code}")) for co in valid_options]
     return {
         key:   get_case(category_options)
     }
     
 def get_case(category_options):
-    whens = [When(co.filter, then=Value(f"{co.code}")) for co in category_options]
+    whens = [When(co.filter, then=Value(f"{co.code}")) for co in category_options if co.filter]
     return Case(
                 *whens
            )
@@ -32,7 +32,7 @@ def get_annotation_window(key, categories, agg_fct):
     return {
         key:  Window(
             expression= agg_fct,
-            partition_by = [get_case( c.category_options)  for c in categories]
+            partition_by = [get_case(c.category_options)  for c in categories]
            )
     }
     
@@ -108,6 +108,12 @@ class ADXDataValueBuilder:
         self.data_element = adx_mapping_definition.data_element
         self.dataset_from_orgunit_func = adx_mapping_definition.dataset_from_orgunit_func
 
+    def get_defaut_cat_options(self, cat_name):
+         for c in self.categories:
+            if cat_name == c.category_name:
+                for o in c.category_options:
+                    if o.is_default:
+                        return o.name 
     def create_adx_data_value(self, organization_unit: Model, period: Period) -> List[ADXDataValue]:
         data_values = []
         fields_impacted = []
@@ -119,9 +125,10 @@ class ADXDataValueBuilder:
             
             for c in self.categories:
                 for o in c.category_options:
-                    sub = get_field_from_Q(o.filter)
-                    if len(sub)>0:
-                        fields_impacted+=sub
+                    if o.filter:
+                        sub = get_field_from_Q(o.filter)
+                        if len(sub)>0:
+                            fields_impacted+=sub
                 annotation.append(get_annotation_case( get_sql_name(c.category_name) ,c.category_options))
                 
                 # annotate with a case
@@ -137,8 +144,11 @@ class ADXDataValueBuilder:
                 for k,v in item.items():
                     
                     if v is None:
-                        out_of_cat = True
-                        aggregations.append(ADXDataValueAggregation(clean_code(revert_sql_name(k)), v))
+                        cat_name = revert_sql_name(k)
+                        v = self.get_defaut_cat_options(cat_name)
+                        if v is None:
+                            out_of_cat = True
+                        aggregations.append(ADXDataValueAggregation(clean_code(cat_name), v))
                     elif k == '':
                         logger.warning('cannot parse desagregation')
                     elif k != 'adx_value':

@@ -41,7 +41,9 @@ class ADXTests(TestCase):
             ADXCategoryOptionDefinition(
                 code="M",name="M", filter=Q(gender__code='M')),
             ADXCategoryOptionDefinition(
-                code="F",name="F", filter=Q(gender__code='F'))
+                code="F",name="F", filter=Q(gender__code='F')),
+            ADXCategoryOptionDefinition(
+                code="O",name="O", is_default = True)
         ]
     )
 
@@ -171,6 +173,7 @@ class ADXTests(TestCase):
             cls._create_test_insuree('chft3', 'F', '2000-01-01', '2020-02-01'),
             cls._create_test_insuree('chft4', 'F', '2000-01-01', '2020-02-01'),
             cls._create_test_insuree('chft5', 'F', '1950-01-01', '2022-01-01'), # should not be in the tests
+            cls._create_test_insuree('chft6', 'O', '2000-01-01', '2020-02-01'),
         ]
 
         org_unit = build_dhis2_id(cls._TEST_HF.uuid)
@@ -203,6 +206,16 @@ class ADXTests(TestCase):
                         'label_name': 'SEX',
                         'label_value': 'F'
                     }]
+                },{
+                    'data_element': 'NB_INSUREES',
+                    'value': '1',
+                    'aggregations': [{
+                        'label_name': 'AGEGROUP',
+                        'label_value': '<=50yo'
+                    }, {
+                        'label_name': 'SEX',
+                        'label_value': 'O'
+                    }]
                 }, {
                     'data_element': 'NB_INSUREES',
                     'value': '1',
@@ -228,7 +241,7 @@ class ADXTests(TestCase):
                 'data_values': [{
                     'aggregations': [],
                     'data_element': 'NB_INSUREES',
-                    'value': '3',
+                    'value': '4',
                 }]
             }]
         }

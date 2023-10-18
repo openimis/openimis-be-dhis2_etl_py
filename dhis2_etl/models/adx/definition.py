@@ -11,7 +11,8 @@ from pydantic import  BaseModel
 class ADXCategoryOptionDefinition:
     code: str
     name: str
-    filter: Q  # Filtering function takes queryset instance as argument and returns another queryset
+    filter: Q = None  # Filtering function takes queryset instance as argument and returns another queryset
+    is_default: bool = False
 
 
 @dataclass

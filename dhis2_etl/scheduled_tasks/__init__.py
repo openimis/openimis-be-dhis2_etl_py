@@ -36,8 +36,12 @@ def schedule_daily_sync():
 def adx_monthly_sync(date):
     with ADXClient() as adx_client:
         service = ADXService.last_month(date)
-        adx_client.post_cube(service.build_enrolment_cube())
-        adx_client.post_cube(service.build_claim_cube())
+        cubes = service.build_enrolment_cube()
+        for c in cubes:
+            adx_client.post_cube(c)
+        cubes = service.build_claim_cube()
+        for c in cubes:
+            adx_client.post_cube(c)
         
 
 
