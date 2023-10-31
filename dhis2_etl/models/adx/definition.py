@@ -19,6 +19,8 @@ class ADXCategoryOptionDefinition:
 class ADXMappingCategoryDefinition:
     category_name: str
     category_options: List[ADXCategoryOptionDefinition]
+    path: Optional[str] = None
+
 
 
 @dataclass

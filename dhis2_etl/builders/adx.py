@@ -32,7 +32,7 @@ def get_annotation_window(key, categories, agg_fct):
     return {
         key:  Window(
             expression= agg_fct,
-            partition_by = [get_case(c.category_options)  for c in categories]
+            partition_by = [get_case(c.category_options) if c.path is None else c.path for c in categories]
            )
     }
     
@@ -129,8 +129,11 @@ class ADXDataValueBuilder:
                         sub = get_field_from_Q(o.filter)
                         if len(sub)>0:
                             fields_impacted+=sub
-                annotation.append(get_annotation_case( get_sql_name(c.category_name) ,c.category_options))
-                
+                if c.path is None:
+                    annotation.append(get_annotation_case( get_sql_name(c.category_name) ,c.category_options))
+                else:
+                    annotation.append({get_sql_name(c.category_name): F(c.path)})
+
                 # annotate with a case
             #queryset = queryset.annotate(**get_annotation_aggregate('adx_value' ,self.aggregation_func)).values('adx_value',*[get_sql_name(c.category_name) for c in self.categories])
             queryset = queryset.values('id',*unique(fields_impacted))

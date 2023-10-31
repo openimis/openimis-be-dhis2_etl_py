@@ -115,7 +115,7 @@ def get_hf_claim_service_number_dv(period):
     )
 
 
-def get_hf_claim_benefits_valuated_dv(period):
+def get_hf_claim_services_valuated_dv(period):
     return ADXMappingDataValueDefinition(
         data_element="NB_BENEFIT",
         period_filter_func=get_claim_details_period_filter,
@@ -134,7 +134,7 @@ def get_hf_claim_benefits_valuated_dv(period):
     )
 
 
-def get_hf_claim_benefits_asked_dv(period):
+def get_hf_claim_service_asked_dv(period):
     return ADXMappingDataValueDefinition(
         data_element="SUM_ASKED_BENEFIT",
         period_filter_func=get_claim_details_period_filter,

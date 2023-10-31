@@ -1,6 +1,6 @@
 import datetime
 from dateutil.relativedelta import relativedelta
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, Max
 
 from claim.models import Claim, ClaimDetail
 from dhis2_etl.models.adx.data import Period
@@ -155,10 +155,11 @@ def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
         slices.append(ADXCategoryOptionDefinition(
             code=clean_code(str(diagnose.code)),
             name=str(diagnose.code),
-            filter=q_with_prefix( 'icd', diagnose, prefix)))
+            filter=None))
     return ADXMappingCategoryDefinition(
         category_name="icd",
-        category_options=slices
+        category_options=slices,
+        path='icd__code' 
     )
 
 
