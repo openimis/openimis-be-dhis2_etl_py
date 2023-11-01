@@ -133,6 +133,7 @@ class ADXDataValueBuilder:
                     annotation.append(get_annotation_case( get_sql_name(c.category_name) ,c.category_options))
                 else:
                     annotation.append({get_sql_name(c.category_name): F(c.path)})
+                    fields_impacted+=[c.path]
 
                 # annotate with a case
             #queryset = queryset.annotate(**get_annotation_aggregate('adx_value' ,self.aggregation_func)).values('adx_value',*[get_sql_name(c.category_name) for c in self.categories])

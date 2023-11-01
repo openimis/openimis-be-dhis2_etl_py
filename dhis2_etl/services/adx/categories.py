@@ -159,7 +159,7 @@ def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
         category_name="icd",
         category_options=slices,
-        path='icd__code' 
+        path=f'{prefix}icd__code' 
     )
 
 
