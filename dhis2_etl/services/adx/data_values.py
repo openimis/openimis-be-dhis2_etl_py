@@ -18,7 +18,7 @@ def get_location_insuree_number_dv(period):
         data_element="NB_INSUREES",
         period_filter_func=None,
         dataset_from_orgunit_func=lambda l: Insuree.objects.filter(
-            *filter_validity(validity = period.from_date), 
+            *filter_validity(), # *filter_validity(validity = period.from_date) is too restrictive
             family__location__parent=l),
         aggregation_func=Count('id'),
         categories=[
@@ -34,7 +34,7 @@ def get_location_family_number_dv(period):
         period_filter_func=None,
         dataset_from_orgunit_func=lambda l: Insuree.objects.filter(
             head=True, 
-            *filter_validity(validity = period.from_date), 
+            *filter_validity(), 
             family__location__parent=l).annotate(policy_value_sum=Sum('family__policies__value')),
         aggregation_func=Count('id'),
         categories=[
@@ -51,7 +51,7 @@ def get_location_contribution_sum_dv(period):
         data_element="SUM_CONTRIBUTIONS",
         period_filter_func=get_contribution_period_filter,
         dataset_from_orgunit_func=lambda l: Premium.objects.filter(
-            *filter_validity(validity = period.from_date), 
+            *filter_validity(), 
             policy__family__location__parent=l),
         aggregation_func= Sum('amount'),
         categories=[get_policy_product_categories(period)]
@@ -62,7 +62,7 @@ def get_hf_claim_number_dv(period):
     return ADXMappingDataValueDefinition(
         data_element="NB_CLAIM",
         period_filter_func=get_claim_period_filter,
-        dataset_from_orgunit_func=lambda hf: hf.claim_set.filter(*filter_validity(validity = period.from_date)),
+        dataset_from_orgunit_func=lambda hf: hf.claim_set.filter(*filter_validity()),
         aggregation_func=Count('id'),
         categories=[
             get_claim_product_categories(period),
@@ -81,7 +81,7 @@ def get_hf_claim_item_number_dv(period):
         period_filter_func=get_claim_details_period_filter,
         dataset_from_orgunit_func=lambda hf: ClaimItem.objects.filter(
             claim__health_facility=hf,
-            *filter_validity(validity = period.from_date), 
+            *filter_validity(), 
             claim__date_processed__isnull=False).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
         aggregation_func=Sum( 'qty'),
         categories=[
@@ -101,7 +101,7 @@ def get_hf_claim_service_number_dv(period):
         period_filter_func=get_claim_details_period_filter,
         dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, 
-            *filter_validity(validity = period.from_date), 
+            *filter_validity(), 
             claim__date_processed__isnull=False).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
         aggregation_func=Sum('qty'),
         categories=[
@@ -121,7 +121,7 @@ def get_hf_claim_services_valuated_dv(period):
         period_filter_func=get_claim_details_period_filter,
         dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, 
-            *filter_validity(validity = period.from_date)).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
+            *filter_validity()).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
         aggregation_func=Sum('qty'),
         categories=[
             get_policy_product_categories(period),
@@ -140,7 +140,7 @@ def get_hf_claim_service_asked_dv(period):
         period_filter_func=get_claim_details_period_filter,
         dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, 
-            *filter_validity(validity = period.from_date)).annotate(full_price=F('price_asked') * F('qty_provided')),
+            *filter_validity()).annotate(full_price=F('price_asked') * F('qty_provided')),
         aggregation_func=Sum('full_price'),
         categories=[
             get_policy_product_categories(period),

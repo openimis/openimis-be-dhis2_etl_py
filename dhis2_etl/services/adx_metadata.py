@@ -26,7 +26,7 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
                         shortName=cat.category_name,
                         name = cat.category_name,
                         code = clean_code(cat.category_name),
-                        categoryOptions = [DHIS2Ref(id=build_dhis2_id(x.code,"categoryOption")) for x in options]
+                        categoryOptions = [DHIS2Ref(id=x.id) for x in options]
                     )
                     # merge with main list
                     if cat_id not in categories:
@@ -35,7 +35,7 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
                                 if not any([catOpt.id == opt.id for catOpt in categoryOptions]):
                                     categoryOptions.append(opt)
                     else:
-                        if any(len(x.categoryOptions) != len(cat.category_name) and x.name == cat.category_name for x in categories.values()):
+                        if any(len(x.categoryOptions) != len(cat.category_options) and x.name == cat.category_name for x in categories.values()):
                             logger.error('two categories have the same name but not the same amout of option')
 
             
@@ -43,14 +43,12 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
                 cat_keys= get_sorted_codes([x.name for x in dv_cat.values()])
                 combo_name = '_'.join(cat_keys)
                 combo_id = build_dhis2_id(combo_name, 'CategoryCombo')
-                combo_code = '_'.join([x[:3] for x in cat_keys])
+                #combo_code = '_'.join([x[:3] for x in cat_keys])
                 if combo_name not in categoryCombo:
                     categoryCombo[combo_name]= CategoryCombo(
-                        shortName=combo_code,
                         name = combo_name,
                         dataDimensionType =  DataDimensionType.disagregation,
                         id = combo_id,
-                        code = clean_code(combo_code),
                         categories = [DHIS2Ref(id=x.id) for x in dv_cat.values()]
                     )
             else:

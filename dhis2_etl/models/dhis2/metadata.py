@@ -26,6 +26,7 @@ class Metadata(BaseModel):
     name: str230
     id: Optional[uid]
     code: Optional[str50]
+    shortName: Optional[str50]
 
 class MetadataSn(Metadata):
     shortName: str50 = ''
@@ -110,7 +111,7 @@ class Category(MetadataSn):
     
 
  
-class CategoryCombo(MetadataSn):
+class CategoryCombo(Metadata):
     categories : List[DHIS2Ref]
     dataDimensionType: DataDimensionType 
     
