@@ -51,11 +51,11 @@ def get_sex_categories(prefix='') -> ADXMappingCategoryDefinition:
         category_name="sex",
         category_options=[
             ADXCategoryOptionDefinition(
-                code="M", name= "Male", filter= q_with_prefix( 'gender__code', 'M', prefix)),
+                code="M", name= "MALE", filter= q_with_prefix( 'gender__code', 'M', prefix)),
             ADXCategoryOptionDefinition(
-                code="F", name= "Female", filter=q_with_prefix( 'gender__code', 'F', prefix)),
+                code="F", name= "FEMALE", filter=q_with_prefix( 'gender__code', 'F', prefix)),
             ADXCategoryOptionDefinition(
-                code="O", name= "Other", is_default = True)
+                code="O", name= "OTHER", is_default = True)
         ]
     )
 
@@ -154,7 +154,7 @@ def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
     for diagnose in diagnosis:
         slices.append(ADXCategoryOptionDefinition(
             code=clean_code(str(diagnose.code)),
-            name=str(diagnose.code),
+            name=str(diagnose.name),
             filter=None))
     return ADXMappingCategoryDefinition(
         category_name="icd",
