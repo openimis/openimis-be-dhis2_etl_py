@@ -115,7 +115,9 @@ class CategoryCombo(Metadata):
     categories : List[DHIS2Ref]
     dataDimensionType: DataDimensionType 
     
- 
+class AttributeValues(Metadata):
+    optionSet: Optional[OptionSet]
+
 
  
 class CategoryOption(MetadataSn):
@@ -163,7 +165,6 @@ class DataSet(MetadataSn):
     openFuturePeriods: int = 1
     openFuturePeriods: int = 0
     categoryCombo : DHIS2Ref = DEFAULT_CATEGORY_COMBO
-
     organisationUnits:List[OrganisationUnit] = []
     #attributeValues = List[AttributeValues] = []
     #legendSets: List[LegendSet] = []

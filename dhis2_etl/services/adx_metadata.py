@@ -1,6 +1,6 @@
 import logging
 from dhis2_etl.models.adx.definition import *
-from dhis2_etl.models.dhis2.metadata import Category,CategoryOption, DataElement,CategoryCombo,DataSet,DataSetElement
+from dhis2_etl.models.dhis2.metadata import Category,CategoryOption, DataElement,CategoryCombo,DataSet,DataSetElement,DEFAULT_CATEGORY_COMBO
 from dhis2_etl.utils import build_dhis2_id, clean_code
 from dhis2_etl.models.dhis2.type import DHIS2Ref
 from dhis2_etl.models.dhis2.enum import ValueType,DomainType,DataDimensionType,AggregationType,PeriodType
@@ -11,13 +11,15 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
     
     # for each adx group get the list of cat
     for group  in adx.groups:
+        group_combo_id = None
+        group_aggregations = [aggr.category_name for aggr in group.aggregations] if group.aggregations else []
         curDE = []
         for dv in group.data_values:
             dv_cat = {}
             
             for cat  in dv.categories:
-                #save the cat / cat option
                 options = build_categoryOption(cat.category_options, "categoryOption")
+                    #save the cat / cat option
                 if len(options)>0:
                     cat_id = build_dhis2_id(cat.category_name,'Category')
                     dv_cat[cat_id] =  Category(
@@ -36,11 +38,10 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
                                     categoryOptions.append(opt)
                     else:
                         if any(len(x.categoryOptions) != len(cat.category_options) and x.name == cat.category_name for x in categories.values()):
-                            logger.error('two categories have the same name but not the same amout of option')
-
-            
+                            logger.error('two categories have the same name but not the same amout of option')            
             if len(dv_cat)>0:
-                cat_keys= get_sorted_codes([x.name for x in dv_cat.values()])
+                # dv categorycombo
+                cat_keys= get_sorted_codes([x.name for x in dv_cat.values() if x.name not in group_aggregations])
                 combo_name = '_'.join(cat_keys)
                 combo_id = build_dhis2_id(combo_name, 'CategoryCombo')
                 #combo_code = '_'.join([x[:3] for x in cat_keys])
@@ -49,8 +50,24 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
                         name = combo_name,
                         dataDimensionType =  DataDimensionType.disagregation,
                         id = combo_id,
-                        categories = [DHIS2Ref(id=x.id) for x in dv_cat.values()]
+                        categories = [DHIS2Ref(id=x.id) for x in dv_cat.values() if dv_cat not in group_aggregations]
                     )
+                # group categoryCombo
+                
+                if group_combo_id is None and group.aggregations:
+                    group_cat_keys= get_sorted_codes([x.name for x in dv_cat.values() if x.name in group_aggregations]) 
+                    if len(group_cat_keys)>0:
+                        group_combo_name = '_'.join(group_cat_keys)
+                        group_combo_id = build_dhis2_id(group_combo_name, 'CategoryCombo')
+                        #combo_code = '_'.join([x[:3] for x in cat_keys])
+                        if group_combo_name not in categoryCombo:
+                            categoryCombo[group_combo_name]= CategoryCombo(
+                                name = group_combo_name,
+                                dataDimensionType =  DataDimensionType.disagregation,
+                                id = group_combo_id,
+                                categories = [DHIS2Ref(id=x.id) for x in dv_cat.values() if dv_cat not in group_aggregations]
+                            )
+                        
             else:
                 combo_id = None
 
@@ -71,8 +88,8 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
             shortName = group.data_set,
             code =  clean_code(group.data_set),
             dataSetElements = build_dataSetElement(curDE, ds_id),
-            periodType  = PeriodType.monthly
-            
+            periodType  = PeriodType.monthly,
+            categoryCombo = DEFAULT_CATEGORY_COMBO if group_combo_id is None else DHIS2Ref(id=group_combo_id), 
         ))
         dataElement += curDE
         
@@ -96,6 +113,15 @@ def build_categoryOption(options, salt):
             name = opt.name if opt.name is not None else opt.code, shortName = opt.code))
     return dhis2_category_options
 
+
+def build_options(options, salt):
+    dhis2_options = []
+    for opt in options:
+        dhis2_options.append(Option(
+            code = clean_code(opt.code), 
+            id = build_dhis2_id(opt.code, salt), 
+            name = opt.name if opt.name is not None else opt.code, shortName = opt.code))
+    return dhis2_options
 
 
 

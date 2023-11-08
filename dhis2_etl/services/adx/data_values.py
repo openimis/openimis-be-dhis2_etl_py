@@ -70,7 +70,6 @@ def get_hf_claim_number_dv(period):
             get_claim_type_categories(),
             get_sex_categories(prefix='insuree__'),
             get_age_range_from_boundaries_categories(period, prefix='insuree__'),
-            #get_main_icd_categories(period)
         ]
     )
 
@@ -86,11 +85,11 @@ def get_hf_claim_item_number_dv(period):
         aggregation_func=Sum( 'qty'),
         categories=[
             get_policy_product_categories(period),
+            get_claim_status_categories(prefix='claim__'),
             get_claim_details_status_categories(),
             get_claim_type_categories(prefix='claim__'),
             get_sex_categories(prefix='claim__insuree__'),
             get_age_range_from_boundaries_categories(period, prefix='claim__insuree__'),
-            #get_main_icd_categories(period, prefix='claim__')
         ]
     )
 
@@ -106,17 +105,17 @@ def get_hf_claim_service_number_dv(period):
         aggregation_func=Sum('qty'),
         categories=[
             get_policy_product_categories(period),
+            get_claim_status_categories(prefix='claim__'),
             get_claim_details_status_categories(),
             get_claim_type_categories(prefix='claim__'),
             get_sex_categories(prefix='claim__insuree__'),
             get_age_range_from_boundaries_categories(period, prefix='claim__insuree__'),
-            #get_main_icd_categories(period, prefix='claim__')
         ]
     )
     
 def get_hf_claim_service_number_icd_dv(period):
     return ADXMappingDataValueDefinition(
-        data_element="NB_CLAIM_SERVICE",
+        data_element="NB_CLAIM_SERVICE_ICD",
         period_filter_func=get_claim_details_period_filter,
         dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, 
@@ -124,7 +123,8 @@ def get_hf_claim_service_number_icd_dv(period):
             claim__date_processed__isnull=False).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
         aggregation_func=Sum('qty'),
         categories=[
-            #get_policy_product_categories(period),
+            get_policy_product_categories(period),
+            get_claim_status_categories(prefix='claim__'),
             get_claim_details_status_categories(),
             get_main_icd_categories(period, prefix='claim__')
         ]
@@ -132,7 +132,7 @@ def get_hf_claim_service_number_icd_dv(period):
 
 def get_hf_claim_services_valuated_dv(period):
     return ADXMappingDataValueDefinition(
-        data_element="NB_BENEFIT",
+        data_element="SUM_VALUATED_SERVICE",
         period_filter_func=get_claim_details_period_filter,
         dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, 
@@ -151,7 +151,7 @@ def get_hf_claim_services_valuated_dv(period):
 
 def get_hf_claim_service_asked_dv(period):
     return ADXMappingDataValueDefinition(
-        data_element="SUM_ASKED_BENEFIT",
+        data_element="SUM_ASKED_SERVICE",
         period_filter_func=get_claim_details_period_filter,
         dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, 

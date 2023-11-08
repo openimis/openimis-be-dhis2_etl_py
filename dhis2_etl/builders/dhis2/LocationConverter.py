@@ -75,9 +75,9 @@ class LocationConverter(BaseDHIS2Converter):
             for location in locations:
                 #if not re.match(exclPaternName, location.name):
                 organisationUnits.append(DHIS2Ref(id = build_dhis2_id(location.uuid) ))
-            return MetadataBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, short_name = group_name, id=id, organisationUnits = organisationUnits)])#  DeltaDHIS2Ref( additions = organisationUnits ))])
+            return MetadataBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, shortName = group_name, id=id, organisationUnits = organisationUnits)])#  DeltaDHIS2Ref( additions = organisationUnits ))])
         else:
-            return MetadataBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, short_name = group_name, id=id)])
+            return MetadataBundle(organisationUnitGroups = [OrganisationUnitGroup(name = group_name, shortName = group_name, id=id)])
     
     @classmethod
     def to_population_datasets(cls, villages, data_set_period, **kwargs):

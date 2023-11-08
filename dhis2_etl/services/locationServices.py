@@ -132,7 +132,7 @@ def syncHealthCenter(startDate,stopDate):
         .select_related('location')\
         .order_by('validity_from')
     res=postMethod('metadata',locations, LocationConverter.to_org_unit_objs )   
-    res.append(post('metadata',None, LocationConverter.to_org_unit_group_obj,  group_name='HealthCenter', id = 'YMRPiQP7N4v' )) 
+    res.append(post('metadata',None, LocationConverter.to_org_unit_group_obj, group_name='HealthCenter', id = 'YMRPiQP7N4v' )) 
     res.append(postPaginated('metadata',locations, LocationConverter.to_org_unit_group_obj,  group_name='HealthCenter', id = 'YMRPiQP7N4v'  )) 
     return res
 
