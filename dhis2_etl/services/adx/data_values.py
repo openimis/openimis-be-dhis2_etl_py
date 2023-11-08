@@ -140,6 +140,7 @@ def get_hf_claim_services_valuated_dv(period):
         aggregation_func=Sum('qty'),
         categories=[
             get_policy_product_categories(period),
+            get_claim_status_categories(prefix='claim__'),
             get_claim_details_status_categories(),
             get_claim_type_categories(prefix='claim__'),
             get_sex_categories(prefix='claim__insuree__'),
@@ -159,6 +160,7 @@ def get_hf_claim_service_asked_dv(period):
         aggregation_func=Sum('full_price'),
         categories=[
             get_policy_product_categories(period),
+            get_claim_status_categories(prefix='claim__'),
             get_claim_details_status_categories(),
             get_claim_type_categories(prefix='claim__'),
             get_sex_categories(prefix='claim__insuree__'),

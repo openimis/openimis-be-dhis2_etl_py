@@ -245,30 +245,32 @@ class ADXGroupBuilder:
             groups_aggregations_combo = {}
             groups_aggregations_combo_datavalue = {}
             dv = self._build_group_data_values(period, org_unit_obj)
-            attribute_name = [c.category_name.upper() for c in self.adx_mapping_definition.aggregations]
+            group_aggregations_names = [c.category_name.upper() for c in self.adx_mapping_definition.aggregations]
             for d in dv:
                 # define the dv combo managed on group level 
-                combo = [ aggr for aggr in d.aggregations if aggr.label_name in attribute_name ]
-                combo_key = "_".join([aggr.label_value for aggr in combo])
+                group_combo = [ aggr for aggr in d.aggregations if aggr.label_name in group_aggregations_names ]
+                if len(group_combo) != len(group_aggregations_names):
+                    logger.error(f'mismatch, dataset {self.adx_mapping_definition.data_set} aggregation not found on  dataElement {d.data_element} aggregation')
+                group_combo_key = "_".join([aggr.label_value for aggr in group_combo])
                 # Save the actual combo
-                if combo_key not in groups_aggregations_combo:
-                    groups_aggregations_combo_datavalue[combo_key] = []
-                    groups_aggregations_combo[combo_key] = combo
+                if group_combo_key not in groups_aggregations_combo:
+                    groups_aggregations_combo_datavalue[group_combo_key] = []
+                    groups_aggregations_combo[group_combo_key] = group_combo
                 # aggregation on group level, should be remove from dv
-                for aggr in combo:
+                for aggr in group_combo:
                     if aggr not in d.aggregations:
                         logger.error(f'{aggr.label_name} not in the datavalue definition')
                     d.aggregations.remove(aggr)
-                groups_aggregations_combo_datavalue[combo_key].append(d)
+                groups_aggregations_combo_datavalue[group_combo_key].append(d)
             #get the possible or actual groups
-            for combo_key in groups_aggregations_combo:
+            for group_combo_key in groups_aggregations_combo:
                 groups.append( ADXMappingGroup(
                     complete_date = toDateStr(date.today()),
                     org_unit=org_unit,
                     period=period.representation,
                     data_set=self.adx_mapping_definition.data_set,
-                    data_values=groups_aggregations_combo_datavalue[combo_key],
-                    aggregations=groups_aggregations_combo[combo_key],
+                    data_values=groups_aggregations_combo_datavalue[group_combo_key],
+                    aggregations=groups_aggregations_combo[group_combo_key],
                     comment=self.adx_mapping_definition.comment
                 ))
             return groups
