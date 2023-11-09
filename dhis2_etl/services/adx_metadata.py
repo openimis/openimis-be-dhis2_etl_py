@@ -37,9 +37,9 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
                         gp_cat[cat_id] =  Category(
                             id=cat_id,
                             dataDimensionType =  DataDimensionType.attribute,
-                            shortName=cat.category_name,
+                            shortName="ATT:" +cat.category_name,
                             name = "ATT:" + cat.category_name,
-                            code = clean_code(cat.category_name),
+                            code = "ATT_" + clean_code(cat.category_name),
                             categoryOptions = [DHIS2Ref(id=x.id) for x in options]
                         )
                         # merge with main list

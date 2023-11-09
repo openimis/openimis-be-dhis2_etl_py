@@ -43,7 +43,7 @@ class XMLFormatter(AbstractADXFormatter[ElementTree.Element]):
 
     def _build_xml_groups(self, adx: ADXMapping, root: ElementTree.Element):
         for group in adx.groups:
-            grouping_details = {clean_code(k.label_name): k.label_value for k in group.aggregations} if group.aggregations else {}
+            grouping_details = {"ATT_"+clean_code(k.label_name): k.label_value for k in group.aggregations} if group.aggregations else {}
             base_attributes = self._dataclass_to_xml_attrib(group)
             xml_group  = self._build_xml_group(group, {**base_attributes, **grouping_details})
             if xml_group is not None:
