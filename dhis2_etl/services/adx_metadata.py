@@ -16,56 +16,71 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
         curDE = []
         for dv in group.data_values:
             dv_cat = {}
-            
+            gp_cat = {}
             for cat  in dv.categories:
                 options = build_categoryOption(cat.category_options, "categoryOption")
-                    #save the cat / cat option
                 if len(options)>0:
-                    cat_id = build_dhis2_id(cat.category_name,'Category')
-                    dv_cat[cat_id] =  Category(
-                        id=cat_id,
-                        dataDimensionType =  DataDimensionType.disagregation,
-                        shortName=cat.category_name,
-                        name = cat.category_name,
-                        code = clean_code(cat.category_name),
-                        categoryOptions = [DHIS2Ref(id=x.id) for x in options]
-                    )
-                    # merge with main list
+                    if cat.category_name not in group_aggregations:
+                        #save the cat / cat option
+                        cat_id = build_dhis2_id(cat.category_name,'Category')
+                        dv_cat[cat_id] =  Category(
+                            id=cat_id,
+                            dataDimensionType =  DataDimensionType.disagregation,
+                            shortName=cat.category_name,
+                            name = "DAG:" + cat.category_name,
+                            code = clean_code(cat.category_name),
+                            categoryOptions = [DHIS2Ref(id=x.id) for x in options]
+                        )
+                    else:
+                        #save the cat / cat option
+                        cat_id = build_dhis2_id(cat.category_name,'CategoryAtt')
+                        gp_cat[cat_id] =  Category(
+                            id=cat_id,
+                            dataDimensionType =  DataDimensionType.attribute,
+                            shortName=cat.category_name,
+                            name = "ATT:" + cat.category_name,
+                            code = clean_code(cat.category_name),
+                            categoryOptions = [DHIS2Ref(id=x.id) for x in options]
+                        )
+                        # merge with main list
                     if cat_id not in categories:
-                            categories[cat_id] = dv_cat[cat_id]
-                            for opt in options:
-                                if not any([catOpt.id == opt.id for catOpt in categoryOptions]):
-                                    categoryOptions.append(opt)
+    
+                        categories[cat_id] = dv_cat[cat_id] if cat_id in dv_cat else gp_cat[cat_id]
+                            
+                        for opt in options:
+                            if not any([catOpt.id == opt.id for catOpt in categoryOptions]):
+                                categoryOptions.append(opt)
                     else:
                         if any(len(x.categoryOptions) != len(cat.category_options) and x.name == cat.category_name for x in categories.values()):
                             logger.error('two categories have the same name but not the same amout of option')            
             if len(dv_cat)>0:
                 # dv categorycombo
-                cat_keys= get_sorted_codes([x.name for x in dv_cat.values() if x.name not in group_aggregations])
+                cat_keys= get_sorted_codes([x.shortName for x in dv_cat.values()])
                 combo_name = '_'.join(cat_keys)
                 combo_id = build_dhis2_id(combo_name, 'CategoryCombo')
                 #combo_code = '_'.join([x[:3] for x in cat_keys])
                 if combo_name not in categoryCombo:
+                    #genearete
                     categoryCombo[combo_name]= CategoryCombo(
-                        name = combo_name,
+                        name = "DAG:" +combo_name,
                         dataDimensionType =  DataDimensionType.disagregation,
                         id = combo_id,
-                        categories = [DHIS2Ref(id=x.id) for x in dv_cat.values() if x.name not in group_aggregations]
+                        categories = [DHIS2Ref(id=x.id) for x in dv_cat.values()]
                     )
                 # group categoryCombo
-                
+            if len(gp_cat)>0:
                 if group_combo_id is None and group.aggregations:
-                    group_cat_keys= get_sorted_codes([x.name for x in dv_cat.values() if x.name in group_aggregations]) 
+                    group_cat_keys= get_sorted_codes([x.shortName for x in gp_cat.values()]) 
                     if len(group_cat_keys)>0:
                         group_combo_name = '_'.join(group_cat_keys)
-                        group_combo_id = build_dhis2_id(group_combo_name, 'CategoryCombo')
+                        group_combo_id = build_dhis2_id(group_combo_name, 'CategoryComboAttr')
                         #combo_code = '_'.join([x[:3] for x in cat_keys])
                         if group_combo_name not in categoryCombo:
                             categoryCombo[group_combo_name]= CategoryCombo(
-                                name = group_combo_name,
-                                dataDimensionType =  DataDimensionType.disagregation,
+                                name = "ATT:" +  group_combo_name,
+                                dataDimensionType =  DataDimensionType.attribute,
                                 id = group_combo_id,
-                                categories = [DHIS2Ref(id=x.id) for x in dv_cat.values() if dv_cat in group_aggregations]
+                                categories = [DHIS2Ref(id=x.id) for x in gp_cat.values() ]
                             )
                         
             else:
@@ -110,7 +125,7 @@ def build_categoryOption(options, salt):
         dhis2_category_options.append(CategoryOption(
             code = clean_code(opt.code), 
             id = build_dhis2_id(opt.code, salt), 
-            name = opt.name if opt.name is not None else opt.code, shortName = opt.code))
+            name = (str(opt.code) + '-' + opt.name) if opt.name is not None else opt.code, shortName = opt.code))
     return dhis2_category_options
 
 
@@ -120,7 +135,7 @@ def build_options(options, salt):
         dhis2_options.append(Option(
             code = clean_code(opt.code), 
             id = build_dhis2_id(opt.code, salt), 
-            name = opt.name if opt.name is not None else opt.code, shortName = opt.code))
+            name = (str(opt.code) + '-' + opt.name) if opt.name is not None else opt.code, shortName = opt.code))
     return dhis2_options
 
 
