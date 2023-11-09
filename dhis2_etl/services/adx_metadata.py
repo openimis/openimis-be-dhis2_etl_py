@@ -50,7 +50,7 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
                         name = combo_name,
                         dataDimensionType =  DataDimensionType.disagregation,
                         id = combo_id,
-                        categories = [DHIS2Ref(id=x.id) for x in dv_cat.values() if dv_cat not in group_aggregations]
+                        categories = [DHIS2Ref(id=x.id) for x in dv_cat.values() if x.name not in group_aggregations]
                     )
                 # group categoryCombo
                 
@@ -65,7 +65,7 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
                                 name = group_combo_name,
                                 dataDimensionType =  DataDimensionType.disagregation,
                                 id = group_combo_id,
-                                categories = [DHIS2Ref(id=x.id) for x in dv_cat.values() if dv_cat not in group_aggregations]
+                                categories = [DHIS2Ref(id=x.id) for x in dv_cat.values() if dv_cat in group_aggregations]
                             )
                         
             else:

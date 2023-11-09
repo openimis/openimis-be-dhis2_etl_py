@@ -113,7 +113,7 @@ class ADXDataValueBuilder:
             if cat_name == c.category_name:
                 for o in c.category_options:
                     if o.is_default:
-                        return o.name 
+                        return o.code 
     def create_adx_data_value(self, organization_unit: Model, period: Period) -> List[ADXDataValue]:
         data_values = []
         fields_impacted = []
