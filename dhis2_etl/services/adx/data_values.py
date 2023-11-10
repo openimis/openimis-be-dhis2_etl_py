@@ -18,7 +18,7 @@ def get_location_insuree_number_dv(period):
         data_element="NB_INSUREES",
         period_filter_func=None,
         dataset_from_orgunit_func=lambda l: Insuree.objects.filter(
-            *filter_validity(), # *filter_validity(validity = period.from_date) is too restrictive
+            *filter_validity(validity=period.from_date), # *filter_validity(validity = period.from_date) is too restrictive
             family__location__parent=l),
         aggregation_func=Count('id'),
         categories=[
@@ -34,7 +34,7 @@ def get_location_family_number_dv(period):
         period_filter_func=None,
         dataset_from_orgunit_func=lambda l: Insuree.objects.filter(
             head=True, 
-            *filter_validity(), 
+            *filter_validity(validity=period.from_date), 
             family__location__parent=l).annotate(policy_value_sum=Sum('family__policies__value')),
         aggregation_func=Count('id'),
         categories=[
