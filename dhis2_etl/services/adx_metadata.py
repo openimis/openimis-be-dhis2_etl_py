@@ -7,8 +7,6 @@ from dhis2_etl.models.dhis2.enum import ValueType,DomainType,DataDimensionType,A
 
 logger = logging.getLogger('openIMIS')
 def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  categories = {},    categoryCombo = {},   dataElement = [], dataSets = []):
-
-    
     # for each adx group get the list of cat
     for group  in adx.groups:
         group_combo_id = None
@@ -17,6 +15,7 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
         for dv in group.data_values:
             dv_cat = {}
             gp_cat = {}
+            combo_id = None
             for cat  in dv.categories:
                 options = build_categoryOption(cat.category_options, "categoryOption")
                 if len(options)>0:
@@ -82,9 +81,6 @@ def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  ca
                                 id = group_combo_id,
                                 categories = [DHIS2Ref(id=x.id) for x in gp_cat.values() ]
                             )
-                        
-            else:
-                combo_id = None
 
             curDE.append(DataElement(
                 aggregationType = AggregationType.sum,
