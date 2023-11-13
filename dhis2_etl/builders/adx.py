@@ -32,7 +32,7 @@ def get_annotation_window(key, categories, agg_fct):
     return {
         key:  Window(
             expression= agg_fct,
-            partition_by = [get_case(c.category_options)  for c in categories]
+            partition_by = [get_case(c.category_options) if c.path is None else c.path for c in categories]
            )
     }
     
@@ -113,7 +113,7 @@ class ADXDataValueBuilder:
             if cat_name == c.category_name:
                 for o in c.category_options:
                     if o.is_default:
-                        return o.name 
+                        return o.code 
     def create_adx_data_value(self, organization_unit: Model, period: Period) -> List[ADXDataValue]:
         data_values = []
         fields_impacted = []
@@ -129,8 +129,12 @@ class ADXDataValueBuilder:
                         sub = get_field_from_Q(o.filter)
                         if len(sub)>0:
                             fields_impacted+=sub
-                annotation.append(get_annotation_case( get_sql_name(c.category_name) ,c.category_options))
-                
+                if c.path is None:
+                    annotation.append(get_annotation_case( get_sql_name(c.category_name) ,c.category_options))
+                else:
+                    annotation.append({get_sql_name(c.category_name): F(c.path)})
+                    fields_impacted+=[c.path]
+
                 # annotate with a case
             #queryset = queryset.annotate(**get_annotation_aggregate('adx_value' ,self.aggregation_func)).values('adx_value',*[get_sql_name(c.category_name) for c in self.categories])
             queryset = queryset.values('id',*unique(fields_impacted))
@@ -139,10 +143,9 @@ class ADXDataValueBuilder:
             queryset = queryset.annotate(**get_annotation_window('adx_value' ,self.categories,self.aggregation_func)).values('adx_value',*[get_sql_name(c.category_name) for c in self.categories]).distinct() # *[get_sql_name(c.category_name) for c in self.categories]
 
             for item in queryset:
-                aggregations =  []
+                aggregations = []
                 out_of_cat = False
                 for k,v in item.items():
-                    
                     if v is None:
                         cat_name = revert_sql_name(k)
                         v = self.get_defaut_cat_options(cat_name)
@@ -153,7 +156,6 @@ class ADXDataValueBuilder:
                         logger.warning('cannot parse desagregation')
                     elif k != 'adx_value':
                         aggregations.append(ADXDataValueAggregation(clean_code(revert_sql_name(k)), v))
-                        
                 if not out_of_cat:
                     data_values.append(ADXDataValue(
                         data_element=self.data_element,
@@ -234,6 +236,44 @@ class ADXGroupBuilder:
             data_values=self._build_group_data_values(period, org_unit_obj),
             comment=self.adx_mapping_definition.comment
         )
+        
+    def create_adx_groups(self,  period: Period, org_unit_obj: Model, org_unit: str):
+        if self.adx_mapping_definition.aggregations is None or len(self.adx_mapping_definition.aggregations)==0:
+            return [self.create_adx_group( period, org_unit_obj, org_unit)]
+        else:
+            groups = []
+            groups_aggregations_combo = {}
+            groups_aggregations_combo_datavalue = {}
+            dv = self._build_group_data_values(period, org_unit_obj)
+            group_aggregations_names = [c.category_name.upper() for c in self.adx_mapping_definition.aggregations]
+            for d in dv:
+                # define the dv combo managed on group level 
+                group_combo = [ aggr for aggr in d.aggregations if aggr.label_name in group_aggregations_names ]
+                if len(group_combo) != len(group_aggregations_names):
+                    logger.error(f'mismatch, dataset {self.adx_mapping_definition.data_set} aggregation not found on  dataElement {d.data_element} aggregation')
+                group_combo_key = "_".join([aggr.label_value for aggr in group_combo])
+                # Save the actual combo
+                if group_combo_key not in groups_aggregations_combo:
+                    groups_aggregations_combo_datavalue[group_combo_key] = []
+                    groups_aggregations_combo[group_combo_key] = group_combo
+                # aggregation on group level, should be remove from dv
+                for aggr in group_combo:
+                    if aggr not in d.aggregations:
+                        logger.error(f'{aggr.label_name} not in the datavalue definition')
+                    d.aggregations.remove(aggr)
+                groups_aggregations_combo_datavalue[group_combo_key].append(d)
+            #get the possible or actual groups
+            for group_combo_key in groups_aggregations_combo:
+                groups.append( ADXMappingGroup(
+                    complete_date = toDateStr(date.today()),
+                    org_unit=org_unit,
+                    period=period.representation,
+                    data_set=self.adx_mapping_definition.data_set,
+                    data_values=groups_aggregations_combo_datavalue[group_combo_key],
+                    aggregations=groups_aggregations_combo[group_combo_key],
+                    comment=self.adx_mapping_definition.comment
+                ))
+            return groups
 
     def _build_group_data_values(self, period: Period, org_unit_obj: object):
         data_values = []
@@ -261,7 +301,7 @@ class ADXBuilder:
             group_mapper = self.group_mapper(group_definition)
             for org_unit_obj in org_units:
                 org_unit = group_definition.to_org_unit_code_func(org_unit_obj)
-                groups.append(group_mapper.create_adx_group(period, org_unit_obj, org_unit))
+                groups+=group_mapper.create_adx_groups(period, org_unit_obj, org_unit)
         return groups
 
     def _period_str_to_obj(self, period: str):

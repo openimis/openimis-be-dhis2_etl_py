@@ -26,6 +26,7 @@ class Metadata(BaseModel):
     name: str230
     id: Optional[uid]
     code: Optional[str50]
+    shortName: Optional[str50]
 
 class MetadataSn(Metadata):
     shortName: str50 = ''
@@ -110,11 +111,13 @@ class Category(MetadataSn):
     
 
  
-class CategoryCombo(MetadataSn):
+class CategoryCombo(Metadata):
     categories : List[DHIS2Ref]
     dataDimensionType: DataDimensionType 
     
- 
+class AttributeValues(Metadata):
+    optionSet: Optional[OptionSet]
+
 
  
 class CategoryOption(MetadataSn):
@@ -162,7 +165,6 @@ class DataSet(MetadataSn):
     openFuturePeriods: int = 1
     openFuturePeriods: int = 0
     categoryCombo : DHIS2Ref = DEFAULT_CATEGORY_COMBO
-
     organisationUnits:List[OrganisationUnit] = []
     #attributeValues = List[AttributeValues] = []
     #legendSets: List[LegendSet] = []

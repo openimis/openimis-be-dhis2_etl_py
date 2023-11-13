@@ -1,6 +1,6 @@
 import datetime
 from dateutil.relativedelta import relativedelta
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, Max
 
 from claim.models import Claim, ClaimDetail
 from dhis2_etl.models.adx.data import Period
@@ -20,20 +20,23 @@ def get_age_range_from_boundaries_categories(period, prefix='') -> ADXMappingCat
     range = {}
     last_age_boundaries = 0
     for age_boundary in AGE_BOUNDARIES:
+        slice_code = f"P{last_age_boundaries}Y-P{age_boundary - 1}Y"
         # born before
         # need to store all range , e.i not update start/stop date because the lambda is evaluated later
         slices.append(ADXCategoryOptionDefinition(
-            code=str(last_age_boundaries) + "_" + str(age_boundary - 1),
-            name= str(last_age_boundaries) + "-" + str(age_boundary - 1),
+            code= slice_code,
+            name= slice_code,
             filter= Q(**{f'{prefix}dob__gt': (period.to_date - relativedelta(years=age_boundary)).strftime("%Y-%m-%d"),
                          f'{prefix}dob__lte': (period.to_date - relativedelta(years=last_age_boundaries)).strftime("%Y-%m-%d"),
                          })
         ))
         last_age_boundaries = age_boundary
     end_date = period.to_date - relativedelta(years=last_age_boundaries)
+    slice_code = f"P{last_age_boundaries}Y-P9999Y"
+
     slices.append(ADXCategoryOptionDefinition(
-        code=str(last_age_boundaries) + "P",
-        name=str(last_age_boundaries) + "p",
+            code= slice_code,
+            name= slice_code,
         filter=q_with_prefix('dob__lt', end_date.strftime("%Y-%m-%d"), prefix)))
     return ADXMappingCategoryDefinition(
         category_name="ageGroup",
@@ -48,11 +51,11 @@ def get_sex_categories(prefix='') -> ADXMappingCategoryDefinition:
         category_name="sex",
         category_options=[
             ADXCategoryOptionDefinition(
-                code="M", name= "Male", filter= q_with_prefix( 'gender__code', 'M', prefix)),
+                code="M", name= "MALE", filter= q_with_prefix( 'gender__code', 'M', prefix)),
             ADXCategoryOptionDefinition(
-                code="F", name= "Female", filter=q_with_prefix( 'gender__code', 'F', prefix)),
+                code="F", name= "FEMALE", filter=q_with_prefix( 'gender__code', 'F', prefix)),
             ADXCategoryOptionDefinition(
-                code="O", name= "Other", is_default = True)
+                code="O", name= "OTHER", is_default = True)
         ]
     )
 
@@ -95,7 +98,7 @@ def get_payment_state_categories() -> ADXMappingCategoryDefinition:
                 filter=Q(family__policies__stage=Policy.STAGE_RENEWED)),
             ADXCategoryOptionDefinition(
                 name = "No-policy",code="NO_POLICY",
-                filter=Q(family__policies__isnull=True)),
+                is_default = True),
         ]
     )
 
@@ -113,7 +116,7 @@ def get_claim_status_categories(prefix='') -> ADXMappingCategoryDefinition:
             ADXCategoryOptionDefinition(
                 name = "Processed",code="PROCESSED", filter=q_with_prefix( 'status', Claim.STATUS_PROCESSED, prefix)),
             ADXCategoryOptionDefinition(
-                name = "Entered",code="ENTERED", filter=q_with_prefix( 'status', Claim.STATUS_ENTERED, prefix)),
+                name = "Entered",code="ENTERED", is_default = True),
         ]
     )
 
@@ -151,11 +154,12 @@ def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
     for diagnose in diagnosis:
         slices.append(ADXCategoryOptionDefinition(
             code=clean_code(str(diagnose.code)),
-            name=str(diagnose.code),
-            filter=q_with_prefix( 'icd', diagnose, prefix)))
+            name=str(diagnose.name),
+            filter=None))
     return ADXMappingCategoryDefinition(
         category_name="icd",
-        category_options=slices
+        category_options=slices,
+        path=f'{prefix}icd__code' 
     )
 
 
@@ -167,6 +171,10 @@ def get_policy_product_categories(period) -> ADXMappingCategoryDefinition:
             code=clean_code(str(product.code)),
             name=f"{product.code}-{product.name}",
             filter=Q(policy__product=product)))
+    slices.append(ADXCategoryOptionDefinition(
+            code= 'NONE',
+            name='None',
+            is_default = True))
     return ADXMappingCategoryDefinition(
         category_name="product",
         category_options=slices
@@ -181,7 +189,12 @@ def get_claim_product_categories(period: Period) -> ADXMappingCategoryDefinition
         slices.append(ADXCategoryOptionDefinition(
             code=clean_code(str(product.code)),
             name=name,
-            filter=Q(Q(items__policy__product=product) | Q(services__policy__product=product))))
+            filter=Q(product=product.id)))
+    slices.append(ADXCategoryOptionDefinition(
+            code= 'NONE',
+            name='None',
+            is_default = True))
+    
     return ADXMappingCategoryDefinition(
         category_name="product",
         category_options=slices

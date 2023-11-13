@@ -19,6 +19,9 @@ class ADXCategoryOptionDefinition:
 class ADXMappingCategoryDefinition:
     category_name: str
     category_options: List[ADXCategoryOptionDefinition]
+    path: Optional[str] = None
+    group_attribute: bool = False
+
 
 
 @dataclass
@@ -38,6 +41,7 @@ class ADXMappingGroupDefinition:
     org_unit_type: Type[Model]  # HF Etc.
     data_values: List[ADXMappingDataValueDefinition]
     to_org_unit_code_func: Callable[[Model], str]
+    aggregations : List[ADXMappingCategoryDefinition] = None
 
     @property
     def dataset_repr(self) -> str:

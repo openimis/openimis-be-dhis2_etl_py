@@ -37,6 +37,8 @@ class ADXMappingGroup:
     data_set: str
     comment: str
     data_values: List[ADXDataValue]  # TODO: Defined automatically based on queryset of ADX Mapping and categories
+    aggregations: List[ADXDataValueAggregation] = None
+
 
 
 @dataclass

@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 from typing import Any, Dict
 
 from django.db.models import QuerySet, Sum, Model, Q, F, Exists, OuterRef,Value
-
+from django.db.models.functions import  Coalesce
+from core import filter_validity
 from contribution.models import Premium
 from dhis2_etl.models.adx.data import Period
 from dhis2_etl.utils import build_dhis2_id
@@ -51,15 +52,15 @@ def get_contribution_period_filter(qs, p):
     return qs.filter(pay_date__range=[p.from_date, p.to_date])
 
 
-def get_claim_period_filter(qs, period):
-    return qs.filter((Q(date_to__isnull=True) & Q(date_from__range=[period.from_date, period.to_date])) | (
-            Q(date_to__isnull=False) & Q(date_to__range=[period.from_date, period.to_date])))
+def get_claim_period_filter(qs, period, prefix=''):
+    return qs.annotate(ref_date=Coalesce(f'{prefix}date_to',f'{prefix}date_from'))\
+            .filter(ref_date__gte = period.from_date)\
+            .filter(ref_date__lt = period.to_date)\
+            .filter(*filter_validity())
 
 
 def get_claim_details_period_filter(qs, period):
-    return qs.filter(
-        (Q(claim__date_to__isnull=True) & Q(claim__date_from__range=[period.from_date, period.to_date])) | (
-                Q(claim__date_to__isnull=False) & Q(claim__date_to__range=[period.from_date, period.to_date])))
+    return get_claim_period_filter(qs, period, prefix='claim__')
 
 
 def get_org_unit_code(model: Model) -> str:

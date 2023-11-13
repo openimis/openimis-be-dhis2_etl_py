@@ -10,7 +10,7 @@ logger = logging.getLogger('openIMIS')
 
 DEFAULT_CFG = {
     "dhis2" : {
-        "host":"https://play.dhis2.org/2.39/",
+        "host":"https://play.dhis2.org/2.39.3",
         "username":"admin",
         "password":"district"
     },
@@ -33,7 +33,7 @@ DEFAULT_CFG = {
         "location": False
     },
     "location":{
-        "rootOrgUnit":"E0FtAX5eNc3",
+        "rootOrgUnit":"ImspTQPwCqd",
         "rootOrgUnitName":"DemOpenIMIS",
         "rootOrgUnitCode":"Root",
         "attributes":{
