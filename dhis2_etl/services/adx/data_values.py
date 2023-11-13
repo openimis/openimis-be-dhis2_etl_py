@@ -1,4 +1,4 @@
-from django.db.models import Q, F, Sum, Count
+from django.db.models import Q, F, Sum, Count, Max
 from django.db.models.functions import Coalesce
 from core import filter_validity
 from claim.models import ClaimItem, ClaimService
@@ -62,7 +62,7 @@ def get_hf_claim_number_dv(period):
     return ADXMappingDataValueDefinition(
         data_element="NB_CLAIM",
         period_filter_func=get_claim_period_filter,
-        dataset_from_orgunit_func=lambda hf: hf.claim_set.filter(*filter_validity()),
+        dataset_from_orgunit_func=lambda hf: hf.claim_set.filter(*filter_validity()).annotate(product= Coalesce(Max('services__policy__product'),Max('items__policy__product'))),
         aggregation_func=Count('id'),
         categories=[
             get_claim_product_categories(period),
@@ -80,8 +80,8 @@ def get_hf_claim_item_number_dv(period):
         period_filter_func=get_claim_details_period_filter,
         dataset_from_orgunit_func=lambda hf: ClaimItem.objects.filter(
             claim__health_facility=hf,
-            *filter_validity(), 
-            claim__date_processed__isnull=False).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
+            *filter_validity(),
+            claim__validity_to__isnull=True).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
         aggregation_func=Sum( 'qty'),
         categories=[
             get_policy_product_categories(period),
@@ -100,8 +100,8 @@ def get_hf_claim_service_number_dv(period):
         period_filter_func=get_claim_details_period_filter,
         dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, 
-            *filter_validity(), 
-            claim__date_processed__isnull=False).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
+            *filter_validity(),
+            claim__validity_to__isnull=True).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
         aggregation_func=Sum('qty'),
         categories=[
             get_policy_product_categories(period),
@@ -119,8 +119,8 @@ def get_hf_claim_service_number_icd_dv(period):
         period_filter_func=get_claim_details_period_filter,
         dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, 
-            *filter_validity(), 
-            claim__date_processed__isnull=False).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
+            *filter_validity(),
+            claim__validity_to__isnull=True).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
         aggregation_func=Sum('qty'),
         categories=[
             get_policy_product_categories(period),
@@ -136,8 +136,10 @@ def get_hf_claim_services_valuated_dv(period):
         period_filter_func=get_claim_details_period_filter,
         dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, 
-            *filter_validity()).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
-        aggregation_func=Sum('qty'),
+            *filter_validity(),
+            claim__validity_to__isnull=True,
+            claim__date_processed__isnull=True),
+        aggregation_func=Sum('price_valuated'),
         categories=[
             get_policy_product_categories(period),
             get_claim_status_categories(prefix='claim__'),

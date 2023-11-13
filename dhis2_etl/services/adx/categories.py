@@ -189,7 +189,7 @@ def get_claim_product_categories(period: Period) -> ADXMappingCategoryDefinition
         slices.append(ADXCategoryOptionDefinition(
             code=clean_code(str(product.code)),
             name=name,
-            filter=Q(Q(items__policy__product=product) | Q(services__policy__product=product))))
+            filter=Q(product=product.id)))
     slices.append(ADXCategoryOptionDefinition(
             code= 'NONE',
             name='None',

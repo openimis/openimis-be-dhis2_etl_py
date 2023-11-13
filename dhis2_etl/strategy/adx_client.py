@@ -44,8 +44,11 @@ class ADXClient:
             cube_xml = ElementTree.tostring(cube_dom)
 
             response = self._post(cube_xml)
-            response.raise_for_status()
-            logger.info(f"adx cube posted successfully")
+            #response.raise_for_status()
+            if response.status_code and response.status_code >= 200  and response.status_code < 300:
+                logger.info(f"posted successfully")
+            else:
+                logger.error(f"error {response.status_code}\nurl:{response.url}\nmessage:{response.text}")
 
 
     @staticmethod
