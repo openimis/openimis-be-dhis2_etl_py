@@ -168,10 +168,13 @@ def get_hf_claim_service_asked_dv(period):
         categories=[
             get_policy_product_categories(period),
             get_claim_status_categories(prefix='claim__'),
-            get_claim_details_status_categories(),
-            get_claim_type_categories(prefix='claim__'),
+            get_claim_service_categories(),
             get_sex_categories(prefix='claim__insuree__'),
             get_age_range_from_boundaries_categories(period, prefix='claim__insuree__'),
             #get_main_icd_categories(period, prefix='claim__')
         ]
     )
+
+    
+ 
+ 

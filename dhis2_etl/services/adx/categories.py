@@ -7,7 +7,7 @@ from dhis2_etl.configurations import GeneralConfiguration
 from dhis2_etl.models.adx.data import Period
 from dhis2_etl.models.adx.definition import ADXCategoryOptionDefinition, ADXMappingCategoryDefinition
 from dhis2_etl.services.adx.utils import filter_with_prefix, q_with_prefix, valid_policy, get_fully_paid, get_partially_paid, not_paid
-from medical.models import Diagnosis
+from medical.models import Diagnosis, Service
 from policy.models import Policy
 from product.models import Product
 from dhis2_etl.utils import clean_code
@@ -171,6 +171,22 @@ def get_claim_type_categories(prefix='') -> ADXMappingCategoryDefinition:
         ]
     )
 
+def get_claim_service_categories(prefix='') -> ADXMappingCategoryDefinition:
+    slices = []
+    services = Service.objects.filter(validity_to__isnull=True)
+    for service in services:
+        slices.append(ADXCategoryOptionDefinition(
+            code=clean_code(str(service.code)),
+            name=f"{service.code}-{service.name}",
+            filter=Q(service=service)))
+    slices.append(ADXCategoryOptionDefinition(
+            code= 'NONE',
+            name='None',
+            is_default = True))
+    return ADXMappingCategoryDefinition(
+        category_name="claim_service",
+        category_options=slices
+    )
 
 def get_claim_details_status_categories(prefix='') -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
