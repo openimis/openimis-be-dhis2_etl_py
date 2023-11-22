@@ -3,6 +3,7 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import Sum, Q, Max
 
 from claim.models import Claim, ClaimDetail
+from dhis2_etl.configurations import GeneralConfiguration
 from dhis2_etl.models.adx.data import Period
 from dhis2_etl.models.adx.definition import ADXCategoryOptionDefinition, ADXMappingCategoryDefinition
 from dhis2_etl.services.adx.utils import filter_with_prefix, q_with_prefix, valid_policy, get_fully_paid, get_partially_paid, not_paid
@@ -10,9 +11,12 @@ from medical.models import Diagnosis
 from policy.models import Policy
 from product.models import Product
 from dhis2_etl.utils import clean_code
+from dict2obj import Dict2Obj
 
+adx = Dict2Obj(GeneralConfiguration.get_adx())
 # 0-5 ans, 6-12 ans, 13-18 ans, 19-25 ans, 26-35 ans, 36-55 ans, 56-75 ans, 75+
-AGE_BOUNDARIES = [6, 13, 19, 26, 36, 56, 76]
+AGE_BOUNDARIES = adx.age_disaggregation
+VALUE_BOUNDARIES = adx.value_disaggregation
 
 
 def get_age_range_from_boundaries_categories(period, prefix='') -> ADXMappingCategoryDefinition:
@@ -42,6 +46,39 @@ def get_age_range_from_boundaries_categories(period, prefix='') -> ADXMappingCat
         category_name="ageGroup",
         category_options=slices
     )
+
+def get_value_range_from_boundaries_categories(path):
+    
+    range = {}
+    last_value_boundaries = VALUE_BOUNDARIES[0]
+    slice_code =f"V{last_age_boundaries}-"
+    slices = [ADXCategoryOptionDefinition(
+            code= slice_code,
+            name= slice_code,
+            filter= q_with_prefix('__lt',last_age_boundaries, path))]
+    for value_boundary in VALUE_BOUNDARIES:
+        slice_code = f"V{last_age_boundaries}-V{age_boundary}"
+        # born before
+        # need to store all range , e.i not update start/stop date because the lambda is evaluated later
+        slices.append(ADXCategoryOptionDefinition(
+            code= slice_code,
+            name= slice_code,
+            filter= Q(**{f'{path}__gt': last_value_boundaries,
+                         f'{path}__lte': value_boundary,
+                         })
+        ))
+        last_value_boundaries = value_boundary
+    slice_code = f"V{last_age_boundaries}+"
+
+    slices.append(ADXCategoryOptionDefinition(
+            code= slice_code,
+            name= slice_code,
+        filter=q_with_prefix('__gte',last_age_boundaries, path)))
+    return ADXMappingCategoryDefinition(
+        category_name="valueGroup",
+        category_options=slices
+    )
+    
 
 def build_age_q(range, prefix ):
     return q_with_prefix('dob__range', range, prefix)
@@ -149,13 +186,22 @@ def get_claim_details_status_categories(prefix='') -> ADXMappingCategoryDefiniti
     )
 
 def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
-    slices = []
-    diagnosis = Diagnosis.objects.filter(validity_to__isnull=True)
+    slices = [ADXCategoryOptionDefinition(
+            code='NONE',
+            name='None',
+            is_default=True)]
+    slice_sodes = []
+    diagnosis = Diagnosis.objects.all().order_by('-validity_to')
     for diagnose in diagnosis:
-        slices.append(ADXCategoryOptionDefinition(
-            code=clean_code(str(diagnose.code)),
-            name=str(diagnose.name),
-            filter=None))
+        cleaned_code = clean_code(str(diagnose.code))
+        # to avoid twice the same code
+        if cleaned_code not in slice_code:
+            slice_code.append(cleaned_code)
+            slices.append(ADXCategoryOptionDefinition(
+                code=cleaned_code,
+                name=str(diagnose.name),
+                filter=None))
+    
     return ADXMappingCategoryDefinition(
         category_name="icd",
         category_options=slices,

@@ -31,6 +31,7 @@ class GeneralConfiguration(BaseConfiguration):
         config.jsonOutPath = cfg['jsonOutPath']
         config.scheduled_integration = cfg['scheduled_integration']
 
+
     @classmethod
     def get_dhis2(cls):
         return cls.get_config().dhis2
