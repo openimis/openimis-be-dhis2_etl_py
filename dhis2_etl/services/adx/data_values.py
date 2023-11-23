@@ -121,7 +121,7 @@ def get_hf_claim_service_number_icd_dv(period):
         dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, 
             *filter_validity(),
-            qty_provided__gte=0,
+            qty_provided__gte=0.0,
             *filter_validity(prefix='claim__')).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
         aggregation_func=Sum('qty'),
         categories=[
@@ -138,7 +138,7 @@ def get_hf_claim_services_valuated_dv(period):
         period_filter_func=get_claim_details_period_filter,
         dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, 
-            *filter_validity(), price_asked__gte=0,qty_provided__gte=0 
+            *filter_validity(), price_asked__gte=0.0,qty_provided__gte=0,
             *filter_validity(prefix='claim__'),
             claim__date_processed__isnull=True),
         aggregation_func=Sum('price_valuated'),
@@ -161,7 +161,7 @@ def get_hf_claim_service_asked_dv(period):
         dataset_from_orgunit_func=lambda hf: ClaimService.objects.filter(
             claim__health_facility=hf, 
             *filter_validity(), 
-            price_asked__gte=0,
+            price_asked__gte=0.0,
             *filter_validity(prefix='claim__'),
             qty_provided__gte=0 ).annotate(full_price=F('price_asked') * F('qty_provided')),
         aggregation_func=Sum('full_price'),
