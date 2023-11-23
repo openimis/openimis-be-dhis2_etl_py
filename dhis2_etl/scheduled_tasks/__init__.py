@@ -39,7 +39,6 @@ def adx_monthly_sync(date):
         service.build_enrolment_cube(adx_client.post_cube)
         service.build_claim_cube(adx_client.post_cube)
 
-        
 
 
 def schedule_tasks(scheduler: BackgroundScheduler):

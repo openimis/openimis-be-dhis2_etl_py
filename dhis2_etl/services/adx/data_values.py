@@ -122,6 +122,7 @@ def get_hf_claim_service_number_icd_dv(period):
             claim__health_facility=hf, 
             *filter_validity(),
             qty_provided__gte=0.0,
+
             *filter_validity(prefix='claim__')).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
         aggregation_func=Sum('qty'),
         categories=[
