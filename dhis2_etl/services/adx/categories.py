@@ -206,16 +206,13 @@ def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
             code='NONE',
             name='None',
             is_default=True)]
- config-age
     slice_codes = []
-
     diagnosis = Diagnosis.objects.all().order_by('-validity_to')
     for diagnose in diagnosis:
         cleaned_code = clean_code(str(diagnose.code))
         # to avoid twice the same code
         if cleaned_code not in slice_codes:
             slice_codes.append(cleaned_code)
-
             slices.append(ADXCategoryOptionDefinition(
                 code=cleaned_code,
                 name=str(diagnose.name),
