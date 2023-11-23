@@ -7,7 +7,7 @@ from dhis2_etl.models.adx.definition import ADXMappingDataValueDefinition
 from dhis2_etl.services.adx.categories import get_age_range_from_boundaries_categories, get_sex_categories, \
     get_payment_state_categories, get_payment_status_categories, get_policy_product_categories, \
     get_claim_status_categories, get_claim_type_categories, get_claim_product_categories, \
-    get_claim_details_status_categories, get_main_icd_categories
+    get_claim_details_status_categories, get_main_icd_categories, get_claim_service_categories
 from dhis2_etl.services.adx.utils import filter_period, get_location_filter, get_qs_count, get_qs_sum, \
     get_claim_details_period_filter, get_claim_period_filter, get_contribution_period_filter
 from insuree.models import Insuree
