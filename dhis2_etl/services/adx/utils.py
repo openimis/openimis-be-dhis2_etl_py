@@ -49,7 +49,7 @@ def filter_period(qs: QuerySet, period: Period) -> QuerySet:
 
 
 def get_contribution_period_filter(qs, p):
-    return qs.filter(pay_date__range=[p.from_date, p.to_date])
+    return qs.filter(pay_date__gte=p.from_date,pay_date__lt = p.to_date)
 
 
 def get_claim_period_filter(qs, period, prefix=''):

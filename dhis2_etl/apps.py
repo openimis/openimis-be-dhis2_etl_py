@@ -20,6 +20,8 @@ DEFAULT_CFG = {
         # https://docs.dhis2.org/en/develop/using-the-api/dhis-core-version-master/data.html#webapi_data_values_import_parameters
         "data_element_id_scheme": "code",
         "org_unit_id_scheme": "code",
+        "age_disaggregation":[6, 13, 19, 26, 36, 56, 76],
+        "value_disaggregation":[10, 100, 1000, 10000, 100000, 1000000]
     },
     "default":{"category": "GLevLNI9wkl", "categoryCombo":"bjDvmb4bfuf", "categoryOption":"xYerKDKCefk" },
     "salt":"LeSalt",
