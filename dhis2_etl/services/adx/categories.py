@@ -18,6 +18,10 @@ adx = Dict2Obj(GeneralConfiguration.get_adx())
 AGE_BOUNDARIES = adx.age_disaggregation
 VALUE_BOUNDARIES = adx.value_disaggregation
 
+NONE_OPT = ADXCategoryOptionDefinition(
+            code= 'NONE',
+            name='None',
+            is_default = True)
 
 def get_age_range_from_boundaries_categories(period, prefix='') -> ADXMappingCategoryDefinition:
     slices = []
@@ -172,21 +176,25 @@ def get_claim_type_categories(prefix='') -> ADXMappingCategoryDefinition:
     )
 
 def get_claim_service_categories(prefix='') -> ADXMappingCategoryDefinition:
-    slices = []
-    services = Service.objects.filter(validity_to__isnull=True)
+    slices = [NONE_OPT]
+    slice_codes = []
+    services = Service.objects.all().order_by('-validity_to')
     for service in services:
-        slices.append(ADXCategoryOptionDefinition(
-            code=clean_code(str(service.code)),
-            name=f"{service.code}-{service.name}",
-            filter=Q(service=service)))
-    slices.append(ADXCategoryOptionDefinition(
-            code= 'NONE',
-            name='None',
-            is_default = True))
+        cleaned_code = clean_code(str(service.code))
+        # to avoid twice the same code
+        if cleaned_code not in slice_codes:
+            slice_codes.append(cleaned_code)
+            slices.append(ADXCategoryOptionDefinition(
+                code=cleaned_code,
+                name=f"{service.code}-{service.name}" if not service.name.startswith(service.code) else service.name,
+                filter=None))
+    
     return ADXMappingCategoryDefinition(
         category_name="claim_service",
-        category_options=slices
+        category_options=slices,
+        path=f'{prefix}service__code' 
     )
+
 
 def get_claim_details_status_categories(prefix='') -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
@@ -202,10 +210,7 @@ def get_claim_details_status_categories(prefix='') -> ADXMappingCategoryDefiniti
     )
 
 def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
-    slices = [ADXCategoryOptionDefinition(
-            code='NONE',
-            name='None',
-            is_default=True)]
+    slices = [NONE_OPT]
     slice_codes = []
     diagnosis = Diagnosis.objects.all().order_by('-validity_to')
     for diagnose in diagnosis:
@@ -215,7 +220,7 @@ def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
             slice_codes.append(cleaned_code)
             slices.append(ADXCategoryOptionDefinition(
                 code=cleaned_code,
-                name=str(diagnose.name),
+                name=f"{diagnose.code}-{diagnose.name}" if not diagnose.name.startswith(diagnose.code) else diagnose.name,
                 filter=None))
     
     return ADXMappingCategoryDefinition(
@@ -227,16 +232,18 @@ def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
 
 def get_policy_product_categories(period) -> ADXMappingCategoryDefinition:
     slices = []
-    products = Product.objects.filter(validity_to__isnull=True)
+    products = Product.objects.all().order_by('-validity_to')
+    slice_codes = [NONE_OPT]
+
     for product in products:
-        slices.append(ADXCategoryOptionDefinition(
-            code=clean_code(str(product.code)),
-            name=f"{product.code}-{product.name}",
-            filter=Q(policy__product=product)))
-    slices.append(ADXCategoryOptionDefinition(
-            code= 'NONE',
-            name='None',
-            is_default = True))
+        cleaned_code = clean_code(str(product.code))
+        if cleaned_code not in slice_codes:
+            slice_codes.append(cleaned_code)
+            slices.append(ADXCategoryOptionDefinition(
+                code=cleaned_code,
+                name=f"{product.code}-{product.name}" if not product.name.startswith(product.code) else product.name,
+                filter=Q(policy__product=product)))
+
     return ADXMappingCategoryDefinition(
         category_name="product",
         category_options=slices
@@ -244,18 +251,14 @@ def get_policy_product_categories(period) -> ADXMappingCategoryDefinition:
 
 #has the same name as it should be the same list in DHIS2
 def get_claim_product_categories(period: Period) -> ADXMappingCategoryDefinition:
-    slices = []
-    products = Product.objects.filter(validity_to__isnull=True)
+    slices = [NONE_OPT]
+    products = Product.objects.all().order_by('-validity_to')
     for product in products:
-        name = f"{product.code}-{product.name}"
         slices.append(ADXCategoryOptionDefinition(
             code=clean_code(str(product.code)),
-            name=name,
+            name=f"{product.code}-{product.name}" if not product.name.startswith(product.code) else product.name,
             filter=Q(product=product.id)))
-    slices.append(ADXCategoryOptionDefinition(
-            code= 'NONE',
-            name='None',
-            is_default = True))
+
     
     return ADXMappingCategoryDefinition(
         category_name="product",
