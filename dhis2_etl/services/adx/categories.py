@@ -172,21 +172,28 @@ def get_claim_type_categories(prefix='') -> ADXMappingCategoryDefinition:
     )
 
 def get_claim_service_categories(prefix='') -> ADXMappingCategoryDefinition:
-    slices = []
+    slices = [ADXCategoryOptionDefinition(
+            code='NONE',
+            name='None',
+            is_default=True)]
+    slice_codes = []
     services = Service.objects.filter(validity_to__isnull=True)
     for service in services:
-        slices.append(ADXCategoryOptionDefinition(
-            code=clean_code(str(service.code)),
-            name=f"{service.code}-{service.name}",
-            filter=Q(service=service)))
-    slices.append(ADXCategoryOptionDefinition(
-            code= 'NONE',
-            name='None',
-            is_default = True))
+        cleaned_code = clean_code(str(service.code))
+        # to avoid twice the same code
+        if cleaned_code not in slice_codes:
+            slice_codes.append(cleaned_code)
+            slices.append(ADXCategoryOptionDefinition(
+                code=cleaned_code,
+                name=str(service.name),
+                filter=None))
+    
     return ADXMappingCategoryDefinition(
         category_name="claim_service",
-        category_options=slices
+        category_options=slices,
+        path=f'{prefix}service__code' 
     )
+
 
 def get_claim_details_status_categories(prefix='') -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
