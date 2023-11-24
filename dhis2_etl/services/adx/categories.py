@@ -230,11 +230,10 @@ def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
     )
 
 
-def get_policy_product_categories(period) -> ADXMappingCategoryDefinition:
-    slices = []
+def get_product_categories(period, prefix='') -> ADXMappingCategoryDefinition:
+    slices = [NONE_OPT]
     products = Product.objects.all().order_by('-validity_to')
-    slice_codes = [NONE_OPT]
-
+    slice_codes = []
     for product in products:
         cleaned_code = clean_code(str(product.code))
         if cleaned_code not in slice_codes:
@@ -242,25 +241,12 @@ def get_policy_product_categories(period) -> ADXMappingCategoryDefinition:
             slices.append(ADXCategoryOptionDefinition(
                 code=cleaned_code,
                 name=f"{product.code}-{product.name}" if not product.name.startswith(product.code) else product.name,
-                filter=Q(policy__product=product)))
+                #filter=Q(**{f'{prefix}product':product})
+            ))
 
     return ADXMappingCategoryDefinition(
         category_name="product",
-        category_options=slices
+        category_options=slices,
+        path=f'{prefix}product__code'
     )
 
-#has the same name as it should be the same list in DHIS2
-def get_claim_product_categories(period: Period) -> ADXMappingCategoryDefinition:
-    slices = [NONE_OPT]
-    products = Product.objects.all().order_by('-validity_to')
-    for product in products:
-        slices.append(ADXCategoryOptionDefinition(
-            code=clean_code(str(product.code)),
-            name=f"{product.code}-{product.name}" if not product.name.startswith(product.code) else product.name,
-            filter=Q(product=product.id)))
-
-    
-    return ADXMappingCategoryDefinition(
-        category_name="product",
-        category_options=slices
-    )
