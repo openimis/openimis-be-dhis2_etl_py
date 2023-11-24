@@ -5,8 +5,8 @@ from claim.models import ClaimItem, ClaimService
 from contribution.models import Premium
 from dhis2_etl.models.adx.definition import ADXMappingDataValueDefinition
 from dhis2_etl.services.adx.categories import get_age_range_from_boundaries_categories, get_sex_categories, \
-    get_payment_state_categories, get_payment_status_categories, get_policy_product_categories, \
-    get_claim_status_categories, get_claim_type_categories, get_claim_product_categories, \
+    get_payment_state_categories, get_payment_status_categories, get_product_categories, \
+    get_claim_status_categories, get_claim_type_categories, get_product_categories, \
     get_claim_details_status_categories, get_main_icd_categories, get_claim_service_categories
 from dhis2_etl.services.adx.utils import filter_period, get_location_filter, get_qs_count, get_qs_sum, \
     get_claim_details_period_filter, get_claim_period_filter, get_contribution_period_filter
@@ -54,7 +54,7 @@ def get_location_contribution_sum_dv(period):
             *filter_validity(), 
             policy__family__location__parent=l),
         aggregation_func= Sum('amount'),
-        categories=[get_policy_product_categories(period)]
+        categories=[get_product_categories(period, prefix='policy__')]
     )
 
 
@@ -65,7 +65,7 @@ def get_hf_claim_number_dv(period):
         dataset_from_orgunit_func=lambda hf: hf.claim_set.filter(*filter_validity()).annotate(product= Coalesce(Max('services__policy__product'),Max('items__policy__product'))),
         aggregation_func=Count('id'),
         categories=[
-            get_claim_product_categories(period),
+            get_product_categories(period),
             get_claim_status_categories(),
             get_claim_type_categories(),
             get_sex_categories(prefix='insuree__'),
@@ -84,7 +84,7 @@ def get_hf_claim_item_number_dv(period):
             *filter_validity(prefix='claim__')).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
         aggregation_func=Sum( 'qty'),
         categories=[
-            get_policy_product_categories(period),
+            get_product_categories(period, prefix='policy__'),
             get_claim_status_categories(prefix='claim__'),
             get_claim_details_status_categories(),
             get_claim_type_categories(prefix='claim__'),
@@ -105,7 +105,7 @@ def get_hf_claim_service_number_dv(period):
             *filter_validity(prefix='claim__')).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
         aggregation_func=Sum('qty'),
         categories=[
-            get_policy_product_categories(period),
+            get_product_categories(period, prefix='policy__'),
             get_claim_status_categories(prefix='claim__'),
             get_claim_details_status_categories(),
             get_claim_type_categories(prefix='claim__'),
@@ -126,7 +126,7 @@ def get_hf_claim_service_number_icd_dv(period):
             *filter_validity(prefix='claim__')).annotate(qty=Coalesce('qty_approved', 'qty_provided')),
         aggregation_func=Sum('qty'),
         categories=[
-            get_policy_product_categories(period),
+            get_product_categories(period, prefix='policy__'),
             get_claim_status_categories(prefix='claim__'),
             get_claim_details_status_categories(),
             get_main_icd_categories(period, prefix='claim__')
@@ -144,7 +144,7 @@ def get_hf_claim_services_valuated_dv(period):
             claim__date_processed__isnull=True),
         aggregation_func=Sum('price_valuated'),
         categories=[
-            get_policy_product_categories(period),
+            get_product_categories(period, prefix='policy__'),
             get_claim_status_categories(prefix='claim__'),
             get_claim_details_status_categories(),
             get_claim_type_categories(prefix='claim__'),
@@ -167,7 +167,7 @@ def get_hf_claim_service_asked_dv(period):
             qty_provided__gte=0 ).annotate(full_price=F('price_asked') * F('qty_provided')),
         aggregation_func=Sum('full_price'),
         categories=[
-            get_policy_product_categories(period),
+            get_product_categories(period, prefix='policy__'),
             get_claim_status_categories(prefix='claim__'),
             get_claim_service_categories(),
             get_sex_categories(prefix='claim__insuree__'),
