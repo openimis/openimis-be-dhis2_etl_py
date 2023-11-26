@@ -230,7 +230,7 @@ def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
     )
 
 
-def get_product_categories(period, prefix='') -> ADXMappingCategoryDefinition:
+def get_product_categories(period, prefix='product__') -> ADXMappingCategoryDefinition:
     slices = [NONE_OPT]
     products = Product.objects.all().order_by('-validity_to')
     slice_codes = []
@@ -247,6 +247,6 @@ def get_product_categories(period, prefix='') -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
         category_name="product",
         category_options=slices,
-        path=f'{prefix}product__code'
+        path=f'{prefix}code'
     )
 
