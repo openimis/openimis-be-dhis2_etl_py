@@ -54,7 +54,7 @@ def get_location_contribution_sum_dv(period):
             *filter_validity(), 
             policy__family__location__parent=l),
         aggregation_func= Sum('amount'),
-        categories=[get_product_categories(period)]
+        categories=[get_product_categories(period, prefix = 'policy__product__')]
     )
 
 
