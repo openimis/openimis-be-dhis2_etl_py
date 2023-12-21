@@ -1,48 +1,102 @@
 import datetime
 from dateutil.relativedelta import relativedelta
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, Max
 
-from claim.models import Claim
-from dhis2_etl.adx_transform.adx_models.adx_data import Period
-from dhis2_etl.adx_transform.adx_models.adx_definition import ADXCategoryOptionDefinition, ADXMappingCategoryDefinition
-from dhis2_etl.services.adx.utils import filter_with_prefix, valid_policy, get_fully_paid, get_partially_paid, not_paid
-from medical.models import Diagnosis
+from claim.models import Claim, ClaimDetail
+from dhis2_etl.configurations import GeneralConfiguration
+from dhis2_etl.models.adx.data import Period
+from dhis2_etl.models.adx.definition import ADXCategoryOptionDefinition, ADXMappingCategoryDefinition
+from dhis2_etl.services.adx.utils import filter_with_prefix, q_with_prefix, valid_policy, get_fully_paid, get_partially_paid, not_paid
+from medical.models import Diagnosis, Service
 from policy.models import Policy
 from product.models import Product
+from dhis2_etl.utils import clean_code
+from dict2obj import Dict2Obj
 
+adx = Dict2Obj(GeneralConfiguration.get_adx())
 # 0-5 ans, 6-12 ans, 13-18 ans, 19-25 ans, 26-35 ans, 36-55 ans, 56-75 ans, 75+
-AGE_BOUNDARIES = [6, 13, 19, 26, 36, 56, 76]
+AGE_BOUNDARIES = adx.age_disaggregation
+VALUE_BOUNDARIES = adx.value_disaggregation
 
+NONE_OPT = ADXCategoryOptionDefinition(
+            code= 'NONE',
+            name='None',
+            is_default = True)
 
 def get_age_range_from_boundaries_categories(period, prefix='') -> ADXMappingCategoryDefinition:
     slices = []
+    range = {}
     last_age_boundaries = 0
     for age_boundary in AGE_BOUNDARIES:
+        slice_code = f"P{last_age_boundaries}Y-P{age_boundary - 1}Y"
         # born before
-        end_date = period.to_date - relativedelta(years=last_age_boundaries)
-        start_date = datetime.datetime.now() - relativedelta(years=age_boundary) + datetime.timedelta(days=1)
+        # need to store all range , e.i not update start/stop date because the lambda is evaluated later
         slices.append(ADXCategoryOptionDefinition(
-            code=str(last_age_boundaries) + "-" + str(age_boundary - 1),
-            filter=lambda qs: filter_with_prefix(qs, 'dob__range', [start_date, end_date], prefix)))
+            code= slice_code,
+            name= slice_code,
+            filter= Q(**{f'{prefix}dob__gt': (period.to_date - relativedelta(years=age_boundary)).strftime("%Y-%m-%d"),
+                         f'{prefix}dob__lte': (period.to_date - relativedelta(years=last_age_boundaries)).strftime("%Y-%m-%d"),
+                         })
+        ))
         last_age_boundaries = age_boundary
     end_date = period.to_date - relativedelta(years=last_age_boundaries)
+    slice_code = f"P{last_age_boundaries}Y-P9999Y"
+
     slices.append(ADXCategoryOptionDefinition(
-        code=str(last_age_boundaries) + "+",
-        filter=lambda qs: filter_with_prefix(qs, 'dob__lt', end_date, prefix)))
+            code= slice_code,
+            name= slice_code,
+        filter=q_with_prefix('dob__lt', end_date.strftime("%Y-%m-%d"), prefix)))
     return ADXMappingCategoryDefinition(
         category_name="ageGroup",
         category_options=slices
     )
 
+def get_value_range_from_boundaries_categories(path):
+    
+    range = {}
+    last_value_boundaries = VALUE_BOUNDARIES[0]
+    slice_code =f"V{last_age_boundaries}-"
+    slices = [ADXCategoryOptionDefinition(
+            code= slice_code,
+            name= slice_code,
+            filter= q_with_prefix('__lt',last_age_boundaries, path))]
+    for value_boundary in VALUE_BOUNDARIES:
+        slice_code = f"V{last_age_boundaries}-V{age_boundary}"
+        # born before
+        # need to store all range , e.i not update start/stop date because the lambda is evaluated later
+        slices.append(ADXCategoryOptionDefinition(
+            code= slice_code,
+            name= slice_code,
+            filter= Q(**{f'{path}__gt': last_value_boundaries,
+                         f'{path}__lte': value_boundary,
+                         })
+        ))
+        last_value_boundaries = value_boundary
+    slice_code = f"V{last_age_boundaries}+"
+
+    slices.append(ADXCategoryOptionDefinition(
+            code= slice_code,
+            name= slice_code,
+        filter=q_with_prefix('__gte',last_age_boundaries, path)))
+    return ADXMappingCategoryDefinition(
+        category_name="valueGroup",
+        category_options=slices
+    )
+    
+
+def build_age_q(range, prefix ):
+    return q_with_prefix('dob__range', range, prefix)
 
 def get_sex_categories(prefix='') -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
         category_name="sex",
         category_options=[
             ADXCategoryOptionDefinition(
-                code="M", filter=lambda qs: filter_with_prefix(qs, 'gender__code', 'M', prefix)),
+                code="M", name= "MALE", filter= q_with_prefix( 'gender__code', 'M', prefix)),
             ADXCategoryOptionDefinition(
-                code="F", filter=lambda qs: filter_with_prefix(qs, 'gender__code', 'F', prefix))
+                code="F", name= "FEMALE", filter=q_with_prefix( 'gender__code', 'F', prefix)),
+            ADXCategoryOptionDefinition(
+                code="O", name= "OTHER", is_default = True)
         ]
     )
 
@@ -53,16 +107,21 @@ def get_payment_status_categories(period) -> ADXMappingCategoryDefinition:
         category_name="payment_status",
         category_options=[
             ADXCategoryOptionDefinition(
-                code="paid",
-                filter=lambda insuree_qs: insuree_qs.annotate(policy_value_sum=Sum('family__policies__value')).filter(
-                    valid_policy(period) & get_fully_paid())),
+                code="PAID",
+                name= "Paid",
+                filter=Q(valid_policy(period) & get_fully_paid())),
             ADXCategoryOptionDefinition(
-                code="partialy-paid",
-                filter=lambda insuree_qs: insuree_qs.annotate(policy_value_sum=Sum('family__policies__value')).filter(
-                    valid_policy(period) & get_partially_paid())),
+                code="NOT_PAID",
+                name= "Not paid",
+                filter=Q(valid_policy(period) & ~get_fully_paid() & ~get_partially_paid())),
             ADXCategoryOptionDefinition(
-                code="not-paid",
-                filter=lambda insuree_qs: insuree_qs.filter(valid_policy(period) & not_paid())),
+                code="PARTIALY_PAID",
+                name= "Partialy paid",
+                filter=Q(valid_policy(period) & get_partially_paid())),
+            ADXCategoryOptionDefinition(
+                code="NO_POLICY",
+                name= "No policy",
+                is_default = True),
         ]
     )
 
@@ -73,91 +132,121 @@ def get_payment_state_categories() -> ADXMappingCategoryDefinition:
         category_name="payment_state",
         category_options=[
             ADXCategoryOptionDefinition(
-                code="new", filter=lambda insuree_qs: insuree_qs.filter(Q(family__policies__stage=Policy.STAGE_NEW))),
+                name = "New",
+                code="NEW", filter=Q(family__policies__stage=Policy.STAGE_NEW)),
             ADXCategoryOptionDefinition(
-                code="renew",
-                filter=lambda insuree_qs: insuree_qs.filter(Q(family__policies__stage=Policy.STAGE_RENEWED))),
+                name = "Renew",code="RENEW",
+                filter=Q(family__policies__stage=Policy.STAGE_RENEWED)),
+            ADXCategoryOptionDefinition(
+                name = "No-policy",code="NO_POLICY",
+                is_default = True),
         ]
     )
 
 
 def get_claim_status_categories(prefix='') -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
-        category_name="item_status",
+        category_name="claim_status",
         category_options=[
             ADXCategoryOptionDefinition(
-                code="approved", filter=lambda qs: filter_with_prefix(qs, 'status', Claim.STATUS_VALUATED, prefix)),
+                name = "Approved", code="APPROVED", filter=q_with_prefix( 'status', Claim.STATUS_VALUATED, prefix)),
             ADXCategoryOptionDefinition(
-                code="rejected", filter=lambda qs: filter_with_prefix(qs, 'status', Claim.STATUS_REJECTED, prefix)),
+                name = "Rejected",code="REJECTED", filter=q_with_prefix( 'status', Claim.STATUS_REJECTED, prefix)),
+            ADXCategoryOptionDefinition(
+                name = "Checked",code="CHECKED", filter=q_with_prefix( 'status', Claim.STATUS_CHECKED, prefix)),
+            ADXCategoryOptionDefinition(
+                name = "Processed",code="PROCESSED", filter=q_with_prefix( 'status', Claim.STATUS_PROCESSED, prefix)),
+            ADXCategoryOptionDefinition(
+                name = "Entered",code="ENTERED", is_default = True),
         ]
     )
 
 
 def get_claim_type_categories(prefix='') -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
-        category_name="item_type",
+        category_name="claim_type",
         category_options=[
             ADXCategoryOptionDefinition(
-                code="Emergency", filter=lambda qs: filter_with_prefix(qs, 'visit_type', 'E', prefix)),
+                name = "Emergency",code="EMERGENCY", filter=q_with_prefix( 'visit_type', 'E', prefix)),
             ADXCategoryOptionDefinition(
-                code="Referrals", filter=lambda qs: filter_with_prefix(qs, 'visit_type', 'R', prefix)),
+                name = "Referrals",code="REFERRALS", filter=q_with_prefix( 'visit_type', 'R', prefix)),
             ADXCategoryOptionDefinition(
-                code="Other", filter=lambda qs: filter_with_prefix(qs, 'visit_type', 'O', prefix)),
+                name = "Other",code="OTHER", is_default = True),
         ]
+    )
+
+def get_claim_service_categories(prefix='') -> ADXMappingCategoryDefinition:
+    slices = [NONE_OPT]
+    slice_codes = []
+    services = Service.objects.all().order_by('-validity_to')
+    for service in services:
+        cleaned_code = clean_code(str(service.code))
+        # to avoid twice the same code
+        if cleaned_code not in slice_codes:
+            slice_codes.append(cleaned_code)
+            slices.append(ADXCategoryOptionDefinition(
+                code=cleaned_code,
+                name=f"{service.code}-{service.name}" if not service.name.startswith(service.code) else service.name,
+                filter=None))
+    
+    return ADXMappingCategoryDefinition(
+        category_name="claim_service",
+        category_options=slices,
+        path=f'{prefix}service__code' 
     )
 
 
 def get_claim_details_status_categories(prefix='') -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
-        category_name="claim_status",
+        category_name="claim_detail_status",
         category_options=[
             ADXCategoryOptionDefinition(
-                code="aproved", filter=lambda qs: filter_with_prefix(qs, 'status', Claim.STATUS_VALUATED, prefix)),
+               name = "Approved", code="APPROVED", filter=q_with_prefix( 'status', ClaimDetail.STATUS_PASSED, prefix)),
             ADXCategoryOptionDefinition(
-                code="rejected", filter=lambda qs: filter_with_prefix(qs, 'status', Claim.STATUS_VALUATED, prefix)),
+                name = "Rejected",code="REJECTED", filter=q_with_prefix( 'status', ClaimDetail.STATUS_REJECTED, prefix)),
+             ADXCategoryOptionDefinition(
+                name = "not assessed",code="NOT_ASSESSED", is_default = True),
         ]
     )
 
 def get_main_icd_categories(period, prefix='') -> ADXMappingCategoryDefinition:
-    slices = []
-    diagnosis = Diagnosis.objects.filter(legacy_id__isnull=True) \
-        .filter(validity_from__gte=period.from_date) \
-        .filter(validity_from__lte=period.to_date)
+    slices = [NONE_OPT]
+    slice_codes = []
+    diagnosis = Diagnosis.objects.all().order_by('-validity_to')
     for diagnose in diagnosis:
-        slices.append(ADXCategoryOptionDefinition(
-            code=str(diagnose.code),
-            filter=lambda qs: filter_with_prefix(qs, 'icd', diagnose, prefix)))
+        cleaned_code = clean_code(str(diagnose.code))
+        # to avoid twice the same code
+        if cleaned_code not in slice_codes:
+            slice_codes.append(cleaned_code)
+            slices.append(ADXCategoryOptionDefinition(
+                code=cleaned_code,
+                name=f"{diagnose.code}-{diagnose.name}" if not diagnose.name.startswith(diagnose.code) else diagnose.name,
+                filter=None))
+    
     return ADXMappingCategoryDefinition(
         category_name="icd",
-        category_options=slices
+        category_options=slices,
+        path=f'{prefix}icd__code' 
     )
 
 
-def get_policy_product_categories(period) -> ADXMappingCategoryDefinition:
-    slices = []
-    products = Product.objects.filter(legacy_id__isnull=True) \
-        .filter(validity_from__gte=period.from_date) \
-        .filter(validity_from__lte=period.to_date)
+def get_product_categories(period, prefix='product__') -> ADXMappingCategoryDefinition:
+    slices = [NONE_OPT]
+    products = Product.objects.all().order_by('-validity_to')
+    slice_codes = []
     for product in products:
-        slices.append(ADXCategoryOptionDefinition(
-            code=str(product.code),
-            filter=lambda premium_qs: premium_qs.filter(policy__product=product)))
+        cleaned_code = clean_code(str(product.code))
+        if cleaned_code not in slice_codes:
+            slice_codes.append(cleaned_code)
+            slices.append(ADXCategoryOptionDefinition(
+                code=cleaned_code,
+                name=f"{product.code}-{product.name}" if not product.name.startswith(product.code) else product.name,
+                #filter=Q(**{f'{prefix}product':product})
+            ))
+
     return ADXMappingCategoryDefinition(
         category_name="product",
-        category_options=slices
+        category_options=slices,
+        path=f'{prefix}code'
     )
 
-
-def get_claim_product_categories(period: Period) -> ADXMappingCategoryDefinition:
-    slices = []
-    products = Product.objects.filter(legacy_id__isnull=True) \
-        .filter(validity_from__gte=period.from_date) \
-        .filter(validity_from__lte=period.to_date)
-    for product in products:
-        slices.append(ADXCategoryOptionDefinition(
-            code=str(product.code),
-            filter=lambda qs: qs.filter(Q(items__policy__product=product) | Q(services__policy__product=product))))
-    return ADXMappingCategoryDefinition(
-        category_name="product",
-        category_options=slices
-    )

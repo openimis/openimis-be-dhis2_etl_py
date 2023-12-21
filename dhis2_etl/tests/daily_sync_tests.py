@@ -4,21 +4,21 @@ from unittest import mock
 
 from claim.test_helpers import create_test_claim
 from django.test import TestCase
+from insuree.models import Education, FamilyType, Gender, Insuree, Profession
+from insuree.test_helpers import create_test_insuree
 from medical.models import Diagnosis, Item, Service
 from policy.test_helpers import create_test_policy2
 from product.test_helpers import create_test_product
 
-from dhis2_etl.converters.ClaimConverter import ClaimConverter
-from dhis2_etl.converters.InsureeConverter import InsureeConverter
-from dhis2_etl.converters.OptionSetConverter import OptionSetConverter
+from dhis2_etl.builders.dhis2.ClaimConverter import ClaimConverter
+from dhis2_etl.builders.dhis2.InsureeConverter import InsureeConverter
+from dhis2_etl.builders.dhis2.OptionSetConverter import OptionSetConverter
 from dhis2_etl.scheduled_tasks import SyncFunction
-from dhis2_etl.scheduled_tasks.utils import has_model_changed_in_timeframe, sync_product_if_changed, \
-    sync_optionset_if_changed
+from dhis2_etl.scheduled_tasks.utils import (has_model_changed_in_timeframe,
+                                             sync_optionset_if_changed,
+                                             sync_product_if_changed)
 from dhis2_etl.services.claimServices import syncClaim
 from dhis2_etl.services.insureeServices import syncPolicy
-from insuree.models import Gender
-from insuree.models import Insuree, Profession, FamilyType, Education
-from insuree.test_helpers import create_test_insuree
 
 
 class DailySyncTests(TestCase):

@@ -1,21 +1,26 @@
 # Service to push openIMIS insuree and policy to DHIS2
 # Copyright Patrick Delcoix <patrick@pmpd.eu>
-from ..models.dhis2Program import *
+# import the logging library
+import logging
+
+from django.db.models import F, Prefetch, Q
 #import time
-from django.http import  JsonResponse
-from ..converters.InsureeConverter import InsureeConverter
 from insuree.models import Insuree, InsureePolicy
+
+
+from dhis2_etl.builders.dhis2.InsureeConverter import InsureeConverter
+from dhis2_etl.models.dhis2.program import *
+from dhis2_etl.strategy.dhis2_client import *
+# FIXME manage permissions
+from dhis2_etl.utils import *
+
 #from policy.models import Policy
 #from django.core.serializers.json import DjangoJSONEncoder
 
-from django.db.models import Q, Prefetch, F
-# FIXME manage permissions
-from ..utils import *
 
-# import the logging library
-import logging
+
 # Get an instance of a logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('openIMIS')
 
 postMethod = postPaginated
 # postMethod = postPaginatedThreaded
@@ -106,7 +111,10 @@ def syncInsureePolicyClaim(startDate,stopDate):
     # .filter(Q(validity_to__isnull=True) | Q(validity_to__gte=stopDate))
     # TODO reverse link clainm
     from claim.models import Claim, ClaimItem, ClaimService
-    from ..converters.ClaimConverter import ClaimConverter, CLAIM_VALUATED, CLAIM_REJECTED
+
+    from dhis2_etl.builders.ClaimConverter import (CLAIM_REJECTED,
+                                                   CLAIM_VALUATED,
+                                                   ClaimConverter)
     insurees = Insuree.objects\
             .filter(validity_from__lte=stopDate)\
             .filter(validity_from__gte=startDate)\

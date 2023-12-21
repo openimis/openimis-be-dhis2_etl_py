@@ -1,23 +1,22 @@
 # Service to push openIMIS insuree and policy to DHIS2
 # Copyright Patrick Delcoix <patrick@pmpd.eu>
-from ..models.dhis2Program import *
-#import time
-from django.http import  JsonResponse
-from ..converters.FundingConverter import FundingConverter
-from policy.models import  Policy
+# import the logging library
+import logging
+
 from contribution.models import Premium
-from product.models import Product
+
 #from policy.models import Policy
 #from django.core.serializers.json import DjangoJSONEncoder
 
-from django.db.models import Q, Prefetch, F
+#import time
+from dhis2_etl.builders.dhis2.FundingConverter import FundingConverter
+from dhis2_etl.models.dhis2.program import *
+from dhis2_etl.strategy.dhis2_client import *
 # FIXME manage permissions
-from ..utils import *
+from dhis2_etl.utils import *
 
-# import the logging library
-import logging
 # Get an instance of a logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('openIMIS')
 
 postMethod = postPaginated
 # postMethod = postPaginatedThreaded

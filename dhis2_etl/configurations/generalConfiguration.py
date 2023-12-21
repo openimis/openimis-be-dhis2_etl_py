@@ -1,5 +1,6 @@
-from . import BaseConfiguration
 import json
+
+from . import BaseConfiguration
 
 
 class GeneralConfiguration(BaseConfiguration):
@@ -29,6 +30,7 @@ class GeneralConfiguration(BaseConfiguration):
         config.location = cfg['location']
         config.jsonOutPath = cfg['jsonOutPath']
         config.scheduled_integration = cfg['scheduled_integration']
+
 
     @classmethod
     def get_dhis2(cls):

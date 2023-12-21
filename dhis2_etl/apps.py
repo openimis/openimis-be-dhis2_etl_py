@@ -1,16 +1,16 @@
-from django.apps import AppConfig
-
 import logging
+
+from django.apps import AppConfig
 
 from .configurations import ModuleConfiguration
 
 MODULE_NAME = "dhis2_etl"
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('openIMIS')
 
 DEFAULT_CFG = {
     "dhis2" : {
-        "host":"https://play.dhis2.org/2.35",
+        "host":"https://play.dhis2.org/2.39.3",
         "username":"admin",
         "password":"district"
     },
@@ -20,9 +20,12 @@ DEFAULT_CFG = {
         # https://docs.dhis2.org/en/develop/using-the-api/dhis-core-version-master/data.html#webapi_data_values_import_parameters
         "data_element_id_scheme": "code",
         "org_unit_id_scheme": "code",
+        "age_disaggregation":[6, 13, 19, 26, 36, 56, 76],
+        "value_disaggregation":[10, 100, 1000, 10000, 100000, 1000000]
     },
+    "default":{"category": "GLevLNI9wkl", "categoryCombo":"bjDvmb4bfuf", "categoryOption":"xYerKDKCefk" },
     "salt":"LeSalt",
-    "jsonOutPath":'C:/temp',
+    "jsonOutPath":'/temp',
     "scheduled_integration": {
         "claims":  False,
         "policies": False,
@@ -32,7 +35,7 @@ DEFAULT_CFG = {
         "location": False
     },
     "location":{
-        "rootOrgUnit":"E0FtAX5eNc3",
+        "rootOrgUnit":"ImspTQPwCqd",
         "rootOrgUnitName":"DemOpenIMIS",
         "rootOrgUnitCode":"Root",
         "attributes":{

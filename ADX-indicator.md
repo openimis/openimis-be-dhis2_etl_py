@@ -1,108 +1,108 @@
-1.1 Adhésions
+1.1 Memberships
 
-Suivi des adhésions :
-
-
-    · Nombre d’adhérents par district, par municipalité, par sexe, par âge
-
-    · Taille moyenne des familles adhérentes par district, par municipalité
+Membership tracking :
 
 
-Suivi du recouvrement des cotisations :
+    - Number of members by district, municipality, gender and age
+
+    - Average size of member families by district, by municipality
 
 
-    · Nombre de familles avec cotisations payées au complet par district, par municipalité, par sexe, par âge
-
-    · Nombre de familles avec cotisations payées partiellement par district, par municipalité, par sexe, par âge
-
-    · Nombre de famille avec aucune cotisation payée par district, par municipalité, par sexe, par âge
-
-    · Total des cotisations par district, par municipalité
+Dues collection monitoring :
 
 
-Suivi des prises en charges :
+    - Number of families with membership fees paid in full, by district, by municipality, by gender, by age
+
+    - Number of families with contributions partially paid, by district, by municipality, by gender, by age
+
+    - Number of families with no fees paid, by district, by municipality, by gender, by age
+
+    - Total contributions per district, per municipality
 
 
-    · Le nombre d’adhérent pris en charge (polices valides) par district, par municipalité, par sexe, par âge
+Tracking the number of members taken on:
 
 
-Taux de fidélisation :
+    - Number of members taken on (valid policies) by district, municipality, gender, age
 
 
-    · Nombre de nouveaux adhérents (sur 1 an) par district, par municipalité, par sexe, par âge
-
-    · Nombre de renouvellements (sur 1 an) par district, par municipalité, par sexe, par âge
-
-    · Nombre de retraits d’adhérents (sur 1 an) par district, par municipalité, par sexe, par âge
+Retention rate :
 
 
+    - Number of new members (over 1 year) by district, by municipality, by gender, by age
 
-1.2 Prestations
+    - Number of renewals (over 1 year) by district, municipality, gender, age
 
-Consommation de prestations (nombre) :
+    - Number of membership withdrawals (over 1 year) by district, municipality, gender and age.
 
 
-    · Nombre de prestations validées par région, par district, par municipalité, par FOSA
 
-    · Nombre de prestations rejetées par région, par district, par municipalité, par FOSA
+1.2 claims
 
-    · Nombre de prestations par type de visite par région, par district, par municipalité, par FOSA :
+Consumption of claims (number) :
 
-        o Urgence
 
-        o Référencements
+    - Number of claims validated by region, by district, by municipality, by health facility
 
-        o Autre (simple)
+    - Number of services rejected by region, by district, by municipality, by health facility
 
-    · Nombre de prestations par type de visite (en % du total) par région, par district, par municipalité, par FOSA :
+    - Number of services per type of visit per region, per district, per municipality, per health facility:
 
-        o Urgence
+        o Emergency
 
-        o Référencements
+        o Referrals
 
-        o Autre (simple)
+        o Other (simple)
 
-    · Nombre de prestation par diagnostique/pathologie, par région, par district, par municipalité, par FOSA :
+    - Number of services by type of visit (as % of total) by region, by district, by municipality, by health facility:
 
-        o CPN 1
+        o Emergency
+
+        o Referrals
+
+        o Other (simple)
+
+    - Number of services by diagnosis/pathology, by region, by district, by municipality, by health facility:
+
+        o ANC 1
 
         o CPN 4
 
-        o Accouchement sans complications
+        o Uncomplicated delivery
 
-        o Césarienne
+        o Caesarean section
 
-        o Paludisme simple
+        o Simple malaria
 
-        o Paludisme grave
+        o Severe malaria
 
-Coûts des prestations prises en charge :
+Cost of services covered :
 
 
-    · Coût total des prestations par région, par district, par municipalité, par FOSA
+    - Total cost of services per region, per district, per municipality, per health facility
 
-    · Coût moyen des prestations par région, par district, par municipalité, par FOSA
+    - Average cost of services per region, per district, per municipality, per health facility
 
-    · Coût moyen de prestations par type de visite par région, par district, par municipalité, par FOSA :
+    - Average cost of services per type of visit per region, per district, per municipality, per health facility:
 
-        o Urgence
+        o Emergency
 
-        o Référencements
+        o Referrals
 
-        o Autre (simple)
+        o Other (simple)
 
-    · Coût de prestations par type de visite (en % du total) par région, par district, par municipalité, par FOSA :
+    - Cost of services by type of visit (as % of total) by region, by district, by municipality, by health facility:
 
-        o Urgence
+        o Emergency
 
-        o Référencements
+        o Referrals
 
-        o Autre (simple)
+        o Other (simple)
 
-    · Coût moyen par type de FOSA :
+    - Average cost by type of health facility :
 
-        o Hôpital de district
+        o District hospital
 
-        o Centre de santé 
+        o Health centre 
 
-    · Taux de sinistralité (coûts total des prestations/total des cotisations) par district, par municipalité 
+    - Claims ratio (total costs of claims/total contributions) per district, per municipality
