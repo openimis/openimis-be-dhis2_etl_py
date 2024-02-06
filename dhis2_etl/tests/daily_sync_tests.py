@@ -33,7 +33,7 @@ class DailySyncTests(TestCase):
         timeframe = self.timeframe
         self.__validate_timeframe(model, timeframe)
         self.assertFalse(has_model_changed_in_timeframe(model.objects, *timeframe))
-        new_insuree1 = self._create_test_insuree('chft1', 'M', '1950-01-01', '2018-12-11T00:00:01')
+        new_insuree1 = self._create_test_insuree('chft1', 'M', '1950-01-01', '2018-12-11T01:01:01')
         new_insuree2 = self._create_test_insuree('chft2', 'M', '1950-01-01', '2018-12-09T23:59:59')
         self.assertFalse(has_model_changed_in_timeframe(model.objects, *timeframe))
         new_insuree3 = self._create_test_insuree('chft3', 'M', '1950-01-01', '2018-12-10T00:00:01')
