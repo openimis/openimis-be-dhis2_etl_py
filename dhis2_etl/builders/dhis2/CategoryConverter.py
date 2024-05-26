@@ -7,9 +7,9 @@ from dhis2.utils import *
 
 
 from dhis2_etl.configurations import GeneralConfiguration
-from dhis2_etl.models.dhis2.enum import ValueType
-from dhis2_etl.models.dhis2.metadata import *
-from dhis2_etl.models.dhis2.type import DHIS2Ref
+from django_adx.models.dhis2.enum import ValueType
+from django_adx.models.dhis2.metadata import *
+from django_adx.models.dhis2.type import DHIS2Ref
 from dhis2_etl.utils import build_dhis2_id
 
 from . import BaseDHIS2Converter

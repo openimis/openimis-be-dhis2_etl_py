@@ -5,7 +5,7 @@ from django.db.models import QuerySet, Sum, Model, Q, F, Exists, OuterRef,Value
 from django.db.models.functions import  Coalesce
 from core import filter_validity
 from contribution.models import Premium
-from dhis2_etl.models.adx.data import Period
+from django_adx.models.adx.data import Period
 from dhis2_etl.utils import build_dhis2_id
 
 

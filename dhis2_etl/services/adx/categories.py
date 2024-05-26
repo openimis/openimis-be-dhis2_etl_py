@@ -4,8 +4,8 @@ from django.db.models import Sum, Q, Max
 
 from claim.models import Claim, ClaimDetail
 from dhis2_etl.configurations import GeneralConfiguration
-from dhis2_etl.models.adx.data import Period
-from dhis2_etl.models.adx.definition import ADXCategoryOptionDefinition, ADXMappingCategoryDefinition
+from django_adx.models.adx.data import Period
+from django_adx.models.adx.definition import ADXCategoryOptionDefinition, ADXMappingCategoryDefinition
 from dhis2_etl.services.adx.utils import filter_with_prefix, q_with_prefix, valid_policy, get_fully_paid, get_partially_paid, not_paid
 from medical.models import Diagnosis, Service
 from policy.models import Policy

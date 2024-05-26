@@ -2,8 +2,8 @@ import logging
 from typing import List
 from django.db.models import Q, F
 from dhis2_etl.builders.adx import ADXBuilder
-from dhis2_etl.models.adx.data import ADXMapping
-from dhis2_etl.models.adx.definition import ADXMappingCubeDefinition
+from django_adx.models.adx.data import ADXMapping
+from django_adx.models.adx.definition import ADXMappingDefinition
 from dhis2_etl.services.adx.cubes import get_claim_cube, get_enrollment_cube
 from dhis2_etl.services.adx.utils import get_first_day_of_last_month
 from location.models import HealthFacility, Location
@@ -49,7 +49,7 @@ class ADXService:
         logger.debug('create claim cube for %i location', len(org_units))
         return self._build_cube(get_claim_cube(self.period), org_units, callback)
 
-    def _build_cube(self, mapping_cube: ADXMappingCubeDefinition, org_units: List, callback):
+    def _build_cube(self, mapping_cube: ADXMappingDefinition, org_units: List, callback):
         for i in range(0, len(org_units), self.PAGE_SIZE):
             callback(ADXBuilder(mapping_cube).create_adx_cube(self.period, org_units[i:i+self.PAGE_SIZE]))
         

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 from xml.etree import ElementTree
 
-from dhis2_etl.models.adx.data import ADXMapping, ADXMappingGroup
+from django_adx.models.adx.data import ADXMapping, ADXMappingGroup
 from dhis2_etl.utils import clean_code
 _T = TypeVar('_T')
 

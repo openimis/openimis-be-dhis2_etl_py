@@ -4,8 +4,8 @@ import logging
 from dhis2.utils import *
 
 from dhis2_etl.configurations import GeneralConfiguration
-from dhis2_etl.models.dhis2.dataset import *
-from dhis2_etl.models.dhis2.metadata import *
+from django_adx.models.dhis2.dataset import *
+from django_adx.models.dhis2.metadata import *
 from dhis2_etl.utils import build_dhis2_id, toDateStr, clean_code
 
 from . import BaseDHIS2Converter

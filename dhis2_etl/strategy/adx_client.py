@@ -8,8 +8,8 @@ from dict2obj import Dict2Obj
 import requests
 from dhis2_etl.configurations import GeneralConfiguration
 from dhis2_etl.serializers.adx import XMLFormatter
-from dhis2_etl.models.adx.data import ADXMapping
-from dhis2_etl.models.dhis2.enum import MergeMode
+from django_adx.models.adx.data import ADXMapping
+from django_adx.models.dhis2.enum import MergeMode
 
 logger = logging.getLogger('openIMIS')
 

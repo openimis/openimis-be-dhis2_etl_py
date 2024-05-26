@@ -2,13 +2,29 @@ import itertools
 import logging
 from typing import Collection, List, Type
 from datetime import datetime
-from dhis2_etl.models.adx.data import (ADXDataValue, ADXDataValueAggregation,
-                                       ADXMapping, ADXMappingGroup, Period)
-from dhis2_etl.models.adx.definition import (ADXMappingCubeDefinition,
-                                             ADXMappingDataValueDefinition,
-                                             ADXMappingGroupDefinition)
-from django.db.models import F, Model, Q , When, Case, Value, Subquery,QuerySet,Window
-
+from django_adx.models.adx.data import (
+    ADXDataValue,
+    ADXDataValueAggregation,
+    ADXMapping,
+    ADXMappingGroup,
+    Period
+)
+from django_adx.models.adx.definition import (
+    ADXMappingDefinition,
+    ADXMappingDataValueDefinition,
+    ADXMappingGroupDefinition
+)
+from django.db.models import (
+    F,
+    Model,
+    Q,
+    When,
+    Case,
+    Value,
+    Subquery,
+    QuerySet,
+    Window
+)
 from numpy import unique
 from dhis2_etl.utils import  clean_code
 
@@ -284,7 +300,7 @@ class ADXGroupBuilder:
 
 
 class ADXBuilder:
-    def __init__(self, adx_mapping_definition: ADXMappingCubeDefinition,
+    def __init__(self, adx_mapping_definition: ADXMappingDefinition,
                  group_mapper: Type[ADXGroupBuilder] = ADXGroupBuilder):
         self.adx_mapping_definition = adx_mapping_definition
         self.group_mapper = group_mapper

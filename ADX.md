@@ -1,8 +1,8 @@
 # **ADX Formatting** 
 ### ADX Data definition 
-ADX Data definition can be defined using `dhis2_etl.models.adx.ADXMappingCubeDefinition`. 
+ADX Data definition can be defined using `django_adx.models.adx.ADXMappingDefinition`. 
 ```python 
-ADXMappingCubeDefinition(
+ADXMappingDefinition(
     period_type=ISOFormatPeriodType(), # Format of handled period type, at the moment only ISO Format is supported 
     groups=[
         ADXMappingGroupDefinition(
@@ -35,7 +35,7 @@ Example:
 
 ```python
 from dhis2_etl.converters.adx.builders import ADXBuilder
-from dhis2_etl.models.adx.definition import ADXMappingGroupDefinition
+from django_adx.models.adx.definition import ADXMappingGroupDefinition
 
 definition = ADXMappingGroupDefinition(...)
 builder = ADXBuilder(definition)
@@ -49,8 +49,8 @@ ADX Formatters allow transforming ADXMapping objects to diffrent formats.
 At the moment only XML Format is implemented.
 
 ```python
-from dhis2_etl.converters.adx.formatters import XMLFormatter
-from dhis2_etl.models.adx.data import ADXMapping
+from django-adx.serializer import XMLFormatter
+from django_adx.models.adx.data import ADXMapping
 
 adx_format = ADXMapping(...)
 xml_formatter = XMLFormatter()

@@ -1,12 +1,12 @@
 import logging
-from dhis2_etl.models.adx.definition import *
-from dhis2_etl.models.dhis2.metadata import Category,CategoryOption, DataElement,CategoryCombo,DataSet,DataSetElement,DEFAULT_CATEGORY_COMBO
+from django_adx.models.adx.definition import *
+from django_adx.models.dhis2.metadata import Category,CategoryOption, DataElement,CategoryCombo,DataSet,DataSetElement,DEFAULT_CATEGORY_COMBO
 from dhis2_etl.utils import build_dhis2_id, clean_code
-from dhis2_etl.models.dhis2.type import DHIS2Ref
-from dhis2_etl.models.dhis2.enum import ValueType,DomainType,DataDimensionType,AggregationType,PeriodType
+from django_adx.models.dhis2.type import DHIS2Ref
+from django_adx.models.dhis2.enum import ValueType,DomainType,DataDimensionType,AggregationType,PeriodType
 
 logger = logging.getLogger('openIMIS')
-def build_categories(adx : ADXMappingCubeDefinition,   categoryOptions = [],  categories = {},    categoryCombo = {},   dataElement = [], dataSets = []):
+def build_categories(adx : ADXMappingDefinition,   categoryOptions = [],  categories = {},    categoryCombo = {},   dataElement = [], dataSets = []):
     # for each adx group get the list of cat
     for group  in adx.groups:
         group_combo_id = None

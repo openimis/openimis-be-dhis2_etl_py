@@ -1,6 +1,6 @@
 from dhis2.utils import *
 from dhis2_etl.configurations import GeneralConfiguration
-from dhis2_etl.models.dhis2.program import *
+from django_adx.models.dhis2.program import *
 from dhis2_etl.utils import build_dhis2_id, toDateStr
 
 from . import BaseDHIS2Converter

@@ -10,7 +10,7 @@ from contribution.models import Premium
 
 #import time
 from dhis2_etl.builders.dhis2.FundingConverter import FundingConverter
-from dhis2_etl.models.dhis2.program import *
+from django_adx.models.dhis2.program import *
 from dhis2_etl.strategy.dhis2_client import *
 # FIXME manage permissions
 from dhis2_etl.utils import *

@@ -9,7 +9,7 @@ from insuree.models import Insuree, InsureePolicy
 
 
 from dhis2_etl.builders.dhis2.InsureeConverter import InsureeConverter
-from dhis2_etl.models.dhis2.program import *
+from django_adx.models.dhis2.program import *
 from dhis2_etl.strategy.dhis2_client import *
 # FIXME manage permissions
 from dhis2_etl.utils import *

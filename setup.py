@@ -21,12 +21,9 @@ setup(
     install_requires=[
         'django',
         'django-db-signals',
-        'dhis2.py',
+        'django-adx'
         'email-validator',
-        'pydantic',
         'dict2obj',
-        'isodate==0.6.1',
-        'python-dateutil==2.8.2'
     ],   
     classifiers=[
         'Environment :: Web Environment',

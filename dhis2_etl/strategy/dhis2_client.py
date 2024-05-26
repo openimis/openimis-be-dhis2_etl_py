@@ -7,7 +7,7 @@ from concurrent.futures.thread import ThreadPoolExecutor
 import requests
 from dhis2 import Api
 
-from dhis2_etl.models.dhis2.enum import ImportStrategy, MergeMode
+from django_adx.models.dhis2.enum import ImportStrategy, MergeMode
 from dict2obj import Dict2Obj
 from django.core.paginator import Paginator
 

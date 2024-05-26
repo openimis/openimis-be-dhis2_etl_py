@@ -5,13 +5,17 @@ from xml.etree import ElementTree
 
 from dhis2_etl.builders.adx import ADXBuilder
 from dhis2_etl.serializers.adx import XMLFormatter, remove_namespace
-from dhis2_etl.models.adx.definition import (ADXCategoryOptionDefinition,
-                                             ADXMappingCategoryDefinition,
-                                             ADXMappingCubeDefinition,
-                                             ADXMappingDataValueDefinition,
-                                             ADXMappingGroupDefinition)
-from dhis2_etl.models.adx.time_period import (ISOFormatPeriodType,
-                                              PeriodParsingException)
+from django_adx.models.adx.definition import (
+    ADXCategoryOptionDefinition,
+    ADXMappingCategoryDefinition,
+    ADXMappingDefinition,
+    ADXMappingDataValueDefinition,
+    ADXMappingGroupDefinition
+)
+from django_adx.models.adx.time_period import (
+    ISOFormatPeriodType,
+    PeriodParsingException
+)
 from dhis2_etl.utils import build_dhis2_id
 from django.test import TestCase
 from django.db.models import Q, Count
@@ -47,7 +51,7 @@ class ADXTests(TestCase):
         ]
     )
 
-    TEST_ADX_DEFINITION = ADXMappingCubeDefinition(
+    TEST_ADX_DEFINITION = ADXMappingDefinition(
         period_type=ISOFormatPeriodType(),
         groups=[
             ADXMappingGroupDefinition(
@@ -69,7 +73,7 @@ class ADXTests(TestCase):
         ]
     )
 
-    TEST_ADX_DEFINITION_NO_CAT = ADXMappingCubeDefinition(
+    TEST_ADX_DEFINITION_NO_CAT = ADXMappingDefinition(
         period_type=ISOFormatPeriodType(),
         groups=[
             ADXMappingGroupDefinition(

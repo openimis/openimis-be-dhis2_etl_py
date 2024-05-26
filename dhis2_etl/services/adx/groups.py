@@ -1,4 +1,4 @@
-from dhis2_etl.models.adx.definition import ADXMappingGroupDefinition
+from django_adx.models.adx.definition import ADXMappingGroupDefinition
 from dhis2_etl.services.adx.data_values import get_location_insuree_number_dv, get_location_family_number_dv, \
     get_location_contribution_sum_dv, get_hf_claim_number_dv, get_hf_claim_services_valuated_dv, \
     get_hf_claim_service_asked_dv, get_hf_claim_item_number_dv, get_hf_claim_service_number_dv, \

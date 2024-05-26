@@ -14,7 +14,7 @@ from django.http import JsonResponse
 from dhis2_etl.builders.dhis2.ClaimConverter import (CLAIM_REJECTED,
                                                      CLAIM_VALUATED,
                                                      ClaimConverter)
-from dhis2_etl.models.dhis2.program import *
+from django_adx.models.dhis2.program import *
 from dhis2_etl.strategy.dhis2_client import *
 # FIXME manage permissions
 from dhis2_etl.utils import *

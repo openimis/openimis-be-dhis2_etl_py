@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 from dhis2_etl.management.utiils import set_logger
 from dhis2_etl.scheduled_tasks import adx_monthly_sync
 from dhis2_etl.services.adx_metadata import build_categories
-from dhis2_etl.models.dhis2.metadata import MetadataBundle
+from django_adx.models.dhis2.metadata import MetadataBundle
 import datetime
 from dhis2_etl.services.adx.cubes import get_claim_cube, get_enrollment_cube
 from dhis2_etl.services.adx.utils import get_first_day_of_last_month

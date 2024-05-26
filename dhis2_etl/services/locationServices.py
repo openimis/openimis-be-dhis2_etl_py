@@ -6,7 +6,7 @@ import logging
 
 #import time
 from dhis2_etl.builders.dhis2.LocationConverter import LocationConverter
-from dhis2_etl.models.dhis2.metadata import *
+from django_adx.models.dhis2.metadata import *
 #from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import F, Q
 from location.models import HealthFacility, Location

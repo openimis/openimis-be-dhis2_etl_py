@@ -3,7 +3,7 @@ from django.db.models.functions import Coalesce
 from core import filter_validity
 from claim.models import ClaimItem, ClaimService
 from contribution.models import Premium
-from dhis2_etl.models.adx.definition import ADXMappingDataValueDefinition
+from django_adx.models.adx.definition import ADXMappingDataValueDefinition
 from dhis2_etl.services.adx.categories import get_age_range_from_boundaries_categories, get_sex_categories, \
     get_payment_state_categories, get_payment_status_categories, get_product_categories, \
     get_claim_status_categories, get_claim_type_categories, get_product_categories, \
