@@ -119,4 +119,6 @@ or can be done step by step are described below
     this code will push data for Jan 23
 
    
+## Scheduled job
 
+in django admin create a job with id `dhis2_adx_monthly_sync`
