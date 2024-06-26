@@ -11,7 +11,7 @@ from location.models import Location, HealthFacility
 
 def has_model_changed_in_timeframe(model_qs, from_date, to_date):\
     return model_qs.filter(legacy_id__isnull=True)\
-        .filter(validity_from__lte=to_date)\
+        .filter(validity_from__lt=to_date)\
         .filter(validity_from__gte=from_date)\
         .exists()
 
