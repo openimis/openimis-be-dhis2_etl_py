@@ -188,6 +188,27 @@ def get_payment_state_categories() -> ADXMappingCategoryDefinition:
     )
 
 
+def get_policy_status_categories() -> ADXMappingCategoryDefinition:
+    # expects the queryset to be annotated with get_policy_status_annotation
+    # option codes are prefixed to avoid sharing options with payment categories
+    return ADXMappingCategoryDefinition(
+        category_name="policy_status",
+        category_options=[
+            ADXCategoryOptionDefinition(
+                code=f"POL_{status}",
+                name=status.capitalize(),
+                filter=Q(policy_status=status),
+            )
+            for status in ["ACTIVE", "SUSPENDED", "IDLE", "READY", "EXPIRED"]
+        ]
+        + [
+            ADXCategoryOptionDefinition(
+                code="POL_NONE", name="No policy", is_default=True
+            ),
+        ],
+    )
+
+
 def get_claim_status_categories(prefix="") -> ADXMappingCategoryDefinition:
     return ADXMappingCategoryDefinition(
         category_name="claim_status",

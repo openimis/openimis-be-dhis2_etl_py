@@ -16,6 +16,7 @@ from dhis2_etl.services.adx.categories import (
     get_claim_details_status_categories,
     get_main_icd_categories,
     get_claim_service_categories,
+    get_policy_status_categories,
 )
 from dhis2_etl.services.adx.utils import (
     filter_period,
@@ -25,6 +26,7 @@ from dhis2_etl.services.adx.utils import (
     get_claim_details_period_filter,
     get_claim_period_filter,
     get_contribution_period_filter,
+    get_policy_status_annotation,
 )
 from insuree.models import Insuree
 
@@ -38,11 +40,14 @@ def get_location_insuree_number_dv(period):
                 validity=period.from_date
             ),  # *filter_validity(validity = period.from_date) is too restrictive
             family__location__parent=l
+        ).annotate(
+            policy_status=get_policy_status_annotation(period, insuree_level=True)
         ),
         aggregation_func=Count("id"),
         categories=[
             get_age_range_from_boundaries_categories(period),
             get_sex_categories(),
+            get_policy_status_categories(),
         ],
     )
 
@@ -55,13 +60,17 @@ def get_location_family_number_dv(period):
             head=True,
             *Insuree.filter_validity(validity=period.from_date),
             family__location__parent=l
-        ).annotate(policy_value_sum=Sum("family__policies__value")),
+        ).annotate(
+            policy_value_sum=Sum("family__policies__value"),
+            policy_status=get_policy_status_annotation(period),
+        ),
         aggregation_func=Count("id"),
         categories=[
             get_age_range_from_boundaries_categories(period),
             get_sex_categories(),
             get_payment_status_categories(period),
             get_payment_state_categories(),
+            get_policy_status_categories(),
         ],
     )
 
