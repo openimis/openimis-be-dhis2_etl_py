@@ -1,19 +1,34 @@
 # import the logging library
-import re
-
 
 # Create your views here.
 
 from django.core.management.base import BaseCommand
-from django.shortcuts import redirect, render
 from dhis2_etl.management.utiils import set_logger
 from dhis2_etl.scheduled_tasks import adx_monthly_sync
 
-from dhis2_etl.services.claimServices import *
-from dhis2_etl.services.fundingServices import *
-from dhis2_etl.services.insureeServices import *
-from dhis2_etl.services.locationServices import *
-from dhis2_etl.services.optionSetServices import *
+import datetime
+from dhis2_etl.services.fundingServices import sync_funding
+from dhis2_etl.services.locationServices import (
+    createRootOrgUnit,
+    syncDispensary,
+    syncDistrict,
+    syncHealthCenter,
+    syncHospital,
+    syncPopulation,
+    syncRegion,
+    syncVillage,
+    syncWard,
+)
+from dhis2_etl.services.optionSetServices import (
+    syncDiagnosis,
+    syncEducation,
+    syncGender,
+    syncGroupType,
+    syncItem,
+    syncProduct,
+    syncProfession,
+    syncService,
+)
 from dhis2_etl.strategy.adx_client import ADXClient
 
 logger = set_logger()
@@ -57,7 +72,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        verbose = options["verbose"]
         reference_date = options["reference_date"][0]
         scope = options["scope"][0]
         if scope is None:
@@ -71,12 +85,11 @@ class Command(BaseCommand):
     def sync_dhis2(self, reference_date, scope):
 
         logger.info("Received task")
-        responses = []
         stop_date = datetime.date.today()
         # ORGUNIT
         #########
         if scope == "createRoot" or scope == "all":
-            sync = createRootOrgUnit()
+            createRootOrgUnit()
 
         if scope == "orgunit" or scope == "all":
             logger.info("start orgUnit sync")

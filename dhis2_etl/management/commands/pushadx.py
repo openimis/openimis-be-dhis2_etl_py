@@ -37,7 +37,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        verbose = options["verbose"]
         # if verbose:
         #    logger = set_logger(True)
         date = options["date"][0]

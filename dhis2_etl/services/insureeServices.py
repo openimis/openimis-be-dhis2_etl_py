@@ -10,11 +10,9 @@ from insuree.models import Insuree, InsureePolicy
 
 
 from dhis2_etl.builders.dhis2.InsureeConverter import InsureeConverter
-from django_adx.models.dhis2.program import *
-from dhis2_etl.strategy.dhis2_client import *
+from dhis2_etl.strategy.dhis2_client import postPaginated
 
 # FIXME manage permissions
-from dhis2_etl.utils import *
 
 # from policy.models import Policy
 # from django.core.serializers.json import DjangoJSONEncoder
@@ -223,7 +221,6 @@ def syncInsureePolicyClaim(startDate, stopDate):
     from django_adx.builders.ClaimConverter import (
         CLAIM_REJECTED,
         CLAIM_VALUATED,
-        ClaimConverter,
     )
 
     insurees = (

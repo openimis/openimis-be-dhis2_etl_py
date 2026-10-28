@@ -2,12 +2,10 @@ import logging
 from typing import List
 from django.db.models import Q, F
 from django_adx.builders.adx import ADXBuilder
-from django_adx.models.adx.data import ADXMapping
 from django_adx.models.adx.definition import ADXMappingDefinition
 from dhis2_etl.services.adx.cubes import get_claim_cube, get_enrollment_cube
 from dhis2_etl.services.adx.utils import get_first_day_of_last_month
 from location.models import HealthFacility, Location
-
 
 logger = logging.getLogger(__name__)
 
@@ -67,9 +65,10 @@ class ADXService:
     def _build_cube(
         self, mapping_cube: ADXMappingDefinition, org_units: List, callback
     ):
-        for i in range(0, len(org_units), self.PAGE_SIZE):
+        for start in range(0, len(org_units), self.PAGE_SIZE):
+            end = start + self.PAGE_SIZE
             callback(
                 ADXBuilder(mapping_cube).create_adx_cube(
-                    self.period, org_units[i : i + self.PAGE_SIZE]
+                    self.period, org_units[start:end]
                 )
             )

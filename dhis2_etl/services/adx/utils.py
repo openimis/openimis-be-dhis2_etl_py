@@ -15,8 +15,7 @@ from django.db.models import (
     CharField,
 )
 from django.db.models.functions import Coalesce
-from core import filter_validity
-from contribution.models import Premium
+from claim.models import Claim
 from insuree.models import InsureePolicy
 from policy.models import Policy
 from django_adx.models.adx.data import Period
@@ -59,9 +58,14 @@ def q_with_prefix(key: str, value: Any, prefix: str = "") -> Q:
     return Q(**{f"{prefix}{key}": value})
 
 
+def get_period_last_day(period: Period) -> datetime:
+    # period.to_date is exclusive: first day of the next period
+    return period.to_date - timedelta(days=1)
+
+
 def filter_period(qs: QuerySet, period: Period) -> QuerySet:
     return qs.filter(
-        validity_from__gte=period.from_date, validity_from__lte=period.to_date
+        validity_from__gte=period.from_date, validity_from__lt=period.to_date
     ).filter(
         Q(validity_to__isnull=True) | Q(legacy_id__isnull=True) | Q(legacy_id=F("id"))
     )
@@ -101,38 +105,51 @@ def not_paid():
 
 
 def valid_policy(period):
+    # policy covering at least one day between the first and last day of the period
     return (
-        Q(family__policies__start_date__lte=period.to_date)
-        & Q(family__policies__expiry_date__gt=period.from_date)
+        Q(family__policies__start_date__lte=get_period_last_day(period))
+        & Q(family__policies__expiry_date__gte=period.from_date)
     ) & Q(family__policies__validity_to__isnull=True)
 
 
 def get_policy_status_annotation(period, insuree_level=False):
-    # Status of the most relevant policy at the end of the period, ranked
+    # Status of the most relevant policy for the period, ranked
     # ACTIVE > SUSPENDED > IDLE > READY > EXPIRED, NO_POLICY otherwise.
+    # Policy.status is the current status only: a policy now EXPIRED that
+    # covered the period was active during it, so it is reported as ACTIVE.
     # Computed with subqueries so rows are not multiplied by the policy join.
     # Insuree level relies on the individual coverage dates of InsureePolicy.
+    last_day = get_period_last_day(period)
     if insuree_level:
+        # historical insuree rows point to the current one through legacy_id
         policies = InsureePolicy.objects.filter(
-            insuree=OuterRef("pk"),
+            insuree_id=Coalesce(OuterRef("legacy_id"), OuterRef("pk")),
             validity_to__isnull=True,
-            start_date__lte=period.to_date,
+            start_date__lte=last_day,
         )
         status = "policy__status"
-        coverage = Q(
-            effective_date__lte=period.to_date, expiry_date__gt=period.from_date
-        )
+        coverage = Q(effective_date__lte=last_day, expiry_date__gte=period.from_date)
     else:
         policies = Policy.objects.filter(
             family=OuterRef("family_id"),
             validity_to__isnull=True,
-            start_date__lte=period.to_date,
+            start_date__lte=last_day,
         )
         status = "status"
-        coverage = Q(expiry_date__gt=period.from_date)
+        coverage = Q(expiry_date__gte=period.from_date)
     return Case(
         When(
-            Exists(policies.filter(coverage, **{status: Policy.STATUS_ACTIVE})),
+            Exists(
+                policies.filter(
+                    coverage,
+                    **{
+                        f"{status}__in": [
+                            Policy.STATUS_ACTIVE,
+                            Policy.STATUS_EXPIRED,
+                        ]
+                    },
+                )
+            ),
             then=Value("ACTIVE"),
         ),
         When(

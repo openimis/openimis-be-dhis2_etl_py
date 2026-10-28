@@ -13,5 +13,5 @@ class BaseConfiguration(object):  # pragma: no cover
         return sys.modules[module_name]
 
 
-from .generalConfiguration import GeneralConfiguration
-from .moduleConfiguration import ModuleConfiguration
+from .generalConfiguration import GeneralConfiguration  # noqa: E402,F401
+from .moduleConfiguration import ModuleConfiguration  # noqa: E402,F401

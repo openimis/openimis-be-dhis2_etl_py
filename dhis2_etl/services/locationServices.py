@@ -5,16 +5,13 @@ import logging
 
 # import time
 from dhis2_etl.builders.dhis2.LocationConverter import LocationConverter
-from django_adx.models.dhis2.metadata import *
 
 # from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import F, Q
 from location.models import HealthFacility, Location
 
 # FIXME manage permissions
-from dhis2_etl.utils import *
-from dhis2_etl.strategy.dhis2_client import *
-
+from dhis2_etl.strategy.dhis2_client import post, postPaginated, postRaw
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -340,7 +337,7 @@ def syncPopulation(atDate):
         .order_by("validity_from")
     )
     # .select_related
-    res = postMethod(
+    postMethod(
         "dataValueSets",
         locations,
         LocationConverter.to_population_datavaluesets,

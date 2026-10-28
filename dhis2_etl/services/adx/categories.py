@@ -1,21 +1,18 @@
-import datetime
 from dateutil.relativedelta import relativedelta
-from django.db.models import Sum, Q, Max
+from django.db.models import Q
 
 from claim.models import Claim, ClaimDetail
 from dhis2_etl.configurations import GeneralConfiguration
-from django_adx.models.adx.data import Period
 from django_adx.models.adx.definition import (
     ADXCategoryOptionDefinition,
     ADXMappingCategoryDefinition,
 )
 from dhis2_etl.services.adx.utils import (
-    filter_with_prefix,
     q_with_prefix,
+    get_period_last_day,
     valid_policy,
     get_fully_paid,
     get_partially_paid,
-    not_paid,
 )
 from medical.models import Diagnosis, Service
 from policy.models import Policy
@@ -24,7 +21,6 @@ from dhis2_etl.utils import clean_code
 from dict2obj import Dict2Obj
 
 adx = Dict2Obj(GeneralConfiguration.get_adx())
-# 0-5 ans, 6-12 ans, 13-18 ans, 19-25 ans, 26-35 ans, 36-55 ans, 56-75 ans, 75+
 AGE_BOUNDARIES = adx.age_disaggregation
 VALUE_BOUNDARIES = adx.value_disaggregation
 
@@ -34,13 +30,13 @@ NONE_OPT = ADXCategoryOptionDefinition(code="NONE", name="None", is_default=True
 def get_age_range_from_boundaries_categories(
     period, prefix=""
 ) -> ADXMappingCategoryDefinition:
+    # age reached on the last day of the period
+    last_day = get_period_last_day(period)
     slices = []
-    range = {}
-    last_age_boundaries = 0
+    last_age_boundary = 0
     for age_boundary in AGE_BOUNDARIES:
-        slice_code = f"P{last_age_boundaries}Y-P{age_boundary - 1}Y"
-        # born before
-        # need to store all range , e.i not update start/stop date because the lambda is evaluated later
+        slice_code = f"P{last_age_boundary}Y-P{age_boundary - 1}Y"
+        # dates are computed now because the filters are evaluated later
         slices.append(
             ADXCategoryOptionDefinition(
                 code=slice_code,
@@ -48,24 +44,24 @@ def get_age_range_from_boundaries_categories(
                 filter=Q(
                     **{
                         f"{prefix}dob__gt": (
-                            period.to_date - relativedelta(years=age_boundary)
+                            last_day - relativedelta(years=age_boundary)
                         ).strftime("%Y-%m-%d"),
                         f"{prefix}dob__lte": (
-                            period.to_date - relativedelta(years=last_age_boundaries)
+                            last_day - relativedelta(years=last_age_boundary)
                         ).strftime("%Y-%m-%d"),
                     }
                 ),
             )
         )
-        last_age_boundaries = age_boundary
-    end_date = period.to_date - relativedelta(years=last_age_boundaries)
-    slice_code = f"P{last_age_boundaries}Y-P9999Y"
+        last_age_boundary = age_boundary
+    end_date = last_day - relativedelta(years=last_age_boundary)
+    slice_code = f"P{last_age_boundary}Y-P9999Y"
 
     slices.append(
         ADXCategoryOptionDefinition(
             code=slice_code,
             name=slice_code,
-            filter=q_with_prefix("dob__lt", end_date.strftime("%Y-%m-%d"), prefix),
+            filter=q_with_prefix("dob__lte", end_date.strftime("%Y-%m-%d"), prefix),
         )
     )
     return ADXMappingCategoryDefinition(
@@ -74,41 +70,29 @@ def get_age_range_from_boundaries_categories(
 
 
 def get_value_range_from_boundaries_categories(path):
-
-    range = {}
-    last_value_boundaries = VALUE_BOUNDARIES[0]
-    slice_code = f"V{last_age_boundaries}-"
+    first_boundary = VALUE_BOUNDARIES[0]
     slices = [
         ADXCategoryOptionDefinition(
-            code=slice_code,
-            name=slice_code,
-            filter=q_with_prefix("__lt", last_age_boundaries, path),
+            code=f"V{first_boundary}-",
+            name=f"V{first_boundary}-",
+            filter=q_with_prefix("__lt", first_boundary, path),
         )
     ]
-    for value_boundary in VALUE_BOUNDARIES:
-        slice_code = f"V{last_age_boundaries}-V{age_boundary}"
-        # born before
-        # need to store all range , e.i not update start/stop date because the lambda is evaluated later
+    for low, high in zip(VALUE_BOUNDARIES, VALUE_BOUNDARIES[1:]):
+        slice_code = f"V{low}-V{high}"
         slices.append(
             ADXCategoryOptionDefinition(
                 code=slice_code,
                 name=slice_code,
-                filter=Q(
-                    **{
-                        f"{path}__gt": last_value_boundaries,
-                        f"{path}__lte": value_boundary,
-                    }
-                ),
+                filter=Q(**{f"{path}__gte": low, f"{path}__lt": high}),
             )
         )
-        last_value_boundaries = value_boundary
-    slice_code = f"V{last_age_boundaries}+"
-
+    last_boundary = VALUE_BOUNDARIES[-1]
     slices.append(
         ADXCategoryOptionDefinition(
-            code=slice_code,
-            name=slice_code,
-            filter=q_with_prefix("__gte", last_age_boundaries, path),
+            code=f"V{last_boundary}+",
+            name=f"V{last_boundary}+",
+            filter=q_with_prefix("__gte", last_boundary, path),
         )
     )
     return ADXMappingCategoryDefinition(

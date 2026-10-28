@@ -13,12 +13,10 @@ from product.models import Product
 # from django.core.serializers.json import DjangoJSONEncoder
 
 # import time
-from dhis2_etl. builders.dhis2.OptionSetConverter import OptionSetConverter
-from django_adx.models.dhis2.program import *
-from dhis2_etl.strategy.dhis2_client import *
+from dhis2_etl.builders.dhis2.OptionSetConverter import OptionSetConverter
+from dhis2_etl.strategy.dhis2_client import post
 
 # FIXME manage permissions
-from dhis2_etl.utils import *
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)

@@ -10,11 +10,9 @@ from contribution.models import Premium
 
 # import time
 from dhis2_etl.builders.dhis2.FundingConverter import FundingConverter
-from django_adx.models.dhis2.program import *
-from dhis2_etl.strategy.dhis2_client import *
+from dhis2_etl.strategy.dhis2_client import postPaginated
 
 # FIXME manage permissions
-from dhis2_etl.utils import *
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)

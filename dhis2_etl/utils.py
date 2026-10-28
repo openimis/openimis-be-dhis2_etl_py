@@ -5,7 +5,6 @@ import hashlib
 import logging
 import re
 
-
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -18,10 +17,10 @@ def toDatetimeStr(dateIn):
     elif isinstance(dateIn, datetime.date):
         return (dateIn.isoformat() + "T00:00:00.000")[:23]
     elif isinstance(dateIn, str):
-        regex = re.compile("^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3,6})?$")
+        regex = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3,6})?$")
         if regex.match(dateIn):
             return (dateIn + ".000")[:23]
-        regex = re.compile("^\d{4}-\d{2}-\d{2}$")
+        regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
         if regex.match(dateIn):
             return (dateIn + "T00:00:00.000")[:23]
         else:
@@ -36,7 +35,7 @@ def toDateStr(dateIn):
     elif isinstance(dateIn, datetime.datetime) or isinstance(dateIn, datetime.date):
         return dateIn.isoformat()[:10]
     elif isinstance(dateIn, str):
-        regex = re.compile("^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3,6})?)?$")
+        regex = re.compile(r"^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3,6})?)?$")
         if regex.match(dateIn):
             return dateIn[:10]
         else:
@@ -46,7 +45,7 @@ def toDateStr(dateIn):
 
 
 def build_dhis2_id(uuid, salt=""):
-    regex = re.compile("^[a-fA-F0-9\-]{32}$")
+    regex = re.compile(r"^[a-fA-F0-9\-]{32}$")
     tmp_uuid = str(uuid).replace("-", "")
     if not regex.match(str(tmp_uuid)):
         # in case the table doesn't have uuid but id only
