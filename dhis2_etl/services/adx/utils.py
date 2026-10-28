@@ -88,6 +88,6 @@ def not_paid():
 
 def valid_policy(period):
     return (
-        Q(family__policies__effective_date__lte=period.to_date)
-        & Q(family__policies__expiry_date__lt=period.to_date)
+        Q(family__policies__start_date__lte=period.to_date)
+        & Q(family__policies__expiry_date__gt=period.from_date)
     ) & Q(family__policies__validity_to__isnull=True)
