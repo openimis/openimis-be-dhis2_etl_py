@@ -1,7 +1,7 @@
 from django.db.models import Q, F, Sum, Count, Max
 from django.db.models.functions import Coalesce
 from core import filter_validity
-from claim.models import ClaimItem, ClaimService
+from claim.models import Claim, ClaimItem, ClaimService
 from contribution.models import Premium
 from django_adx.models.adx.definition import ADXMappingDataValueDefinition
 from dhis2_etl.services.adx.categories import (
@@ -26,6 +26,7 @@ from dhis2_etl.services.adx.utils import (
     get_claim_details_period_filter,
     get_claim_period_filter,
     get_contribution_period_filter,
+    get_period_last_day,
     get_policy_status_annotation,
 )
 from insuree.models import Insuree
@@ -36,9 +37,7 @@ def get_location_insuree_number_dv(period):
         data_element="NB_INSUREES",
         period_filter_func=None,
         dataset_from_orgunit_func=lambda l: Insuree.objects.filter(
-            *Insuree.filter_validity(
-                validity=period.from_date
-            ),  # *filter_validity(validity = period.from_date) is too restrictive
+            *Insuree.filter_validity(validity=get_period_last_day(period)),
             family__location__parent=l
         ).annotate(
             policy_status=get_policy_status_annotation(period, insuree_level=True)
@@ -58,7 +57,7 @@ def get_location_family_number_dv(period):
         period_filter_func=None,
         dataset_from_orgunit_func=lambda l: Insuree.objects.filter(
             head=True,
-            *Insuree.filter_validity(validity=period.from_date),
+            *Insuree.filter_validity(validity=get_period_last_day(period)),
             family__location__parent=l
         ).annotate(
             policy_value_sum=Sum("family__policies__value"),
