@@ -7,12 +7,13 @@ from django.db.models import (
     Model,
     Q,
     F,
-    Exists,
     OuterRef,
     Value,
     Case,
     When,
     CharField,
+    IntegerField,
+    Subquery,
 )
 from django.db.models.functions import Coalesce
 from claim.models import Claim
@@ -112,12 +113,11 @@ def valid_policy(period):
     ) & Q(family__policies__validity_to__isnull=True)
 
 
-def get_policy_status_annotation(period, insuree_level=False):
-    # Status of the most relevant policy for the period, ranked
-    # ACTIVE > SUSPENDED > IDLE > READY > EXPIRED, NO_POLICY otherwise.
+def get_ranked_policies(period, insuree_level=False):
+    # Policies of the family (or insuree) started by the end of the period,
+    # most relevant first: ACTIVE > SUSPENDED > IDLE > READY > EXPIRED.
     # Policy.status is the current status only: a policy now EXPIRED that
-    # covered the period was active during it, so it is reported as ACTIVE.
-    # Computed with subqueries so rows are not multiplied by the policy join.
+    # covered the period was active during it, so it is ranked as ACTIVE.
     # Insuree level relies on the individual coverage dates of InsureePolicy.
     last_day = get_period_last_day(period)
     if insuree_level:
@@ -127,7 +127,7 @@ def get_policy_status_annotation(period, insuree_level=False):
             validity_to__isnull=True,
             start_date__lte=last_day,
         )
-        status = "policy__status"
+        prefix = "policy__"
         coverage = Q(effective_date__lte=last_day, expiry_date__gte=period.from_date)
     else:
         policies = Policy.objects.filter(
@@ -135,36 +135,53 @@ def get_policy_status_annotation(period, insuree_level=False):
             validity_to__isnull=True,
             start_date__lte=last_day,
         )
-        status = "status"
+        prefix = ""
         coverage = Q(expiry_date__gte=period.from_date)
-    return Case(
-        When(
-            Exists(
-                policies.filter(
-                    coverage,
-                    **{
-                        f"{status}__in": [
-                            Policy.STATUS_ACTIVE,
-                            Policy.STATUS_EXPIRED,
-                        ]
-                    },
-                )
+    ranks = [
+        (
+            "ACTIVE",
+            coverage
+            & Q(
+                **{
+                    f"{prefix}status__in": [
+                        Policy.STATUS_ACTIVE,
+                        Policy.STATUS_EXPIRED,
+                    ]
+                }
             ),
-            then=Value("ACTIVE"),
         ),
-        When(
-            Exists(policies.filter(**{status: Policy.STATUS_SUSPENDED})),
-            then=Value("SUSPENDED"),
+        ("SUSPENDED", Q(**{f"{prefix}status": Policy.STATUS_SUSPENDED})),
+        ("IDLE", Q(**{f"{prefix}status": Policy.STATUS_IDLE})),
+        ("READY", Q(**{f"{prefix}status": Policy.STATUS_READY})),
+    ]
+    return policies.annotate(
+        adx_rank=Case(
+            *[When(q, then=Value(i)) for i, (_, q) in enumerate(ranks)],
+            default=Value(len(ranks)),
+            output_field=IntegerField(),
         ),
-        When(
-            Exists(policies.filter(**{status: Policy.STATUS_IDLE})),
-            then=Value("IDLE"),
+        adx_status=Case(
+            *[When(q, then=Value(code)) for code, q in ranks],
+            default=Value("EXPIRED"),
+            output_field=CharField(),
         ),
-        When(
-            Exists(policies.filter(**{status: Policy.STATUS_READY})),
-            then=Value("READY"),
-        ),
-        When(Exists(policies), then=Value("EXPIRED")),
-        default=Value("NO_POLICY"),
+        adx_product_code=F(f"{prefix}product__code"),
+    ).order_by("adx_rank", "-expiry_date", "-start_date")
+
+
+def get_policy_status_annotation(period, insuree_level=False):
+    # Status of the most relevant policy for the period, NO_POLICY otherwise.
+    # Computed with a subquery so rows are not multiplied by the policy join.
+    return Coalesce(
+        Subquery(get_ranked_policies(period, insuree_level).values("adx_status")[:1]),
+        Value("NO_POLICY"),
+        output_field=CharField(),
+    )
+
+
+def get_policy_product_annotation(period, insuree_level=False):
+    # Product (regime) of the same policy as get_policy_status_annotation.
+    return Subquery(
+        get_ranked_policies(period, insuree_level).values("adx_product_code")[:1],
         output_field=CharField(),
     )

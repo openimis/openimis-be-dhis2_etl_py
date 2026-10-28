@@ -20,10 +20,15 @@ from dhis2_etl.services.adx.categories import (
     VALUE_BOUNDARIES,
     get_age_range_from_boundaries_categories,
     get_policy_status_categories,
+    get_product_categories,
     get_value_range_from_boundaries_categories,
 )
 from dhis2_etl.services.adx.data_values import get_location_insuree_number_dv
-from dhis2_etl.services.adx.utils import get_policy_status_annotation, valid_policy
+from dhis2_etl.services.adx.utils import (
+    get_policy_product_annotation,
+    get_policy_status_annotation,
+    valid_policy,
+)
 from dhis2_etl.utils import clean_code
 
 
@@ -34,6 +39,8 @@ class PolicyStatusTests(TestCase):
     def setUpTestData(cls):
         create_test_gender()
         cls.product = create_test_product("PSTAT")
+        # a regime code that needs cleaning to become a DHIS2 option code
+        cls.regime = create_test_product("AMO-S1")
         cls.active = cls._insuree_with_policy(
             Policy.STATUS_ACTIVE, datetime.date(2026, 1, 1), datetime.date(2026, 12, 31)
         )
@@ -41,6 +48,16 @@ class PolicyStatusTests(TestCase):
             Policy.STATUS_IDLE,
             datetime.date(2026, 1, 1),
             datetime.date(2026, 12, 31),
+            effective_date=None,
+            product=cls.regime,
+        )
+        # a less relevant policy of another regime in the active family
+        cls._add_policy(
+            cls.active,
+            cls.regime,
+            Policy.STATUS_IDLE,
+            datetime.date(2026, 2, 1),
+            datetime.date(2027, 1, 31),
             effective_date=None,
         )
         # expired since, but covered the first day of the period
@@ -57,9 +74,25 @@ class PolicyStatusTests(TestCase):
         cls.no_policy = create_test_insuree(is_head=True)
 
     @classmethod
-    def _insuree_with_policy(cls, status, start_date, expiry_date, effective_date=...):
+    def _insuree_with_policy(
+        cls, status, start_date, expiry_date, effective_date=..., product=None
+    ):
         insuree = create_test_insuree(is_head=True)
-        policy, insuree_policy = create_test_policy2(cls.product, insuree)
+        cls._add_policy(
+            insuree,
+            product or cls.product,
+            status,
+            start_date,
+            expiry_date,
+            effective_date,
+        )
+        return insuree
+
+    @classmethod
+    def _add_policy(
+        cls, insuree, product, status, start_date, expiry_date, effective_date=...
+    ):
+        policy, insuree_policy = create_test_policy2(product, insuree)
         if effective_date is ...:
             effective_date = start_date
         dates = dict(
@@ -71,7 +104,6 @@ class PolicyStatusTests(TestCase):
             status=status, enroll_date=start_date, **dates
         )
         InsureePolicy.objects.filter(id=insuree_policy.id).update(**dates)
-        return insuree
 
     def _statuses(self, insuree_level):
         return dict(
@@ -97,9 +129,12 @@ class PolicyStatusTests(TestCase):
         self._assert_statuses(self._statuses(insuree_level=True))
 
     def test_insuree_without_individual_coverage_is_not_active(self):
-        InsureePolicy.objects.filter(insuree=self.active).update(effective_date=None)
+        InsureePolicy.objects.filter(
+            insuree=self.active, policy__product=self.product
+        ).update(effective_date=None)
         statuses = self._statuses(insuree_level=True)
-        self.assertEqual(statuses[self.active.id], "EXPIRED")
+        # falls back to the next most relevant policy
+        self.assertEqual(statuses[self.active.id], "IDLE")
         # family level still sees the active family policy
         self.assertEqual(self._statuses(insuree_level=False)[self.active.id], "ACTIVE")
 
@@ -153,7 +188,40 @@ class PolicyStatusTests(TestCase):
             if agg.label_name.lower() == "policy_status"
         ]
         self.assertIn("POL_ACTIVE", statuses)
+        regimes = [
+            agg.label_value
+            for dv in data_values
+            for agg in dv.aggregations
+            if agg.label_name.lower() == "product"
+        ]
+        self.assertEqual(regimes, ["PSTAT"])
         self.assertEqual(sum(int(dv.value) for dv in data_values), 1)
+
+    def _regimes(self, insuree_level):
+        return dict(
+            Insuree.objects.annotate(
+                regime=get_policy_product_annotation(
+                    self.PERIOD, insuree_level=insuree_level
+                )
+            ).values_list("id", "regime")
+        )
+
+    def test_regime_follows_most_relevant_policy(self):
+        for insuree_level in (False, True):
+            regimes = self._regimes(insuree_level)
+            # active PSTAT policy wins over the idle AMO-S1 one
+            self.assertEqual(regimes[self.active.id], "PSTAT")
+            self.assertEqual(regimes[self.idle.id], "AMO-S1")
+            self.assertIsNone(regimes[self.no_policy.id])
+
+    def test_regime_category_sends_cleaned_code(self):
+        category = get_product_categories(self.PERIOD, code_field="policy_product_code")
+        self.assertIsNone(category.path)
+        option = next(o for o in category.category_options if o.code == "AMO_S1")
+        ids = Insuree.objects.annotate(
+            policy_product_code=get_policy_product_annotation(self.PERIOD)
+        ).filter(option.filter)
+        self.assertEqual(list(ids.values_list("id", flat=True)), [self.idle.id])
 
     def test_age_boundaries_on_last_day_of_period(self):
         category = get_age_range_from_boundaries_categories(self.PERIOD)

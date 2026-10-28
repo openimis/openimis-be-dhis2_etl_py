@@ -318,26 +318,35 @@ def get_main_icd_categories(period, prefix="") -> ADXMappingCategoryDefinition:
     )
 
 
-def get_product_categories(period, prefix="product__") -> ADXMappingCategoryDefinition:
-    slices = [NONE_OPT]
-    products = Product.objects.all().order_by("-validity_to")
-    slice_codes = []
-    for product in products:
+def get_product_categories(
+    period, prefix="product__", code_field=None
+) -> ADXMappingCategoryDefinition:
+    # with code_field, options filter on that (annotated) raw product code,
+    # so the value sent is the cleaned option code; otherwise the raw code
+    # found at f"{prefix}code" is used as the option code.
+    raw_codes = {}
+    names = {}
+    for product in Product.objects.all().order_by("-validity_to"):
         cleaned_code = clean_code(str(product.code))
-        if cleaned_code not in slice_codes:
-            slice_codes.append(cleaned_code)
-            slices.append(
-                ADXCategoryOptionDefinition(
-                    code=cleaned_code,
-                    name=(
-                        f"{product.code}-{product.name}"
-                        if not product.name.startswith(product.code)
-                        else product.name
-                    ),
-                    # filter=Q(**{f'{prefix}product':product})
-                )
-            )
-
+        raw_codes.setdefault(cleaned_code, set()).add(product.code)
+        names.setdefault(
+            cleaned_code,
+            (
+                f"{product.code}-{product.name}"
+                if not product.name.startswith(product.code)
+                else product.name
+            ),
+        )
+    slices = [NONE_OPT] + [
+        ADXCategoryOptionDefinition(
+            code=cleaned_code,
+            name=names[cleaned_code],
+            filter=(Q(**{f"{code_field}__in": sorted(codes)}) if code_field else None),
+        )
+        for cleaned_code, codes in raw_codes.items()
+    ]
     return ADXMappingCategoryDefinition(
-        category_name="product", category_options=slices, path=f"{prefix}code"
+        category_name="product",
+        category_options=slices,
+        path=None if code_field else f"{prefix}code",
     )

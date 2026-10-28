@@ -21,6 +21,7 @@ from dhis2_etl.services.adx.utils import (
     get_claim_period_filter,
     get_contribution_period_filter,
     get_period_last_day,
+    get_policy_product_annotation,
     get_policy_status_annotation,
 )
 from insuree.models import Insuree
@@ -34,13 +35,17 @@ def get_location_insuree_number_dv(period):
             *Insuree.filter_validity(validity=get_period_last_day(period)),
             family__location__parent=loc
         ).annotate(
-            policy_status=get_policy_status_annotation(period, insuree_level=True)
+            policy_status=get_policy_status_annotation(period, insuree_level=True),
+            policy_product_code=get_policy_product_annotation(
+                period, insuree_level=True
+            ),
         ),
         aggregation_func=Count("id"),
         categories=[
             get_age_range_from_boundaries_categories(period),
             get_sex_categories(),
             get_policy_status_categories(),
+            get_product_categories(period, code_field="policy_product_code"),
         ],
     )
 
@@ -56,6 +61,7 @@ def get_location_family_number_dv(period):
         ).annotate(
             policy_value_sum=Sum("family__policies__value"),
             policy_status=get_policy_status_annotation(period),
+            policy_product_code=get_policy_product_annotation(period),
         ),
         aggregation_func=Count("id"),
         categories=[
@@ -64,6 +70,7 @@ def get_location_family_number_dv(period):
             get_payment_status_categories(period),
             get_payment_state_categories(),
             get_policy_status_categories(),
+            get_product_categories(period, code_field="policy_product_code"),
         ],
     )
 
