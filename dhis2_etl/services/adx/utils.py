@@ -1,10 +1,24 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict
 
-from django.db.models import QuerySet, Sum, Model, Q, F, Exists, OuterRef, Value
+from django.db.models import (
+    QuerySet,
+    Sum,
+    Model,
+    Q,
+    F,
+    Exists,
+    OuterRef,
+    Value,
+    Case,
+    When,
+    CharField,
+)
 from django.db.models.functions import Coalesce
 from core import filter_validity
 from contribution.models import Premium
+from insuree.models import InsureePolicy
+from policy.models import Policy
 from django_adx.models.adx.data import Period
 from dhis2_etl.utils import build_dhis2_id
 
@@ -91,3 +105,49 @@ def valid_policy(period):
         Q(family__policies__start_date__lte=period.to_date)
         & Q(family__policies__expiry_date__gt=period.from_date)
     ) & Q(family__policies__validity_to__isnull=True)
+
+
+def get_policy_status_annotation(period, insuree_level=False):
+    # Status of the most relevant policy at the end of the period, ranked
+    # ACTIVE > SUSPENDED > IDLE > READY > EXPIRED, NO_POLICY otherwise.
+    # Computed with subqueries so rows are not multiplied by the policy join.
+    # Insuree level relies on the individual coverage dates of InsureePolicy.
+    if insuree_level:
+        policies = InsureePolicy.objects.filter(
+            insuree=OuterRef("pk"),
+            validity_to__isnull=True,
+            start_date__lte=period.to_date,
+        )
+        status = "policy__status"
+        coverage = Q(
+            effective_date__lte=period.to_date, expiry_date__gt=period.from_date
+        )
+    else:
+        policies = Policy.objects.filter(
+            family=OuterRef("family_id"),
+            validity_to__isnull=True,
+            start_date__lte=period.to_date,
+        )
+        status = "status"
+        coverage = Q(expiry_date__gt=period.from_date)
+    return Case(
+        When(
+            Exists(policies.filter(coverage, **{status: Policy.STATUS_ACTIVE})),
+            then=Value("ACTIVE"),
+        ),
+        When(
+            Exists(policies.filter(**{status: Policy.STATUS_SUSPENDED})),
+            then=Value("SUSPENDED"),
+        ),
+        When(
+            Exists(policies.filter(**{status: Policy.STATUS_IDLE})),
+            then=Value("IDLE"),
+        ),
+        When(
+            Exists(policies.filter(**{status: Policy.STATUS_READY})),
+            then=Value("READY"),
+        ),
+        When(Exists(policies), then=Value("EXPIRED")),
+        default=Value("NO_POLICY"),
+        output_field=CharField(),
+    )
