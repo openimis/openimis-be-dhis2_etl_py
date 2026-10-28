@@ -1,20 +1,22 @@
 # import the logging library
-import re
-
 
 # Create your views here.
 
 from django.core.management.base import BaseCommand
-from django.shortcuts import redirect, render
 from dhis2_etl.management.utiils import set_logger
-from dhis2_etl.scheduled_tasks import adx_monthly_sync
 
-from dhis2_etl.services.claimServices import *
-from dhis2_etl.services.fundingServices import *
-from dhis2_etl.services.insureeServices import *
-from dhis2_etl.services.locationServices import *
-from dhis2_etl.services.optionSetServices import *
-from dhis2_etl.strategy.adx_client import ADXClient
+import datetime
+
+from dhis2_etl.services.claimServices import syncClaim
+from dhis2_etl.services.fundingServices import sync_funding
+from dhis2_etl.services.insureeServices import (
+    enrollInsuree,
+    syncInsuree,
+    syncInsureePolicy,
+    syncInsureePolicyClaim,
+    syncPolicy,
+)
+from dhis2_etl.services.locationServices import syncPopulation
 
 logger = set_logger()
 
@@ -56,7 +58,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        verbose = options["verbose"]
         start_date = options["start_date"][0]
         stop_date = options["stop_date"][0]
         scope = options["scope"][0]
@@ -70,10 +71,9 @@ class Command(BaseCommand):
 
     def sync_dhis2(self, start_date, stop_date, scope):
         logger.info("Received task")
-        responses = []
-        ## TEI and Program enrollment and event
+        # TEI and Program enrollment and event
         #########################################
-        ## Deprecated
+        # Deprecated
         if scope == "insuree":
             logger.info("start Insuree sync")
             syncInsuree(start_date, stop_date)
@@ -88,7 +88,7 @@ class Command(BaseCommand):
         # manual enrollment to policy program
         if scope == "enroll" or scope == "all":
             logger.info("start Insuree enroll")
-            insureeResponse = enrollInsuree(start_date, stop_date)
+            enrollInsuree(start_date, stop_date)
             # responses.insert(insureeResponse)
         # syncInsuree and Policiy event
         if scope == "insureepolicies" or scope == "all":

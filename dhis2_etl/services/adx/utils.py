@@ -15,9 +15,7 @@ from django.db.models import (
     CharField,
 )
 from django.db.models.functions import Coalesce
-from core import filter_validity
 from claim.models import Claim
-from contribution.models import Premium
 from insuree.models import InsureePolicy
 from policy.models import Policy
 from django_adx.models.adx.data import Period

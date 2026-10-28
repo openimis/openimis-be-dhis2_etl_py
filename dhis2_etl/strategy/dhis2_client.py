@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 
 # import the logging library
 import logging
@@ -35,7 +36,10 @@ def printPaginated(ressource, queryset, convertor, **kwargs):
     timestamp = datetime.datetime.now().strftime("%d%m%Y%H%M%S.%f")
     while curPage <= pages:
         f = open(
-            path + "\out_" + timestamp + "_" + ressource + "-" + str(curPage) + ".json",
+            os.path.join(
+                path,
+                "out_" + timestamp + "_" + ressource + "-" + str(curPage) + ".json",
+            ),
             "w+",
         )
         page = p.page(curPage)
@@ -115,7 +119,6 @@ def post(ressource, objs, convertor, **kwargs):
             response = {"status_code": e.code, "url": e.url, "text": e.description}
             logger.debug(e)
             return response
-            pass
         else:
             logger.error(e)
 
@@ -145,7 +148,6 @@ def postPage(ressource, page, convertor, **kwargs):
             response = {"status_code": e.code, "url": e.url, "text": e.description}
             logger.debug(e)
             return response
-            pass
         else:
             logger.error(e)
 
@@ -171,6 +173,5 @@ def postRaw(ressource, objConv, **kwargs):
             response = {"status_code": e.code, "url": e.url, "text": e.description}
             logger.debug(e)
             return response
-            pass
         else:
             logger.error(e)

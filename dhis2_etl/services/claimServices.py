@@ -7,7 +7,6 @@ from claim.models import Claim, ClaimItem, ClaimService
 from django.db.models import Prefetch, Q
 
 # import time
-from django.http import JsonResponse
 
 # from policy.models import Policy
 # from django.core.serializers.json import DjangoJSONEncoder
@@ -17,11 +16,9 @@ from dhis2_etl.builders.dhis2.ClaimConverter import (
     CLAIM_VALUATED,
     ClaimConverter,
 )
-from django_adx.models.dhis2.program import *
-from dhis2_etl.strategy.dhis2_client import *
+from dhis2_etl.strategy.dhis2_client import postPaginated
 
 # FIXME manage permissions
-from dhis2_etl.utils import *
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)

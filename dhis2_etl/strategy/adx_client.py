@@ -1,6 +1,5 @@
 import logging
 from typing import Any, Dict
-from urllib.parse import urljoin
 from xml.etree import ElementTree
 
 from dict2obj import Dict2Obj
@@ -9,7 +8,6 @@ import requests
 from dhis2_etl.configurations import GeneralConfiguration
 from django_adx.serializers.adx import XMLFormatter
 from django_adx.models.adx.data import ADXMapping
-from django_adx.models.dhis2.enum import MergeMode
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +48,7 @@ class ADXClient:
                 and response.status_code >= 200
                 and response.status_code < 300
             ):
-                logger.info(f"posted successfully")
+                logger.info("posted successfully")
             else:
                 logger.error(
                     f"error {response.status_code}\nurl:{response.url}\nmessage:{response.text}"

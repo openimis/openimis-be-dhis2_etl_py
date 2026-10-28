@@ -7,7 +7,11 @@ from django.test import TestCase
 from insuree.models import Education, FamilyType, Gender, Insuree, Profession
 from insuree.test_helpers import create_test_gender, create_test_insuree
 from medical.models import Diagnosis, Item, Service
-from medical.test_helpers import create_test_diagnosis, create_test_service, create_test_item
+from medical.test_helpers import (
+    create_test_diagnosis,
+    create_test_service,
+    create_test_item,
+)
 from policy.test_helpers import create_test_policy2
 from product.test_helpers import create_test_product
 
@@ -30,8 +34,8 @@ class DailySyncTests(TestCase):
         # Ensure genders exist before any test operations
         create_test_gender()
         create_test_diagnosis()
-        create_test_item(item_type='D')
-        create_test_service('D')
+        create_test_item(item_type="D")
+        create_test_service("D")
         self.timeframe = (
             datetime.datetime(2018, 12, 10),
             datetime.datetime(2018, 12, 11),
@@ -44,16 +48,10 @@ class DailySyncTests(TestCase):
         timeframe = self.timeframe
         self.__validate_timeframe(model, timeframe)
         self.assertFalse(has_model_changed_in_timeframe(model.objects, *timeframe))
-        new_insuree1 = self._create_test_insuree(
-            "chft1", "M", "1950-01-01", "2018-12-11T01:01:01"
-        )
-        new_insuree2 = self._create_test_insuree(
-            "chft2", "M", "1950-01-01", "2018-12-09T23:59:59"
-        )
+        self._create_test_insuree("chft1", "M", "1950-01-01", "2018-12-11T01:01:01")
+        self._create_test_insuree("chft2", "M", "1950-01-01", "2018-12-09T23:59:59")
         self.assertFalse(has_model_changed_in_timeframe(model.objects, *timeframe))
-        new_insuree3 = self._create_test_insuree(
-            "chft3", "M", "1950-01-01", "2018-12-10T00:00:01"
-        )
+        self._create_test_insuree("chft3", "M", "1950-01-01", "2018-12-10T00:00:01")
         self.assertTrue(has_model_changed_in_timeframe(model.objects, *timeframe))
 
     def test_claim_sync(self):

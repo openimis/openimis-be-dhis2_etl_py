@@ -1,5 +1,5 @@
 import logging
-from django_adx.models.adx.definition import *
+from django_adx.models.adx.definition import ADXMappingDefinition
 from django_adx.models.dhis2.metadata import (
     Category,
     CategoryOption,
@@ -8,6 +8,7 @@ from django_adx.models.dhis2.metadata import (
     DataSet,
     DataSetElement,
     DEFAULT_CATEGORY_COMBO,
+    Option,
 )
 from dhis2_etl.utils import build_dhis2_id, clean_code
 from django_adx.models.dhis2.type import DHIS2Ref

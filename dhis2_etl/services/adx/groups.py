@@ -14,7 +14,7 @@ from dhis2_etl.services.adx.categories import (
     get_product_categories,
     get_claim_status_categories,
 )
-from dhis2_etl.utils import build_dhis2_id, clean_code
+from dhis2_etl.utils import clean_code
 from location.models import Location, HealthFacility
 
 
@@ -23,7 +23,7 @@ def get_enrolment_location_group(period):
         comment="number of insuree per location",
         data_set="ENROLMENT",
         org_unit_type=Location,
-        to_org_unit_code_func=lambda l: clean_code(l.uuid),
+        to_org_unit_code_func=lambda loc: clean_code(loc.uuid),
         data_values=[
             get_location_insuree_number_dv(period),
             get_location_family_number_dv(period),

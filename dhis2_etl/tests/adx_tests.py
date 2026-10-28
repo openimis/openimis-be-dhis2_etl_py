@@ -105,10 +105,9 @@ class ADXTests(TestCase):
         cls._create_test_organization_unit()
 
     def is_same_aggregation(self, dv_g, dv_e):
-        is_same = True
         # true if not cat
-        if not "aggregations" in dv_g:
-            if not "aggregations" in dv_e:
+        if "aggregations" not in dv_g:
+            if "aggregations" not in dv_e:
                 return True
             else:
                 return False
@@ -116,7 +115,7 @@ class ADXTests(TestCase):
         for ag_g in dv_g["aggregations"]:
             found = False
             # if no agg on expected not the same as generated
-            if not "aggregations" in dv_e:
+            if "aggregations" not in dv_e:
                 return False
             for ag_e in dv_e["aggregations"]:
                 if str(ag_g) == str(ag_e):
@@ -154,7 +153,7 @@ class ADXTests(TestCase):
     def test_xml_format(self):
         adx_format = self._create_test_adx()
         xml_formatter = XMLFormatter()
-        xml_format = xml_formatter.format_adx(adx_format)
+        xml_formatter.format_adx(adx_format)
         expected = ElementTree.fromstring(self.EXPECTED_XML_DUMP)
         remove_namespace(expected)
         # FIXME Name space issue

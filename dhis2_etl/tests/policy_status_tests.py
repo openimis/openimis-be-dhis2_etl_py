@@ -38,7 +38,9 @@ class PolicyStatusTests(TestCase):
             Policy.STATUS_ACTIVE, datetime.date(2026, 1, 1), datetime.date(2026, 12, 31)
         )
         cls.idle = cls._insuree_with_policy(
-            Policy.STATUS_IDLE, datetime.date(2026, 1, 1), datetime.date(2026, 12, 31),
+            Policy.STATUS_IDLE,
+            datetime.date(2026, 1, 1),
+            datetime.date(2026, 12, 31),
             effective_date=None,
         )
         # expired since, but covered the first day of the period
@@ -106,12 +108,21 @@ class PolicyStatusTests(TestCase):
         codes = [o.code for o in category.category_options]
         self.assertEqual(
             codes,
-            ["POL_ACTIVE", "POL_SUSPENDED", "POL_IDLE", "POL_READY", "POL_EXPIRED", "POL_NONE"],
+            [
+                "POL_ACTIVE",
+                "POL_SUSPENDED",
+                "POL_IDLE",
+                "POL_READY",
+                "POL_EXPIRED",
+                "POL_NONE",
+            ],
         )
 
     def test_valid_policy_overlaps_period(self):
         ids = set(
-            Insuree.objects.filter(valid_policy(self.PERIOD)).values_list("id", flat=True)
+            Insuree.objects.filter(valid_policy(self.PERIOD)).values_list(
+                "id", flat=True
+            )
         )
         self.assertIn(self.active.id, ids)
         self.assertIn(self.idle.id, ids)
