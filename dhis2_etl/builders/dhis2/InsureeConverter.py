@@ -25,7 +25,15 @@ from .ClaimConverter import ClaimConverter
 logger = logging.getLogger("openIMIS")
 # Create your views here.
 insureeProgram = GeneralConfiguration.get_insuree_program()
-salt = GeneralConfiguration.get_salt()
+
+
+def pseudonymise(value):
+    """
+    The pseudonymised form of an identifier: md5 of the deployment's secret salt and
+    the value. The algorithm is kept as is because the exported DHIS2 attribute values
+    must stay stable for the instances already fed.
+    """
+    return hashlib.md5((GeneralConfiguration.get_salt() + value).encode("utf-8")).hexdigest()
 
 
 class InsureeConverter(BaseDHIS2Converter):
@@ -69,9 +77,7 @@ class InsureeConverter(BaseDHIS2Converter):
                 attributes.append(
                     AttributeValue(
                         attribute=insureeProgram.get("attributes").get("CHFId"),
-                        value=hashlib.md5(
-                            (salt + insuree.chf_id).encode("utf-8")
-                        ).hexdigest(),
+                        value=pseudonymise(insuree.chf_id),
                     )
                 )
 
@@ -85,8 +91,8 @@ class InsureeConverter(BaseDHIS2Converter):
                         value=insuree.family.uuid,
                     )
                 )
-            # "firstName"
-            if insuree.other_names is not None and is_valid_uid(
+            # "firstName": personal data, only when export_names is on
+            if GeneralConfiguration.export_names() and insuree.other_names is not None and is_valid_uid(
                 insureeProgram.get("attributes").get("firstName")
             ):
                 attributes.append(
@@ -95,8 +101,8 @@ class InsureeConverter(BaseDHIS2Converter):
                         value=insuree.other_names,
                     )
                 )
-            # "lastName"
-            if insuree.last_name is not None and is_valid_uid(
+            # "lastName": personal data, only when export_names is on
+            if GeneralConfiguration.export_names() and insuree.last_name is not None and is_valid_uid(
                 insureeProgram.get("attributes").get("lastName")
             ):
                 attributes.append(
@@ -138,7 +144,8 @@ class InsureeConverter(BaseDHIS2Converter):
         uid = build_dhis2_id(insuree.uuid)
         # event  = kwargs.get('event',False)
         attributes = []
-        if insuree.last_name is not None and is_valid_uid(
+        # "lastName": personal data, only when export_names is on
+        if GeneralConfiguration.export_names() and insuree.last_name is not None and is_valid_uid(
             insureeProgram.get("attributes").get("lastName")
         ):
             attributes.append(
@@ -175,9 +182,7 @@ class InsureeConverter(BaseDHIS2Converter):
             attributes.append(
                 AttributeValue(
                     attribute=insureeProgram.get("attributes").get("insuranceId"),
-                    value=hashlib.md5(
-                        (salt + insuree.chf_id).encode("utf-8")
-                    ).hexdigest(),
+                    value=pseudonymise(insuree.chf_id),
                 )
             )
         if insuree.chf_id is not None and is_valid_uid(
@@ -187,9 +192,7 @@ class InsureeConverter(BaseDHIS2Converter):
             attributes.append(
                 AttributeValue(
                     attribute=insureeProgram.get("attributes").get("CHFId"),
-                    value=hashlib.md5(
-                        (salt + insuree.chf_id).encode("utf-8")
-                    ).hexdigest(),
+                    value=pseudonymise(insuree.chf_id),
                 )
             )
         # "insureeId":"e9fOa40sDwR",  # should not use it
@@ -233,8 +236,8 @@ class InsureeConverter(BaseDHIS2Converter):
                     value=insuree.family.family_type_id,
                 )
             )
-        # "firstName"
-        if insuree.other_names is not None and is_valid_uid(
+        # "firstName": personal data, only when export_names is on
+        if GeneralConfiguration.export_names() and insuree.other_names is not None and is_valid_uid(
             insureeProgram.get("attributes").get("firstName")
         ):
             attributes.append(

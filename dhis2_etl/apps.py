@@ -9,10 +9,13 @@ MODULE_NAME = "dhis2_etl"
 logger = logging.getLogger(__name__)
 
 DEFAULT_CFG = {
+    # No default DHIS2 instance: the host and credentials must be configured for the
+    # deployment (core.ModuleConfiguration); pushing fails with ImproperlyConfigured
+    # until they are.
     "dhis2": {
-        "host": "https://play.dhis2.org/2.39.3",
-        "username": "admin",
-        "password": "district",
+        "host": "",
+        "username": "",
+        "password": "",
     },
     "adx": {
         "endpoint": "api/dataValueSets",
@@ -28,7 +31,13 @@ DEFAULT_CFG = {
         "categoryCombo": "bjDvmb4bfuf",
         "categoryOption": "xYerKDKCefk",
     },
-    "salt": "LeSalt",
+    # Secret salt of the pseudonymised insuree identifiers (CHFId, insuranceId): it
+    # must be set per deployment and kept secret. No default, so that two deployments
+    # never share one; exporting insurees fails with ImproperlyConfigured until it is.
+    "salt": "",
+    # The insuree first and last names are personal data: they are exported to DHIS2
+    # only when this is explicitly turned on.
+    "export_names": False,
     "jsonOutPath": "/temp",
     "scheduled_integration": {
         "claims": False,
@@ -116,8 +125,8 @@ DEFAULT_CFG = {
             "dob": "woZmnhwGvu6",
             "education": "pWV8uthRZVY",
             "groupType": "QnAQO4Kd4I3",
-            "firstName": "vYdz8EjQJe0",  # not used for privacy reason
-            "lastName": "BRGgPOilUtC",  # not used for privacy reason
+            "firstName": "vYdz8EjQJe0",  # exported only when export_names is on
+            "lastName": "BRGgPOilUtC",  # exported only when export_names is on
             "firstServicePoint": "GZ6zgXS25VH",
             "gender": "QtkHTKL4EsU",
             "isHead": "siOTMqr9kw6",
@@ -215,6 +224,17 @@ class Dhis2Config(AppConfig):
 
     def __configure_module(self, cfg):
         ModuleConfiguration.build_configuration(cfg)
+        from .configurations import GeneralConfiguration
+
+        missing = GeneralConfiguration.missing_settings()
+        if missing:
+            # not an error at start-up: the module may be installed without being
+            # used; any push or insuree export fails until these are configured
+            logger.warning(
+                "Module %s is not configured for use: missing %s",
+                MODULE_NAME,
+                ", ".join(missing),
+            )
         logger.info("Module %s configured successfully", MODULE_NAME)
 
 

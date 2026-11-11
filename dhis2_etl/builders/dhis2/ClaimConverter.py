@@ -13,7 +13,6 @@ from dhis2_etl.utils import build_dhis2_id, toDateStr
 from . import BaseDHIS2Converter
 
 claimProgram = GeneralConfiguration.get_claim_program()
-salt = GeneralConfiguration.get_salt()
 CLAIM_REJECTED = 1
 CLAIM_ENTERED = 2
 CLAIM_CHECKED = 4
