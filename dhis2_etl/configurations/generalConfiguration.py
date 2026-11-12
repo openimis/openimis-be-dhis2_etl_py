@@ -1,4 +1,8 @@
+from django.core.exceptions import ImproperlyConfigured
+
 from . import BaseConfiguration
+
+DHIS2_CONNECTION_KEYS = ("host", "username", "password")
 
 
 class GeneralConfiguration(BaseConfiguration):
@@ -8,7 +12,8 @@ class GeneralConfiguration(BaseConfiguration):
         config = cls.get_config()
         config.dhis2 = cfg["dhis2"]
         config.adx = cfg["adx"]
-        config.salt = cfg["salt"]
+        config.salt = cfg.get("salt")
+        config.export_names = bool(cfg.get("export_names", False))
         config.insureeProgram = cfg["insureeProgram"]
         config.claimProgram = cfg["claimProgram"]
         config.fundingProgram = cfg["fundingProgram"]
@@ -34,6 +39,35 @@ class GeneralConfiguration(BaseConfiguration):
         return cls.get_config().dhis2
 
     @classmethod
+    def get_dhis2_connection(cls):
+        """
+        The DHIS2 host and credentials; raises ImproperlyConfigured when any is
+        missing, rather than connecting to an unintended instance.
+        """
+        dhis2 = cls.get_dhis2() or {}
+        missing = [key for key in DHIS2_CONNECTION_KEYS if not dhis2.get(key)]
+        if missing:
+            raise ImproperlyConfigured(
+                "dhis2_etl: the DHIS2 connection is not configured, missing dhis2.%s"
+                % ", dhis2.".join(missing)
+            )
+        return dhis2
+
+    @classmethod
+    def missing_settings(cls):
+        """The settings a deployment must provide before using the module."""
+        dhis2 = cls.get_dhis2() or {}
+        missing = ["dhis2.%s" % key for key in DHIS2_CONNECTION_KEYS if not dhis2.get(key)]
+        if not cls.get_config().salt:
+            missing.append("salt")
+        return missing
+
+    @classmethod
+    def export_names(cls):
+        """Whether the insuree first and last names are exported (off by default)."""
+        return bool(getattr(cls.get_config(), "export_names", False))
+
+    @classmethod
     def get_adx(cls):
         return cls.get_config().adx
 
@@ -43,7 +77,17 @@ class GeneralConfiguration(BaseConfiguration):
 
     @classmethod
     def get_salt(cls):
-        return cls.get_config().salt
+        """
+        The deployment's secret salt of the pseudonymised identifiers; raises
+        ImproperlyConfigured when it is not set, rather than exporting identifiers
+        hashed with a salt known to everyone.
+        """
+        salt = cls.get_config().salt
+        if not salt:
+            raise ImproperlyConfigured(
+                "dhis2_etl: 'salt' is not configured; set a deployment-specific secret salt"
+            )
+        return salt
 
     @classmethod
     def get_policy_state_code(cls, code):

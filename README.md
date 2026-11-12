@@ -10,16 +10,30 @@ there is 2 methods available, both require to push for the metadata first:
 
 ## seting up the module
 
-please update the django module configuration to with DHIS2 url and credentials
+The module ships **without** a DHIS2 host, credentials or salt: each deployment must set them in
+the module configuration (`core.ModuleConfiguration`, module `dhis2_etl`, layer `be`). Until they
+are set, a warning is logged at start-up and any push fails with `ImproperlyConfigured` naming the
+missing setting.
 
 ```
     "dhis2" : {
-        "host":"https://play.dhis2.org/2.39/",
-        "username":"admin",
-        "password":"district"
-    }
-
+        "host": "https://dhis2.example.org/",
+        "username": "<dhis2 user>",
+        "password": "<dhis2 password>"
+    },
+    "salt": "<deployment-specific secret>",
+    "export_names": false
 ```
+
+- `salt` (required): the secret used to pseudonymise the insuree identifiers exported as the
+  `CHFId` and `insuranceId` attributes (`md5(salt + chf_id)`). Use a long random value specific to
+  the deployment and keep it secret: anyone knowing it can recompute the hash of a known insurance
+  number and re-identify the insuree in DHIS2. Changing it changes every exported identifier, so
+  keep it stable once data has been pushed. Deployments that relied on the former built-in default
+  (`"LeSalt"`) keep their existing DHIS2 identifiers only by setting that value explicitly, which
+  leaves them pseudonymised with a public salt: plan a re-import with a new secret salt instead.
+- `export_names` (default `false`): the insuree first and last names (`firstName`, `lastName`
+  attributes) are personal data and are not exported unless this is set to `true`.
 
 the full default configuration can be found in the app.py file where DE and program id could be updated
 

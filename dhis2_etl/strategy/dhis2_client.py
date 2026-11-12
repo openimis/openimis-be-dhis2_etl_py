@@ -17,10 +17,21 @@ from dhis2_etl.configurations import GeneralConfiguration
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
-# Get DHIS2 credentials from the config
-dhis2 = Dict2Obj(GeneralConfiguration.get_dhis2())
-# create the DHIS2 API object
-api = Api(dhis2.host, dhis2.username, dhis2.password)
+_api = None
+
+
+def get_api():
+    """
+    The DHIS2 API object, created on first use from the configured host and
+    credentials (ImproperlyConfigured when they are missing).
+    """
+    global _api
+    if _api is None:
+        dhis2 = Dict2Obj(GeneralConfiguration.get_dhis2_connection())
+        _api = Api(dhis2.host, dhis2.username, dhis2.password)
+    return _api
+
+
 # define the page size
 page_size = int(GeneralConfiguration.get_default_page_size())
 
@@ -108,7 +119,7 @@ def post(ressource, objs, convertor, **kwargs):
     jsonPayload = objConv.dict(exclude_none=True, exclude_defaults=True)
     logger.debug("Paylaod: %s", json.dumps(jsonPayload, indent=2))
     try:
-        response = api.post(
+        response = get_api().post(
             ressource, json=jsonPayload, params={"mergeMode": MergeMode.merge}
         )  # ,'importStrategy':'CREATE_AND_UPDATE'}) #, "async":"false", "preheatCache":"true"})
         logger.debug(response)
@@ -132,7 +143,7 @@ def postPage(ressource, page, convertor, **kwargs):
     jsonPayload = objConv.dict(exclude_none=True, exclude_defaults=True)
     logger.debug("Paylaod: %s", json.dumps(jsonPayload, indent=2))
     try:
-        response = api.post(
+        response = get_api().post(
             ressource,
             json=jsonPayload,
             params={
@@ -157,7 +168,7 @@ def postRaw(ressource, objConv, **kwargs):
     jsonPayload = objConv.dict(exclude_none=True, exclude_defaults=True)
     logger.debug("Paylaod: %s", json.dumps(jsonPayload, indent=2))
     try:
-        response = api.post(
+        response = get_api().post(
             ressource,
             json=jsonPayload,
             params={

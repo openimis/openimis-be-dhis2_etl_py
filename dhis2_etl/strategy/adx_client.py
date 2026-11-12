@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class ADXClient:
     def __init__(self, **kwargs):
-        dhis2 = Dict2Obj(GeneralConfiguration.get_dhis2())
+        dhis2 = Dict2Obj(GeneralConfiguration.get_dhis2_connection())
         adx = Dict2Obj(GeneralConfiguration.get_adx())
         self.host = dhis2.host
         self.username = dhis2.username
